@@ -387,7 +387,8 @@ private:
     }
 
     string prefixFor(Id function) {
-        const static map<Id, string> texts = {{Id::alkene, "en"},{Id::alkyne, "in"},{Id::bromine, "bromo"},
+        const static map<Id, string> texts = {{Id::amide, "carbamoil"},{Id::ketone, "oxo"},{Id::alcohol, "hidroxi"},
+            {Id::amine, "amino"},{Id::nitro, "nitro"},{Id::alkene, "en"},{Id::alkyne, "in"},{Id::bromine, "bromo"},
             {Id::chlorine, "cloro"},{Id::fluorine, "fluoro"},{Id::iodine, "yodo"}};
 
         vector<unsigned short> positions = listPositionsOf(function);
@@ -397,8 +398,8 @@ private:
     }
 
     string sufixFor(Id function) {
-        const static map<Id, string> texts = {{Id::acid, "oico"},{Id::amide, "amide"},{Id::nitrile, "nitrilo"},
-            {Id::aldehyde, "al"},{Id::ketone, "ona"},{Id::alcohol, "ol"},{Id::amine, "amide"} };
+        const static map<Id, string> texts = {{Id::acid, "oico"},{Id::amide, "amida"},{Id::nitrile, "nitrilo"},
+            {Id::aldehyde, "al"},{Id::ketone, "ona"},{Id::alcohol, "ol"},{Id::amine, "amina"}};
 
         vector<unsigned short> positions = listPositionsOf(function);
         if ((substituents::list.find(function)->second).getBonds() == 3) 
@@ -418,6 +419,7 @@ public:
             -REDUNDANCIA
             -VERIFICAR
             -ARREGLAR CADENA
+                -pasar amida no principal pero terminal a sust. del anterior?
             -RADICALES:
                 -VERIFICAR
                     -ARREGLAR CADENA
@@ -474,34 +476,6 @@ public:
         if(isVowel(firstLetterOf(bonds)))
             return prefix + mult + bonds + sufix;
         return prefix + mult + "a" + bonds + sufix;
-
-        /*
-        reorderBy(functions[0]);
-        vector<unsigned short> positions = listPositionsOf(functions[0]);
-        vector<string> parts;
-        string s = "";
-        switch (functions[0]) {
-        case Id::alkene:
-            parts.push_back(interfixFor(positions, functions[0]));
-            if (thereIs(Id::alkyne))
-                parts.push_back(interfixFor(listPositionsOf(Id::alkyne), Id::alkyne));
-            break;
-        case Id::alkyne:
-            parts.push_back(interfixFor(positions, functions[0]));
-        default:
-            return multiplier(chain.size()) + "ano";
-        }
-
-        string intermediate = concadenate(parts);
-        //string intermediate = concadenate(sortAlphabetically(parts));
-        if (isVowel(firstLetterOf(intermediate)))
-            return multiplier(chain.size()) + intermediate + 'o';
-        return multiplier(chain.size()) + 'a' + intermediate + 'o';
-        */
-        /*
-        if (thereIs(Function::acid))
-            return "acido " + prefix(chain.size()) + "anoico";
-        return "Carbonos: " +  std::to_string(chain.size()) + " " + prefix(chain.size());*/
     }
 
     string getFormula() {
