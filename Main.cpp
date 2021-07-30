@@ -219,14 +219,14 @@ private:
             return greekPrefix(unit) + "acos";
         }
         string s;
-        if (n < 99) { // [30, 99]
+        if (n < 100) { // [30, 99]
             s = greekPrefix(unit);
             if (unit > 4)
                 s += "a";
             s += greekPrefix(ten);
             if (ten == 4)
                 s += "cont";
-            s += "acont";
+            else s += "acont";
             return s;
         } 
         // [100, 999]
@@ -244,7 +244,7 @@ private:
         case 4:
             return s + "atetract";
         default:
-            return s + greekPrefix(hundred) + "act";
+            return s + "a" + greekPrefix(hundred) + "act";
         }
     }
 
@@ -295,12 +295,12 @@ private:
     void listFunctions() {
         for (Carbon c : chain) {
             if (c.freeBonds() == 1) {
-                //if (find(functions.begin(), functions.end(), Id::alkene) == functions.end())
-                    //functions.push_back(Id::alkene);
+                if (find(functions.begin(), functions.end(), Id::alkene) == functions.end())
+                    functions.push_back(Id::alkene);
             }
             else if (c.freeBonds() == 2) {
-                //if (find(functions.begin(), functions.end(), Id::alkyne) == functions.end())
-                    //functions.push_back(Id::alkyne);
+                if (find(functions.begin(), functions.end(), Id::alkyne) == functions.end())
+                    functions.push_back(Id::alkyne);
             }    
             for (Substituent s : c.getSubstituents()) 
                 if (find(functions.begin(), functions.end(), s.getFunction()) == functions.end()
@@ -465,16 +465,21 @@ public:
         if (functions.size() 
             && functions[0] != Id::nitro
             && functions[0] != Id::simple_chain
+            && functions[0] != Id::alkene
+            && functions[0] != Id::alkyne
             && !isHalogen(functions[0]))
                 sufix = sufixFor(functions[count++]);
           
         vector<string> prefixes;
         string prefix, s;
         while (count < functions.size()) {
-            s = prefixFor(functions[count]);
-            if (s != "") prefixes.push_back(s);
+            if (functions[count] != Id::alkene && functions[count] != Id::alkyne) {
+                s = prefixFor(functions[count]);
+                if (s != "") prefixes.push_back(s);
+            }
             count++;
         }
+            
         if (prefixes.size()) {
             sortAlphabetically(prefixes);
             prefix += prefixes[0];
@@ -616,46 +621,25 @@ int main() {
     chain.addSubstituent(substituents::hydrogen);*/
     //CH -= C - CI2 - C(Cl) = CH2
 
-    chain.addSubstituent(substituents::hydrogen);
-    chain.addSubstituent(substituents::hydrogen);
-    chain.addSubstituent(substituents::hydrogen);
-    chain.nextCarbon();
-    chain.addSubstituent(substituents::hydrogen);
-    chain.nextCarbon();
-    chain.addSubstituent(substituents::hydrogen);
-    chain.nextCarbon();
-    chain.addSubstituent(substituents::hydrogen);
-    chain.addSubstituent(substituents::hydrogen);
-    chain.nextCarbon();
-    chain.addSubstituent(substituents::hydrogen);
-    chain.nextCarbon();
-    chain.addSubstituent(substituents::hydrogen);
-    chain.nextCarbon();
-    chain.addSubstituent(substituents::hydrogen);
-    chain.addSubstituent(substituents::hydrogen);
-    for (unsigned short i = 0; i < 331; i++) {
+    /*for (unsigned short n = 0; n < 999; n++) {
+        Chain ch;
+        chain = ch;
+        chain.addSubstituent(substituents::hydrogen);
+        chain.nextCarbon();
+        for (unsigned short i = 0; i < n - 4; i++) {
+            chain.nextCarbon();
+            chain.addSubstituent(substituents::hydrogen);
+            chain.addSubstituent(substituents::hydrogen);
+        }
+        chain.nextCarbon();
+        chain.addSubstituent(substituents::hydrogen);
+        chain.nextCarbon();
         chain.nextCarbon();
         chain.addSubstituent(substituents::hydrogen);
         chain.addSubstituent(substituents::hydrogen);
-    }
-        
-    chain.nextCarbon();
-    chain.addSubstituent(substituents::hydrogen);
-    chain.addSubstituent(substituents::hydrogen);
-    chain.addSubstituent(substituents::hydrogen);
-   
-    /*chain.addSubstituent(substituents::acid);
-    chain.nextCarbon();
-    chain.addSubstituent(substituents::hydrogen);
-    chain.addSubstituent(substituents::hydrogen);
-    chain.nextCarbon();
-    chain.addSubstituent(substituents::hydrogen);
-    chain.addSubstituent(substituents::hydrogen);
-    chain.nextCarbon();
-    chain.addSubstituent(substituents::hydrogen);
-    chain.addSubstituent(substituents::hydrogen);
-    chain.nextCarbon();
-    chain.addSubstituent(substituents::acid);*/
+
+        cout << n + 1 << ": " << chain.getName() << endl;
+    }*/
 
     bool first = true;
     for (vector<Id> available = chain.availableSubstituents(); available.size(); available = chain.availableSubstituents()) {
