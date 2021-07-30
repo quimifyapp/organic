@@ -154,13 +154,6 @@ private:
     vector<Carbon> chain;
     vector<Id> functions;
 
-    unsigned short digitsIn(unsigned short n) {
-        unsigned short i = 1;
-        for (unsigned short i = 1; n > 9; i++)
-            n /= 10;
-        return i;
-    }
-
     string greekPrefix(unsigned short n) {
         switch (n) {
         case 5:
@@ -433,8 +426,8 @@ public:
 
     string getName() {
         listFunctions();
-        //SOLO cuando dos simple chain mismo numero, es x orden alfabetico
         reorderChain();
+        //SOLO cuando dos simple chain mismo numero, es x orden alfabetico
 
         /*
         FALTA:
@@ -530,7 +523,6 @@ public:
     vector<Id> availableSubstituents() {
         vector<Id> result;
         unsigned short free = chain.back().freeBonds();
-        //cout << "free " << free << endl;
         if (free > 2) {
             result.push_back(Id::acid);
             result.push_back(Id::amide);
@@ -561,11 +553,11 @@ public:
                 result.push_back(Groups::list[i].getId());
         if (!chain.back().isTerminal() && free) result.push_back(Function::simple_chain);
         return result;
-    }*/
-    /*unsigned short currentSize() {
+    }
+    unsigned short currentSize() {
         return chain.size();
-    }*/
-    /*unsigned short freeBonds() {
+    }
+    unsigned short freeBonds() {
         return chain.back().freeBonds();
     }*/
 };
@@ -578,36 +570,16 @@ int main() {
 
     Chain chain;
 
-    /*for (int i = 0; i < 100; i++) {
-        chain.addSubstituent(substituents::hydrogen);
-        chain.addSubstituent(substituents::hydrogen);
-        chain.addSubstituent(substituents::hydrogen);
-        for (int j = 2; j < i; j++) {
-            chain.nextCarbon();
-            chain.addSubstituent(substituents::hydrogen);
-            chain.addSubstituent(substituents::hydrogen);
-        }
-        chain.nextCarbon();
-        chain.addSubstituent(substituents::hydrogen);
-        chain.addSubstituent(substituents::hydrogen);
-        chain.addSubstituent(substituents::hydrogen);
-        cout << chain.getName() << " ino" << endl;
-        chain = Chain();
-    }*/
-
     /*chain.addSubstituent(substituents::iodine);
     chain.addSubstituent(substituents::iodine);
+    chain.nextCarbon();
     chain.addSubstituent(substituents::iodine);
     chain.nextCarbon();
     chain.addSubstituent(substituents::iodine);
-    chain.addSubstituent(substituents::iodine);
     chain.nextCarbon();
-    chain.addSubstituent(substituents::iodine);
-    chain.addSubstituent(substituents::iodine);
-    chain.nextCarbon();
-    chain.addSubstituent(substituents::iodine);
     chain.addSubstituent(substituents::iodine);
     chain.addSubstituent(substituents::iodine);*/
+    //peryodobuta-1,3-dieno
 
     /*chain.addSubstituent(substituents::hydrogen);
     chain.nextCarbon();
@@ -640,6 +612,7 @@ int main() {
 
         cout << n + 1 << ": " << chain.getName() << endl;
     }*/
+    //Cadenas con bucle
 
     bool first = true;
     for (vector<Id> available = chain.availableSubstituents(); available.size(); available = chain.availableSubstituents()) {
