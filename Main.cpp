@@ -189,6 +189,8 @@ private:
     string multiplier(unsigned short n) {
         if (n < 10) { // [1, 9]
             switch (n) {
+            case 0:
+                return "";
             case 1:
                 return "met";
             case 2:
@@ -209,21 +211,41 @@ private:
         if (n < 30) { // [20, 29]
             switch (n) {
             case 20:
-                return "eicos";
+                return "icos";
             case 21:
                 return "heneicos";
             }
             if (n < 25) return greekPrefix(unit) + "cos";
             return greekPrefix(unit) + "acos";
         }
-        // [30, 99]
-        string s = greekPrefix(unit);
-        if (unit > 4) 
-            s += "a";
-        s += greekPrefix(ten);
-        if (ten == 4) 
-            return s + "cont";
-        return s + "acont";
+        string s;
+        if (n < 99) { // [30, 99]
+            s = greekPrefix(unit);
+            if (unit > 4)
+                s += "a";
+            s += greekPrefix(ten);
+            if (ten == 4)
+                s += "cont";
+            s += "acont";
+            return s;
+        } 
+        // [100, 999]
+        unsigned short hundred = n / 100; 
+        ten = ten - (hundred * 10);
+        s = multiplier(ten * 10 + unit);
+        switch (hundred)
+        {
+        case 1:
+            return s + "ahect";
+        case 2:
+            return s + "adict";
+        case 3:
+            return s + "atrict";
+        case 4:
+            return s + "atetract";
+        default:
+            return s + greekPrefix(hundred) + "act";
+        }
     }
 
     bool thereIs(Id function) {
@@ -440,7 +462,8 @@ public:
 
         unsigned short count = 0;
         string sufix;
-        if (functions.size() && functions[0] != Id::nitro
+        if (functions.size() 
+            && functions[0] != Id::nitro
             && functions[0] != Id::simple_chain
             && !isHalogen(functions[0]))
                 sufix = sufixFor(functions[count++]);
@@ -452,7 +475,6 @@ public:
             if (s != "") prefixes.push_back(s);
             count++;
         }
-        
         if (prefixes.size()) {
             sortAlphabetically(prefixes);
             prefix += prefixes[0];
@@ -460,22 +482,21 @@ public:
                 prefix += "-" + prefixes[i];
         }
 
-        if (thereIs(Id::acid)) prefix = "ácido " + prefix;
-
         string bonds;
         s = prefixFor(Id::alkene);
         if (s != "") bonds += "-" + s;
         s = prefixFor(Id::alkyne);
         if (s != "") bonds += "-" + s;
         if (bonds == "") bonds = "an";
+
+        string mult = multiplier(chain.size());
         
         if (sufix == "" || !isVowel(firstLetterOf(sufix))) 
             bonds += "o";
-        
-        string mult = multiplier(chain.size());
-        if(isVowel(firstLetterOf(bonds)))
-            return prefix + mult + bonds + sufix;
-        return prefix + mult + "a" + bonds + sufix;
+        if (!isVowel(firstLetterOf(bonds))) mult += "a";
+        if (thereIs(Id::acid)) prefix = "ácido " + prefix;
+
+        return prefix + mult + bonds + sufix;
     }
 
     string getFormula() {
@@ -594,6 +615,34 @@ int main() {
     chain.addSubstituent(substituents::hydrogen);
     chain.addSubstituent(substituents::hydrogen);*/
     //CH -= C - CI2 - C(Cl) = CH2
+
+    chain.addSubstituent(substituents::hydrogen);
+    chain.addSubstituent(substituents::hydrogen);
+    chain.addSubstituent(substituents::hydrogen);
+    chain.nextCarbon();
+    chain.addSubstituent(substituents::hydrogen);
+    chain.nextCarbon();
+    chain.addSubstituent(substituents::hydrogen);
+    chain.nextCarbon();
+    chain.addSubstituent(substituents::hydrogen);
+    chain.addSubstituent(substituents::hydrogen);
+    chain.nextCarbon();
+    chain.addSubstituent(substituents::hydrogen);
+    chain.nextCarbon();
+    chain.addSubstituent(substituents::hydrogen);
+    chain.nextCarbon();
+    chain.addSubstituent(substituents::hydrogen);
+    chain.addSubstituent(substituents::hydrogen);
+    for (unsigned short i = 0; i < 331; i++) {
+        chain.nextCarbon();
+        chain.addSubstituent(substituents::hydrogen);
+        chain.addSubstituent(substituents::hydrogen);
+    }
+        
+    chain.nextCarbon();
+    chain.addSubstituent(substituents::hydrogen);
+    chain.addSubstituent(substituents::hydrogen);
+    chain.addSubstituent(substituents::hydrogen);
    
     /*chain.addSubstituent(substituents::acid);
     chain.nextCarbon();
