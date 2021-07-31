@@ -9,6 +9,7 @@ using namespace std;
 enum class Id { //The sub. kinds ordered by nomenclature priority
     acid,
     amide,
+    carbamoyl,
     nitrile,
     aldehyde,
     ketone,
@@ -56,6 +57,7 @@ public:
 namespace substituents {
     Substituent acid(Id::acid, 3);
     Substituent amide(Id::amide, 3);
+    Substituent carbamoyl(Id::carbamoyl, 1);
     Substituent nitrile(Id::nitrile, 3);
     Substituent aldehyde(Id::aldehyde, 3);
     Substituent ketone(Id::ketone, 2);
@@ -71,6 +73,7 @@ namespace substituents {
     const map<Id, Substituent> list = {
         {Id::acid, acid},
         {Id::amide, amide},
+        {Id::carbamoyl, carbamoyl},
         {Id::nitrile, nitrile},
         {Id::aldehyde, aldehyde},
         {Id::ketone, ketone},
@@ -130,6 +133,10 @@ public:
 
     void bondCarbon() {
         used_bonds += 1;
+    }
+
+    void unbondCarbon() {
+        used_bonds -= 1;
     }
 
     vector<Substituent> getSubstituents() {
@@ -414,7 +421,7 @@ private:
     }
 
     string prefixFor(Id function) {
-        const static map<Id, string> texts = {{Id::amide, "carbamoil"},{Id::ketone, "oxo"},{Id::alcohol, "hidroxi"},
+        const static map<Id, string> texts = {{Id::carbamoyl, "carbamoil"},{Id::ketone, "oxo"},{Id::alcohol, "hidroxi"},
             {Id::amine, "amino"},{Id::nitro, "nitro"},{Id::alkene, "en"},{Id::alkyne, "in"},{Id::bromine, "bromo"},
             {Id::chlorine, "cloro"},{Id::fluorine, "fluoro"},{Id::iodine, "yodo"}};
 
@@ -435,35 +442,75 @@ private:
     }
 
     void correct() {
-        //-pasar amida no principal pero terminal a sust.del anterior ?
         //cadena principal vs. radicales
 
-        //Cetona terminal con un hidrógeno (falso aldehído) -> aldehído (si sería principal)
-        if (chain[chain.size() - 1].thereIs(Id::ketone) && chain[chain.size() - 1].thereIs(Id::hydrogen) && functions[0] <= Id::aldehyde) {
-            chain[chain.size() - 1].removeSubstituent(substituents::ketone);
-            chain[chain.size() - 1].removeSubstituent(substituents::hydrogen);
-            chain[chain.size() - 1].addSubstituent(substituents::aldehyde);
-            listFunctions();
+        //si carbamoil es terminal o penultimo y no hay un terminal mayor a amida -> amida
+        if (functions[0] >= Id::amide) {
+            //Es (o será) principal, no hay otro con mayor preferencia
+            if (chain[0].thereIs(Id::carbamoyl)) {
+                chain[0].removeSubstituent(substituents::carbamoyl);
+                Carbon c(1);
+                c.addSubstituent(substituents::amide);
+                chain.insert(chain.begin(), c);
+                listFunctions();
+            }
+            if (chain[chain.size() - 1].thereIs(Id::carbamoyl)) {
+                chain[chain.size() - 1].removeSubstituent(substituents::carbamoyl);
+                Carbon c(1);
+                c.addSubstituent(substituents::amide);
+                chain.push_back(c);
+                listFunctions();
+            }
         }
-        if (chain[0].thereIs(Id::ketone) && chain[0].thereIs(Id::hydrogen) && functions[0] <= Id::aldehyde) {
-            chain[0].removeSubstituent(substituents::ketone);
-            chain[0].removeSubstituent(substituents::hydrogen);
-            chain[0].addSubstituent(substituents::aldehyde);
-            listFunctions();
+
+        //amida no principal -> carbamoil del anterior
+        if (functions[0] != Id::amide) {
+            //Hay otro terminal de mayor preferencia uno de los dos extremos
+            if (chain[0].thereIs(Id::amide)) {
+                chain[1].unbondCarbon();
+                chain[1].addSubstituent(substituents::carbamoyl);
+                chain.erase(chain.begin());
+                listFunctions();
+            }
+            else if (chain[chain.size() - 1].thereIs(Id::amide)) {
+                chain[chain.size() - 1 - 1].unbondCarbon();
+                chain[chain.size() - 1 - 1].addSubstituent(substituents::carbamoyl);
+                chain.pop_back();
+                listFunctions();
+            }
+        }
+
+        //Cetona e hidrógeno terminales -> aldehído
+        if (functions[0] >= Id::aldehyde) { 
+            //Es (o será) principal, no hay otro con mayor preferencia
+            if (chain[0].thereIs(Id::ketone) && chain[0].thereIs(Id::hydrogen)) {
+                chain[0].removeSubstituent(substituents::ketone);
+                chain[0].removeSubstituent(substituents::hydrogen);
+                chain[0].addSubstituent(substituents::aldehyde);
+                listFunctions();
+            }
+            if (chain[chain.size() - 1].thereIs(Id::ketone) && chain[chain.size() - 1].thereIs(Id::hydrogen)) {
+                chain[chain.size() - 1].removeSubstituent(substituents::ketone);
+                chain[chain.size() - 1].removeSubstituent(substituents::hydrogen);
+                chain[chain.size() - 1].addSubstituent(substituents::aldehyde);
+                listFunctions();
+            }
         }
         //Aldehído sin ser el grupo principal -> cetona
-        if (chain[chain.size() - 1].thereIs(Id::aldehyde) && functions[0] != Id::aldehyde) {
-            chain[chain.size() - 1].removeSubstituent(substituents::aldehyde);
-            chain[chain.size() - 1].addSubstituent(substituents::ketone);
-            chain[chain.size() - 1].addSubstituent(substituents::hydrogen);
-            listFunctions();
-        }
-        else if (chain[0].thereIs(Id::aldehyde) && functions[0] != Id::aldehyde) {
-            //Else porque si se cumple es que hay otro terminal de mayor preferencia en el otro extremo
-            chain[0].removeSubstituent(substituents::aldehyde);
-            chain[0].addSubstituent(substituents::ketone);
-            chain[0].addSubstituent(substituents::hydrogen);
-            listFunctions();
+        if (functions[0] != Id::aldehyde) {
+            //Hay otro terminal de mayor preferencia uno de los dos extremos
+            if (chain[chain.size() - 1].thereIs(Id::aldehyde)) {
+                chain[chain.size() - 1].removeSubstituent(substituents::aldehyde);
+                chain[chain.size() - 1].addSubstituent(substituents::ketone);
+                chain[chain.size() - 1].addSubstituent(substituents::hydrogen);
+                listFunctions();
+            }
+            else if (chain[0].thereIs(Id::aldehyde)) {
+                chain[0].removeSubstituent(substituents::aldehyde);
+                chain[0].addSubstituent(substituents::ketone);
+                chain[0].addSubstituent(substituents::hydrogen);
+                listFunctions();
+            }
         }
     }
 
@@ -473,7 +520,7 @@ public:
         listFunctions();
         correct();
         reorder();
-        //SOLO cuando dos simple chain mismo numero, es x orden alfabetico
+        //SOLO cuando dos simple chain mismo numero (mismos carbonos), es x orden alfabetico
 
         /*
         FALTA:
@@ -501,12 +548,12 @@ public:
 
         unsigned short count = 0;
         string sufix;
-        if (functions.size() 
-            && functions[0] != Id::nitro
-            && functions[0] != Id::simple_chain
-            && functions[0] != Id::alkene
-            && functions[0] != Id::alkyne
-            && !isHalogen(functions[0]))
+        if (functions.size() && 
+            functions[0] != Id::nitro && 
+            functions[0] != Id::simple_chain && 
+            functions[0] != Id::alkene && 
+            functions[0] != Id::alkyne && 
+            !isHalogen(functions[0]))
                 sufix = sufixFor(functions[count++]);
           
         vector<string> prefixes;
@@ -569,13 +616,17 @@ public:
     vector<Id> availableSubstituents() {
         vector<Id> result;
         unsigned short free = chain.back().freeBonds();
-        if (free > 2) {
+        if (free > 2) { //3 bonds
             result.push_back(Id::acid);
             result.push_back(Id::amide);
+        }
+        if(free > 0) // 1 bond
+            result.push_back(Id::carbamoyl);
+        if (free > 2) { // 3 bonds
             result.push_back(Id::nitrile);
             result.push_back(Id::aldehyde);
         }
-        if (free > 1)  // 2 bonds
+        if (free > 1) // 2 bonds
             result.push_back(Id::ketone);
         if (free > 0) { // 1 bond
             result.push_back(Id::alcohol);
@@ -609,10 +660,10 @@ public:
 };
 
 int main() {
-    const map<Id, string> texts = { {Id::acid, "=O & -OH"},{Id::amide, "=O & -NH2"},{Id::nitrile, "-=N"},
-           {Id::aldehyde, "=O & -H"},{Id::ketone, "=O"},{Id::alcohol, "-OH"},{Id::amine, "-NH2"},
-           {Id::nitro, "-NO2"},{Id::bromine, "-Br"},{Id::chlorine, "-Cl"},{Id::fluorine, "-F"},
-           {Id::iodine, "-I"},{Id::simple_chain, "-CH2-CH2..."},{Id::hydrogen, "-H"} };
+    const map<Id, string> texts = { {Id::acid, "=O & -OH"},{Id::amide, "=O & -NH2"},{Id::carbamoyl, "-C (==O & -NH2)"},
+        {Id::nitrile, "-=N"},{Id::aldehyde, "=O & -H"},{Id::ketone, "=O"},{Id::alcohol, "-OH"},
+        {Id::amine, "-NH2"},{Id::nitro, "-NO2"},{Id::bromine, "-Br"},{Id::chlorine, "-Cl"},
+        {Id::fluorine, "-F"},{Id::iodine, "-I"},{Id::simple_chain, "-CH2-CH2..."},{Id::hydrogen, "-H"} };
 
     Chain chain;
 
@@ -664,13 +715,13 @@ int main() {
     for (vector<Id> available = chain.availableSubstituents(); available.size(); available = chain.availableSubstituents()) {
         cout << " ---> " << chain.getFormula() << endl;
         if (!first)
-            cout << " ---------------" << endl << " 0) " << "-C-" << endl;
+            cout << " ------------------" << endl << " 0) " << "-C-" << endl;
             //<< " ---------------" << endl << endl; ///////////////////////////
         else first = false;
         
-        cout << " ---------------" << endl;
+        cout << " ------------------" << endl;
         for (unsigned short i = 0; i < available.size(); i++) {
-                cout << ' ' << i + 1 << ") " << texts.find(available[i])->second << endl << " ---------------" << endl;
+                cout << ' ' << i + 1 << ") " << texts.find(available[i])->second << endl << " ------------------" << endl;
         }
 
         unsigned short input;
