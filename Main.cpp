@@ -113,18 +113,6 @@ public:
             }
     }
 
-    void aldehydeToKetone() {
-        removeSubstituent(substituents::aldehyde);
-        addSubstituent(substituents::ketone);
-        addSubstituent(substituents::hydrogen);
-    }
-
-    void ketoneToAldehyde() {
-        removeSubstituent(substituents::ketone);
-        removeSubstituent(substituents::hydrogen);
-        addSubstituent(substituents::aldehyde);
-    }
-
     bool thereIs(Id function) {
         for (unsigned short i = 0; i < subs.size(); i++)
             if (subs[i].getFunction() == function)
@@ -450,25 +438,31 @@ private:
         //-pasar amida no principal pero terminal a sust.del anterior ?
         //cadena principal vs. radicales
 
-
-
         //Cetona terminal con un hidrógeno (falso aldehído) -> aldehído (si sería principal)
         if (chain[chain.size() - 1].thereIs(Id::ketone) && chain[chain.size() - 1].thereIs(Id::hydrogen) && functions[0] <= Id::aldehyde) {
-            chain[chain.size() - 1].ketoneToAldehyde();
+            chain[0].removeSubstituent(substituents::ketone);
+            chain[0].removeSubstituent(substituents::hydrogen);
+            chain[0].addSubstituent(substituents::aldehyde);
             listFunctions();
         }
         if (chain[0].thereIs(Id::ketone) && chain[0].thereIs(Id::hydrogen) && functions[0] <= Id::aldehyde) {
-            chain[0].ketoneToAldehyde();
+            chain[0].removeSubstituent(substituents::ketone);
+            chain[0].removeSubstituent(substituents::hydrogen);
+            chain[0].addSubstituent(substituents::aldehyde);
             listFunctions();
         }
         //Aldehído sin ser el grupo principal -> cetona
         if (chain[chain.size() - 1].thereIs(Id::aldehyde) && functions[0] != Id::aldehyde) {
-            chain[chain.size() - 1].aldehydeToKetone();
+            chain[chain.size() - 1].removeSubstituent(substituents::aldehyde);
+            chain[chain.size() - 1].addSubstituent(substituents::ketone);
+            chain[chain.size() - 1].addSubstituent(substituents::hydrogen);
             listFunctions();
         }
         else if (chain[0].thereIs(Id::aldehyde) && functions[0] != Id::aldehyde) {
             //Else porque si se cumple es que hay otro terminal de mayor preferencia en el otro extremo
-            chain[0].aldehydeToKetone();
+            chain[0].removeSubstituent(substituents::aldehyde);
+            chain[0].addSubstituent(substituents::ketone);
+            chain[0].addSubstituent(substituents::hydrogen);
             listFunctions();
         }
     }
