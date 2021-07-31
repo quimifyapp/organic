@@ -440,9 +440,9 @@ private:
 
         //Cetona terminal con un hidrógeno (falso aldehído) -> aldehído (si sería principal)
         if (chain[chain.size() - 1].thereIs(Id::ketone) && chain[chain.size() - 1].thereIs(Id::hydrogen) && functions[0] <= Id::aldehyde) {
-            chain[0].removeSubstituent(substituents::ketone);
-            chain[0].removeSubstituent(substituents::hydrogen);
-            chain[0].addSubstituent(substituents::aldehyde);
+            chain[chain.size() - 1].removeSubstituent(substituents::ketone);
+            chain[chain.size() - 1].removeSubstituent(substituents::hydrogen);
+            chain[chain.size() - 1].addSubstituent(substituents::aldehyde);
             listFunctions();
         }
         if (chain[0].thereIs(Id::ketone) && chain[0].thereIs(Id::hydrogen) && functions[0] <= Id::aldehyde) {
