@@ -44,6 +44,10 @@ public:
         carbons = new_carbons;
     }
 
+    bool equals(Substituent s) {
+        return function == s.function && bonds == s.bonds && carbons == s.carbons;
+    }
+
     Id getFunction() const { return function; }
     unsigned short getBonds() const { return bonds; }
     unsigned short getCarbons() const { return carbons; }
@@ -93,13 +97,24 @@ public:
     }
 
     unsigned short freeBonds() {
-        //Terminal carbons have 3 free bonds, intermediate have only 2
         return 4 - used_bonds;
     }
 
     void addSubstituent(Substituent sub) {
         subs.push_back(sub);
         used_bonds += sub.getBonds();
+    }
+
+    void changeSubstituent(Substituent previous, Substituent next) {
+        for (unsigned short i = 0; i < subs.size(); i++) {
+            if (subs[i].equals(previous)) {
+                subs[i] = next;
+                used_bonds -= previous.getBonds();
+                used_bonds += next.getBonds();
+                for (unsigned j = 0; j < previous.getBonds() - next.getBonds(); j++)
+                    addSubstituent(substituents::hydrogen);
+            } 
+        }
     }
 
     bool thereIs(Id function) {
@@ -286,6 +301,7 @@ private:
     }
 
     void listFunctions() {
+        functions.clear();
         for (Carbon c : chain) {
             if (c.freeBonds() == 1) {
                 if (find(functions.begin(), functions.end(), Id::alkene) == functions.end())
@@ -339,7 +355,7 @@ private:
         return (ch == 'e') || (ch == 'i') || (ch == 'a') || (ch == 'o') || (ch == 'u'); 
     }
 
-    void reorderChain() {
+    void reorder() {
         Chain reversed;
         vector<Carbon> v;
         for (Id function : functions) {
@@ -422,11 +438,26 @@ private:
         return pieceFor(positions, texts.find(function)->second);
     }
 
+    void correct() {
+        //-pasar amida no principal pero terminal a sust.del anterior ?
+        //cetona e hidrogeno terminal -> CHO
+        if (chain[chain.size() - 1].thereIs(Id::aldehyde) && functions[0] != Id::aldehyde) {
+            chain[chain.size() - 1].changeSubstituent(substituents::aldehyde, substituents::ketone);
+            listFunctions();
+        }
+        else if (chain[0].thereIs(Id::aldehyde) && functions[0] != Id::aldehyde) {
+            chain[0].changeSubstituent(substituents::aldehyde, substituents::ketone);
+            listFunctions();
+        }
+            
+    }
+
 public:
 
     string getName() {
         listFunctions();
-        reorderChain();
+        correct();
+        reorder();
         //SOLO cuando dos simple chain mismo numero, es x orden alfabetico
 
         /*
@@ -434,7 +465,7 @@ public:
             -REDUNDANCIA
             -VERIFICAR
             -ARREGLAR CADENA
-                -pasar amida no principal pero terminal a sust. del anterior?
+                
             -RADICALES:
                 -VERIFICAR
                     -ARREGLAR CADENA
