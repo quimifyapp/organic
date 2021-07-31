@@ -105,16 +105,24 @@ public:
         used_bonds += sub.getBonds();
     }
 
-    void changeSubstituent(Substituent previous, Substituent next) {
-        for (unsigned short i = 0; i < subs.size(); i++) {
-            if (subs[i].equals(previous)) {
-                subs[i] = next;
-                used_bonds -= previous.getBonds();
-                used_bonds += next.getBonds();
-                for (unsigned j = 0; j < previous.getBonds() - next.getBonds(); j++)
-                    addSubstituent(substituents::hydrogen);
-            } 
-        }
+    void removeSubstituent(Substituent sub) {
+        for (unsigned short i = 0; i < subs.size(); i++)
+            if (subs[i].equals(sub)) {
+                subs.erase(subs.begin() + i);
+                //used_bonds -= sub.getBonds();
+            }
+    }
+
+    void aldehydeToKetone() {
+        removeSubstituent(substituents::aldehyde);
+        addSubstituent(substituents::ketone);
+        addSubstituent(substituents::hydrogen);
+    }
+
+    void ketoneToAldehyde() {
+        removeSubstituent(substituents::ketone);
+        removeSubstituent(substituents::hydrogen);
+        addSubstituent(substituents::aldehyde);
     }
 
     bool thereIs(Id function) {
@@ -440,17 +448,29 @@ private:
 
     void correct() {
         //-pasar amida no principal pero terminal a sust.del anterior ?
-        //cetona e hidrogeno terminal -> CHO
         //cadena principal vs. radicales
+
+
+
+        //Cetona terminal con un hidrógeno (falso aldehído) -> aldehído (si sería principal)
+        if (chain[chain.size() - 1].thereIs(Id::ketone) && chain[chain.size() - 1].thereIs(Id::hydrogen) && functions[0] <= Id::aldehyde) {
+            chain[chain.size() - 1].ketoneToAldehyde();
+            listFunctions();
+        }
+        if (chain[0].thereIs(Id::ketone) && chain[0].thereIs(Id::hydrogen) && functions[0] <= Id::aldehyde) {
+            chain[0].ketoneToAldehyde();
+            listFunctions();
+        }
+        //Aldehído sin ser el grupo principal -> cetona
         if (chain[chain.size() - 1].thereIs(Id::aldehyde) && functions[0] != Id::aldehyde) {
-            chain[chain.size() - 1].changeSubstituent(substituents::aldehyde, substituents::ketone);
+            chain[chain.size() - 1].aldehydeToKetone();
             listFunctions();
         }
         else if (chain[0].thereIs(Id::aldehyde) && functions[0] != Id::aldehyde) {
-            chain[0].changeSubstituent(substituents::aldehyde, substituents::ketone);
+            //Else porque si se cumple es que hay otro terminal de mayor preferencia en el otro extremo
+            chain[0].aldehydeToKetone();
             listFunctions();
         }
-            
     }
 
 public:
