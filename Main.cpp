@@ -164,7 +164,6 @@ public:
         }
         return s;
     }
-
 };
 
 class Chain {
@@ -300,7 +299,6 @@ private:
                         positions.push_back(i);
             return positions;
         }
-
     }
 
     void listFunctions() {
@@ -373,7 +371,6 @@ private:
                 chain = reversed.chain;
                 break;
             }
-                
         }
     }
 
