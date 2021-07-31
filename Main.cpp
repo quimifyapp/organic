@@ -441,6 +441,7 @@ private:
     void correct() {
         //-pasar amida no principal pero terminal a sust.del anterior ?
         //cetona e hidrogeno terminal -> CHO
+        //cadena principal vs. radicales
         if (chain[chain.size() - 1].thereIs(Id::aldehyde) && functions[0] != Id::aldehyde) {
             chain[chain.size() - 1].changeSubstituent(substituents::aldehyde, substituents::ketone);
             listFunctions();
