@@ -379,8 +379,8 @@ private:
                     functions.push_back(Id::alkyne);
             }    
             for (Substituent s : c.getSubstituents()) 
-                if (find(functions.begin(), functions.end(), s.getFunction()) == functions.end()
-                    && s.getFunction() != Id::hydrogen)
+                if (find(functions.begin(), functions.end(), s.getFunction()) == functions.end() &&
+                    s.getFunction() != Id::hydrogen)
                     functions.push_back(s.getFunction());
         }
         sort(functions.begin(), functions.end());
@@ -420,6 +420,10 @@ private:
 
     bool isVowel(char ch){ 
         return (ch == 'e') || (ch == 'i') || (ch == 'a') || (ch == 'o') || (ch == 'u'); 
+    }
+
+    bool isNumber(char ch) {
+        return ch > 48 && ch < 58;
     }
 
     void reorder() {
@@ -473,10 +477,46 @@ private:
         return true;
     }
 
-    string pieceFor(vector<unsigned short> positions, string text) {
-        
+    bool isRedundant(Id function, vector<unsigned short> positions) {
+        /*
+        -dobles o triples enlaces si solo son uno (eteno, propeno si no hay nada más,...?)
+                -propeno
+                    -grupos k no son finales
+                    -grupos si son finales
+        */
+        if (chain.size() == 1)
+            return true;
+        if (chain.size() == 2) {
+            if (functions.size() == 1)
+                //Solo es uno
+                return true;
+            if (function == Id::alkene || function == Id::alkyne)
+                //Es alqueno o alquino
+                return true;
+            if (functions.size() == 2) {
+                //Hay dos sustituyentes
+                if (substituents::list.find(functions[0])->second.getBonds() +
+                    substituents::list.find(functions[1])->second.getBonds() > 3)
+                    //No caben en un solo carbono
+                    return true;
+                if (functions[0] == function)
+                    //De los dos, es el de mayor preferencia (1)
+                    return true;
+            }
+        }
+        if (chain.size() == 3) {
+            if (function == Id::ketone && functions[0] >= Id::aldehyde)
+                //Propanona
+                return true;
+            if (functions.size() == 1 && (function == Id::alkene || function == Id::alkyne))
+                //Es propeno, propadieno o propino 
+                return true;
+        }
+    }
+
+    string pieceFor(Id function, vector<unsigned short> positions, string text) {
         if (positions.size()) {
-            if(chain.size() == 1) 
+            if(isRedundant(function, positions))
                 return quantifier(positions.size()) + text;
             string s;
             for (unsigned short i = 0; i < positions.size() - 1; i++) {
@@ -495,9 +535,9 @@ private:
             {Id::bromine, "bromo"},{Id::chlorine, "cloro"},{Id::fluorine, "fluoro"},{Id::iodine, "yodo"}};
 
         vector<unsigned short> positions = listPositionsOf(function);
-        if (isHalogen(function) && everySubstituentIs(function) && chain.size() > 1) // ???????????????????????
+        if (isHalogen(function) && everySubstituentIs(function) && chain.size() > 1) // per???????????????????????
             return "per" + texts.find(function)->second;
-        return pieceFor(positions, texts.find(function)->second);
+        return pieceFor(function, positions, texts.find(function)->second);
     }
 
     string sufixFor(Id function) {
@@ -507,12 +547,13 @@ private:
         vector<unsigned short> positions = listPositionsOf(function);
         if ((substituents::list.find(function)->second).getBonds() == 3) 
             return quantifier(positions.size()) + texts.find(function)->second;
-        return pieceFor(positions, texts.find(function)->second);
+        return pieceFor(function, positions, texts.find(function)->second);
     }
 
     void correct() {
-        //cadena principal vs. radicales
-        //carbamoil intermedio y no hay terminal mayor a amida -> amida?
+        /*cadena principal vs. radicales
+        carbamoil intermedio y no hay terminal mayor a amida -> amida ("carbamoilpropano" -> 2-metilpropanamida)
+        lo mismo que amida-carbamoil con nitrilo-ciano*/
         if (functions.size()) {
             //Carbamoil terminal principal -> amida
             if (functions[0] >= Id::amide) {
@@ -590,10 +631,6 @@ public:
         correct();
         reorder();
         /*-REDUNDANCIA
-                -dobles o triples enlaces si solo son uno
-                -grupos si es eteno
-                -grupos si son finales
-                -grupos si no son finales y es propeno
         -RADICALES:
                 -VERIFICAR
                     -ARREGLAR CADENA
@@ -632,10 +669,19 @@ public:
 
         string bonds;
         s = prefixFor(Id::alkene);
-        if (s != "") bonds += "-" + s;
+        if (s != "") {
+            if (isNumber(s.at(0)))
+                bonds += "-";
+            bonds += s;
+        }
         s = prefixFor(Id::alkyne);
-        if (s != "") bonds += "-" + s;
+        if (s != "") {
+            if (isNumber(s.at(0)))
+                bonds += "-";
+            bonds += s;
+        }
         if (bonds == "") bonds = "an";
+        if (isNumber(sufix.at(0))) bonds += "-";
 
         string mult = multiplier(chain.size());
         
