@@ -715,7 +715,7 @@ int main() {
         {Id::amine, "-NH2"},{Id::nitro, "-NO2"},{Id::bromine, "-Br"},{Id::chlorine, "-Cl"},
         {Id::fluorine, "-F"},{Id::iodine, "-I"},{Id::simple_chain, "-CH2-CH2..."},{Id::hydrogen, "-H"}};
 
-    while(true){
+    do {
         Chain chain;
 
         /*chain.addSubstituent(substituents::iodine);
@@ -728,7 +728,6 @@ int main() {
         chain.addSubstituent(substituents::iodine);
         chain.addSubstituent(substituents::iodine);*/
         //peryodobuta-1,3-dieno
-
         /*chain.addSubstituent(substituents::hydrogen);
         chain.nextCarbon();
         chain.nextCarbon();
@@ -740,7 +739,6 @@ int main() {
         chain.addSubstituent(substituents::hydrogen);
         chain.addSubstituent(substituents::hydrogen);*/
         //CH -= C - CI2 - C(Cl) = CH2
-
         /*for (unsigned short n = 0; n < 999; n++) {
             Chain ch;
             chain = ch;
@@ -767,7 +765,6 @@ int main() {
             cout << " ---> " << chain.getFormula() << endl;
             if (!first)
                 cout << " ------------------" << endl << " 0) " << "-C-" << endl;
-            //<< " ---------------" << endl << endl; ///////////////////////////
             else first = false;
 
             cout << " ------------------" << endl;
@@ -792,26 +789,9 @@ int main() {
             }
             else chain.nextCarbon();
         }
-        cout << " ---> " << chain.getFormula() << endl << " " << chain.getName();
-        cout << endl;
+        cout << " ---> " << chain.getFormula() << endl << " " << chain.getName() << endl;
         system("pause");
+    } while (true);
 
-        //HWND hwnd = GetDesktopWindow();
-        //toClipboard(hwnd, chain.getFormula() + ": " + chain.getName());
-        /*void toClipboard(HWND hwnd, const std::string& s) {
-        OpenClipboard(hwnd);
-        EmptyClipboard();
-        HGLOBAL hg = GlobalAlloc(GMEM_MOVEABLE, s.size() + 1);
-        if (!hg) {
-            CloseClipboard();
-            return;
-        }
-        memcpy(GlobalLock(hg), s.c_str(), s.size() + 1);
-        GlobalUnlock(hg);
-        SetClipboardData(CF_TEXT, hg);
-        CloseClipboard();
-        GlobalFree(hg);
-    }*/
-    }
     return 0;
 }
