@@ -113,6 +113,7 @@ public:
             if (subs[i].equals(sub)) {
                 subs.erase(subs.begin() + i);
                 //used_bonds -= sub.getBonds();
+                break;
             }
     }
 
@@ -144,25 +145,55 @@ public:
     }
 
     string toString() {
-        string s = "C";
+        const static map<Id, string> texts = {{Id::acid,"OOH"},{Id::amide,"ONH2"},{Id::carbamoyl,"CONH2"},
+            {Id::nitrile,"N"},{Id::aldehyde,"HO"},{Id::ketone,"O"},{Id::alcohol,"OH"},{Id::amine,"NH2"},
+            {Id::nitro,"NO2"},{Id::bromine,"Br"},{Id::chlorine,"Cl"},{Id::fluorine,"F"},{Id::iodine,"I"}};
+
+        string result = "C";
         if (thereIs(Id::hydrogen)) {
-            s += "H";
-            unsigned short i = 0;
-            for (Substituent sub : subs)
-                if (sub.getFunction() == Id::hydrogen)
-                    i++;
-            if (i > 1) s += to_string(i);
-        } 
-        if (thereIs(Id::chlorine)) {
-            s += "(Cl";
-            unsigned short i = 0;
+            result += "H";
+            unsigned short count = 0;
             for (Substituent sub : subs)
                 if (sub.getFunction() == Id::chlorine)
-                    i++;
-            if (i > 1) s += to_string(i);
-            s += ")";
+                    count++;
+            if (count > 1) result += to_string(count);
         }
-        return s;
+
+        vector<Substituent> subs_temp = subs;
+        for (unsigned short i = 0; i < subs_temp.size(); i++) 
+            if (subs_temp[i].getFunction() == Id::hydrogen) {
+                subs_temp.erase(subs_temp.begin() + i);
+                i = 0;
+            }
+                
+        if(subs_temp.size())
+            for (unsigned short i = 0; i < subs_temp.size() - 1; i++)
+                if (subs_temp[i].getFunction() > subs_temp[i + 1].getFunction()) {
+                    swap(subs_temp[i], subs_temp[i + 1]);
+                    i = 0;
+                }
+        
+        for (Substituent sub : subs_temp) {
+            unsigned short count = 0;
+            for (unsigned short i = 0; i < subs_temp.size(); i++)
+                if (sub.equals(subs_temp[i])) {
+                    subs_temp.erase(subs_temp.begin() + i);
+                    count++;
+                    i = 0;
+                }
+            if (sub.getBonds() > 1) {
+                result += texts.find(sub.getFunction())->second;
+                if (count > 1) result += to_string(count);
+            }
+            else if (sub.getFunction() != Id::simple_chain) {
+                result += "(" + texts.find(sub.getFunction())->second + ")";
+                if(count > 1) result += to_string(count);
+            }
+            else {
+                //...
+            }
+        }
+        return result;
     }
 };
 
@@ -423,7 +454,7 @@ private:
             {Id::chlorine, "cloro"},{Id::fluorine, "fluoro"},{Id::iodine, "yodo"}};
 
         vector<unsigned short> positions = listPositionsOf(function);
-        if (isHalogen(function) && everySubstituentIs(function))
+        if (isHalogen(function) && everySubstituentIs(function) && chain.size() > 1) // ???????????????????????
             return "per" + texts.find(function)->second;
         return pieceFor(positions, texts.find(function)->second);
     }
@@ -441,7 +472,9 @@ private:
     void correct() {
         //cadena principal vs. radicales
 
-        //si carbamoil es terminal o penultimo y no hay un terminal mayor a amida -> amida
+        //carbamoil intermedio y no hay terminal mayor a amida -> amida?
+
+        //Carbamoil terminal principal -> amida
         if (functions[0] >= Id::amide) {
             //Es (o será) principal, no hay otro con mayor preferencia
             if (chain[0].thereIs(Id::carbamoyl)) {
@@ -459,8 +492,7 @@ private:
                 listFunctions();
             }
         }
-
-        //amida no principal -> carbamoil del anterior
+        //Amida no principal -> carbamoil del anterior
         if (functions[0] != Id::amide) {
             //Hay otro terminal de mayor preferencia uno de los dos extremos
             if (chain[0].thereIs(Id::amide)) {
@@ -657,10 +689,10 @@ public:
 };
 
 int main() {
-    const map<Id, string> texts = { {Id::acid, "=O & -OH"},{Id::amide, "=O & -NH2"},{Id::carbamoyl, "-C (==O & -NH2)"},
+    const map<Id, string> texts = {{Id::acid, "=O & -OH"},{Id::amide, "=O & -NH2"},{Id::carbamoyl, "-C (==O & -NH2)"},
         {Id::nitrile, "-=N"},{Id::aldehyde, "=O & -H"},{Id::ketone, "=O"},{Id::alcohol, "-OH"},
         {Id::amine, "-NH2"},{Id::nitro, "-NO2"},{Id::bromine, "-Br"},{Id::chlorine, "-Cl"},
-        {Id::fluorine, "-F"},{Id::iodine, "-I"},{Id::simple_chain, "-CH2-CH2..."},{Id::hydrogen, "-H"} };
+        {Id::fluorine, "-F"},{Id::iodine, "-I"},{Id::simple_chain, "-CH2-CH2..."},{Id::hydrogen, "-H"}};
 
     Chain chain;
 
