@@ -5,8 +5,8 @@
 #include <algorithm>
 
 //Clipboard
-#include <Windows.h> 
-#include <winuser.h>
+//#include <Windows.h> 
+//#include <winuser.h>
 
 using namespace std;
 
@@ -215,8 +215,12 @@ public:
             }
             else {
                 if (subs_temp[0].getFunction() != Id::simple_chain) {
-                    result += texts.find(subs_temp[0].getFunction())->second;
-                    if (quantities[0] > 1) result += to_string(quantities[0]);
+                    if (quantities[0] > 1) {
+                        result += "(" + texts.find(subs_temp[0].getFunction())->second + ")" + to_string(quantities[0]);
+                    }
+                    else {
+                        result += texts.find(subs_temp[0].getFunction())->second;
+                    }
                 }
                 else {
                     //...
@@ -470,8 +474,11 @@ private:
     }
 
     string pieceFor(vector<unsigned short> positions, string text) {
-        string s;
+        
         if (positions.size()) {
+            if(chain.size() == 1) 
+                return quantifier(positions.size()) + text;
+            string s;
             for (unsigned short i = 0; i < positions.size() - 1; i++) {
                 s += to_string(positions[i] + 1);
                 s += ",";
@@ -702,21 +709,6 @@ public:
     }
 };
 
-void toClipboard(HWND hwnd, const std::string& s) {
-    OpenClipboard(hwnd);
-    EmptyClipboard();
-    HGLOBAL hg = GlobalAlloc(GMEM_MOVEABLE, s.size() + 1);
-    if (!hg) {
-        CloseClipboard();
-        return;
-    }
-    memcpy(GlobalLock(hg), s.c_str(), s.size() + 1);
-    GlobalUnlock(hg);
-    SetClipboardData(CF_TEXT, hg);
-    CloseClipboard();
-    GlobalFree(hg);
-}
-
 int main() {
     const map<Id, string> texts = {{Id::acid, "=O & -OH"},{Id::amide, "=O & -NH2"},{Id::carbamoyl, "-C (==O & -NH2)"},
         {Id::nitrile, "-=N"},{Id::aldehyde, "=O & -H"},{Id::ketone, "=O"},{Id::alcohol, "-OH"},
@@ -778,15 +770,14 @@ int main() {
         else first = false;
         
         cout << " ------------------" << endl;
-        for (unsigned short i = 0; i < available.size(); i++) {
+        for (unsigned short i = 0; i < available.size(); i++) 
                 cout << ' ' << i + 1 << ") " << texts.find(available[i])->second << endl << " ------------------" << endl;
-        }
 
         unsigned short input;
         cin >> input;
         if (input) {
             input -= 1; // To use it as an index
-            for (unsigned short i = 0; i < available.size(); i++) {
+            for (unsigned short i = 0; i < available.size(); i++) 
                 if (input == i) {
                     if (available[i] == Id::simple_chain) {
                         cout << "Carbonos en la cadena: ";
@@ -794,21 +785,32 @@ int main() {
                         cin >> carbons;
                         chain.addSubstituent(Substituent(Id::simple_chain, 1, carbons));
                     }
-                    else{
-                        chain.addSubstituent(substituents::list.find(available[i])->second);
-                    }
+                    else chain.addSubstituent(substituents::list.find(available[i])->second);
                     break;
                 }
-            }
         }
-        else {
-            chain.nextCarbon();
-        }
+        else chain.nextCarbon();
     }
     cout << " ---> " << chain.getFormula() << endl << " " << chain.getName();
-    HWND hwnd = GetDesktopWindow();
-    toClipboard(hwnd, chain.getFormula() + ": " + chain.getName());
     cout << endl;
     system("pause");
+
+    //HWND hwnd = GetDesktopWindow();
+    //toClipboard(hwnd, chain.getFormula() + ": " + chain.getName());
+    /*void toClipboard(HWND hwnd, const std::string& s) {
+    OpenClipboard(hwnd);
+    EmptyClipboard();
+    HGLOBAL hg = GlobalAlloc(GMEM_MOVEABLE, s.size() + 1);
+    if (!hg) {
+        CloseClipboard();
+        return;
+    }
+    memcpy(GlobalLock(hg), s.c_str(), s.size() + 1);
+    GlobalUnlock(hg);
+    SetClipboardData(CF_TEXT, hg);
+    CloseClipboard();
+    GlobalFree(hg);
+}*/
+
     return 0;
 }
