@@ -490,9 +490,9 @@ private:
     }
 
     string prefixFor(Id function) {
-        const static map<Id, string> texts = {{Id::carbamoyl, "carbamoil"},{Id::ketone, "oxo"},{Id::alcohol, "hidroxi"},
-            {Id::amine, "amino"},{Id::nitro, "nitro"},{Id::alkene, "en"},{Id::alkyne, "in"},{Id::bromine, "bromo"},
-            {Id::chlorine, "cloro"},{Id::fluorine, "fluoro"},{Id::iodine, "yodo"}};
+        const static map<Id, string> texts = {{Id::carbamoyl, "carbamoil"},{Id::nitrile, "ciano"},{Id::ketone, "oxo"},
+            {Id::alcohol, "hidroxi"},{Id::amine, "amino"},{Id::nitro, "nitro"},{Id::alkene, "en"},{Id::alkyne, "in"},
+            {Id::bromine, "bromo"},{Id::chlorine, "cloro"},{Id::fluorine, "fluoro"},{Id::iodine, "yodo"}};
 
         vector<unsigned short> positions = listPositionsOf(function);
         if (isHalogen(function) && everySubstituentIs(function) && chain.size() > 1) // ???????????????????????
@@ -715,102 +715,103 @@ int main() {
         {Id::amine, "-NH2"},{Id::nitro, "-NO2"},{Id::bromine, "-Br"},{Id::chlorine, "-Cl"},
         {Id::fluorine, "-F"},{Id::iodine, "-I"},{Id::simple_chain, "-CH2-CH2..."},{Id::hydrogen, "-H"}};
 
-    Chain chain;
+    while(true){
+        Chain chain;
 
-    /*chain.addSubstituent(substituents::iodine);
-    chain.addSubstituent(substituents::iodine);
-    chain.nextCarbon();
-    chain.addSubstituent(substituents::iodine);
-    chain.nextCarbon();
-    chain.addSubstituent(substituents::iodine);
-    chain.nextCarbon();
-    chain.addSubstituent(substituents::iodine);
-    chain.addSubstituent(substituents::iodine);*/
-    //peryodobuta-1,3-dieno
-
-    /*chain.addSubstituent(substituents::hydrogen);
-    chain.nextCarbon();
-    chain.nextCarbon();
-    chain.addSubstituent(substituents::iodine);
-    chain.addSubstituent(substituents::iodine);
-    chain.nextCarbon();
-    chain.addSubstituent(substituents::chlorine);
-    chain.nextCarbon();
-    chain.addSubstituent(substituents::hydrogen);
-    chain.addSubstituent(substituents::hydrogen);*/
-    //CH -= C - CI2 - C(Cl) = CH2
-
-    /*for (unsigned short n = 0; n < 999; n++) {
-        Chain ch;
-        chain = ch;
-        chain.addSubstituent(substituents::hydrogen);
+        /*chain.addSubstituent(substituents::iodine);
+        chain.addSubstituent(substituents::iodine);
         chain.nextCarbon();
-        for (unsigned short i = 0; i < n - 4; i++) {
+        chain.addSubstituent(substituents::iodine);
+        chain.nextCarbon();
+        chain.addSubstituent(substituents::iodine);
+        chain.nextCarbon();
+        chain.addSubstituent(substituents::iodine);
+        chain.addSubstituent(substituents::iodine);*/
+        //peryodobuta-1,3-dieno
+
+        /*chain.addSubstituent(substituents::hydrogen);
+        chain.nextCarbon();
+        chain.nextCarbon();
+        chain.addSubstituent(substituents::iodine);
+        chain.addSubstituent(substituents::iodine);
+        chain.nextCarbon();
+        chain.addSubstituent(substituents::chlorine);
+        chain.nextCarbon();
+        chain.addSubstituent(substituents::hydrogen);
+        chain.addSubstituent(substituents::hydrogen);*/
+        //CH -= C - CI2 - C(Cl) = CH2
+
+        /*for (unsigned short n = 0; n < 999; n++) {
+            Chain ch;
+            chain = ch;
+            chain.addSubstituent(substituents::hydrogen);
+            chain.nextCarbon();
+            for (unsigned short i = 0; i < n - 4; i++) {
+                chain.nextCarbon();
+                chain.addSubstituent(substituents::hydrogen);
+                chain.addSubstituent(substituents::hydrogen);
+            }
+            chain.nextCarbon();
+            chain.addSubstituent(substituents::hydrogen);
+            chain.nextCarbon();
             chain.nextCarbon();
             chain.addSubstituent(substituents::hydrogen);
             chain.addSubstituent(substituents::hydrogen);
-        }
-        chain.nextCarbon();
-        chain.addSubstituent(substituents::hydrogen);
-        chain.nextCarbon();
-        chain.nextCarbon();
-        chain.addSubstituent(substituents::hydrogen);
-        chain.addSubstituent(substituents::hydrogen);
 
-        cout << n + 1 << ": " << chain.getName() << endl;
-    }*/
-    //Cadenas con bucle
+            cout << n + 1 << ": " << chain.getName() << endl;
+        }*/
+        //Cadenas con bucle
 
-    bool first = true;
-    for (vector<Id> available = chain.availableSubstituents(); available.size(); available = chain.availableSubstituents()) {
-        cout << " ---> " << chain.getFormula() << endl;
-        if (!first)
-            cout << " ------------------" << endl << " 0) " << "-C-" << endl;
+        bool first = true;
+        for (vector<Id> available = chain.availableSubstituents(); available.size(); available = chain.availableSubstituents()) {
+            cout << " ---> " << chain.getFormula() << endl;
+            if (!first)
+                cout << " ------------------" << endl << " 0) " << "-C-" << endl;
             //<< " ---------------" << endl << endl; ///////////////////////////
-        else first = false;
-        
-        cout << " ------------------" << endl;
-        for (unsigned short i = 0; i < available.size(); i++) 
+            else first = false;
+
+            cout << " ------------------" << endl;
+            for (unsigned short i = 0; i < available.size(); i++)
                 cout << ' ' << i + 1 << ") " << texts.find(available[i])->second << endl << " ------------------" << endl;
 
-        unsigned short input;
-        cin >> input;
-        if (input) {
-            input -= 1; // To use it as an index
-            for (unsigned short i = 0; i < available.size(); i++) 
-                if (input == i) {
-                    if (available[i] == Id::simple_chain) {
-                        cout << "Carbonos en la cadena: ";
-                        unsigned short carbons;
-                        cin >> carbons;
-                        chain.addSubstituent(Substituent(Id::simple_chain, 1, carbons));
+            unsigned short input;
+            cin >> input;
+            if (input) {
+                input -= 1; // To use it as an index
+                for (unsigned short i = 0; i < available.size(); i++)
+                    if (input == i) {
+                        if (available[i] == Id::simple_chain) {
+                            cout << "Carbonos en la cadena: ";
+                            unsigned short carbons;
+                            cin >> carbons;
+                            chain.addSubstituent(Substituent(Id::simple_chain, 1, carbons));
+                        }
+                        else chain.addSubstituent(substituents::list.find(available[i])->second);
+                        break;
                     }
-                    else chain.addSubstituent(substituents::list.find(available[i])->second);
-                    break;
-                }
+            }
+            else chain.nextCarbon();
         }
-        else chain.nextCarbon();
-    }
-    cout << " ---> " << chain.getFormula() << endl << " " << chain.getName();
-    cout << endl;
-    system("pause");
+        cout << " ---> " << chain.getFormula() << endl << " " << chain.getName();
+        cout << endl;
+        system("pause");
 
-    //HWND hwnd = GetDesktopWindow();
-    //toClipboard(hwnd, chain.getFormula() + ": " + chain.getName());
-    /*void toClipboard(HWND hwnd, const std::string& s) {
-    OpenClipboard(hwnd);
-    EmptyClipboard();
-    HGLOBAL hg = GlobalAlloc(GMEM_MOVEABLE, s.size() + 1);
-    if (!hg) {
+        //HWND hwnd = GetDesktopWindow();
+        //toClipboard(hwnd, chain.getFormula() + ": " + chain.getName());
+        /*void toClipboard(HWND hwnd, const std::string& s) {
+        OpenClipboard(hwnd);
+        EmptyClipboard();
+        HGLOBAL hg = GlobalAlloc(GMEM_MOVEABLE, s.size() + 1);
+        if (!hg) {
+            CloseClipboard();
+            return;
+        }
+        memcpy(GlobalLock(hg), s.c_str(), s.size() + 1);
+        GlobalUnlock(hg);
+        SetClipboardData(CF_TEXT, hg);
         CloseClipboard();
-        return;
+        GlobalFree(hg);
+    }*/
     }
-    memcpy(GlobalLock(hg), s.c_str(), s.size() + 1);
-    GlobalUnlock(hg);
-    SetClipboardData(CF_TEXT, hg);
-    CloseClipboard();
-    GlobalFree(hg);
-}*/
-
     return 0;
 }
