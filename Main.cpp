@@ -433,12 +433,11 @@ private:
             v = chain;
             reverse(v.begin(), v.end());
             reversed = Chain(v);
-            vector<unsigned short> normal_pos = listPositionsOf(function);
-            vector<unsigned short> reversed_pos = reversed.listPositionsOf(function);
-            if (sum(normal_pos) < sum(reversed_pos))
-                break;
-            else if (sum(normal_pos) > sum(reversed_pos)) {
-                chain = reversed.chain;
+            unsigned short normal_sum = sum(listPositionsOf(function));
+            unsigned short reversed_sum = sum(reversed.listPositionsOf(function));
+            if (normal_sum != reversed_sum) {
+                if (normal_sum > reversed_sum)
+                    chain = reversed.chain;
                 break;
             }
         }
