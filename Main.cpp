@@ -625,7 +625,6 @@ private:
     }
 
 public:
-
     string getName() {
         listFunctions();
         correct();
