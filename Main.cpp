@@ -443,16 +443,32 @@ private:
         }
     }
 
-    vector<string> sortAlphabetically(vector<string> vector) {
+    vector<string> sortPrefixes(vector<string> prefixes) {
+        //Ordena alfabéticamente los prefijos sin sus multiplicadores
+        string texts[10] = {"carbamoil","ciano","oxo","hidroxi",
+            "amino","nitro","bromo","cloro","fluoro","yodo"};
+        //Raíces de los prefijos
+
+        vector<string> roots;
+        for (string s : prefixes) {
+            //Asigna a cada prefijo su raíz
+            for (unsigned short i = 0; i < 10; i++) 
+                if (s.find(texts[i]) != string::npos) {
+                    roots.push_back(texts[i]);
+                    break;
+                }
+        }
         unsigned short i = 0;
-        while (i < vector.size() - 1) {
-            if (firstLetterOf(vector[i]) > firstLetterOf(vector[i + 1])) {
-                swap(vector[i], vector[i + 1]);
+        while (i < prefixes.size() - 1) {
+            if ((roots[0] > roots[0]) || (roots[0] == roots[0] && roots[1] > roots[1])) {
+                //Compara las raíces de los prefijos
+                swap(prefixes[i], prefixes[i + 1]);
+                //Pero ordena los prefijos 
                 i = 0;
             }
             else i++;
         }
-        return vector;
+        return prefixes;
     }
 
     string concadenate(vector<string> vector) {
@@ -659,7 +675,7 @@ public:
         }
             
         if (prefixes.size()) {
-            sortAlphabetically(prefixes);
+            prefixes = sortPrefixes(prefixes);
             prefix += prefixes[0];
             for (unsigned short i = 1; i < prefixes.size(); i++)
                 prefix += "-" + prefixes[i];
@@ -818,7 +834,7 @@ int main() {
             unsigned short input;
             cin >> input;
             if (input) {
-                input -= 1; // To use it as an index
+                input -= 1; 
                 for (unsigned short i = 0; i < available.size(); i++)
                     if (input == i) {
                         if (available[i] == Id::simple_chain) {
