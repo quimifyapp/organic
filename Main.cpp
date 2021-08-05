@@ -33,18 +33,23 @@ enum class Id { //Substituent's kinds ordered by nomenclature priority
 
 class Substituent {
 private:
-    Id function; // The substituent's kind
-    unsigned short bonds; // Amount of e- it shares with the carbon
-    unsigned short carbons; // Only for radicals
-    bool iso; // Only for radicals
-    /* EXAMPLES:
-    *=O                 ---> ketone {function = Id:ketone, bonds = 2}
+    Id function; 
+    // The substituent's kind
+    unsigned short bonds; 
+    // Amount of e- it shares with the carbon
+    unsigned short carbons; 
+    // Only for radicals
+    bool iso; 
+    // Only for radicals
 
-    *-CH2-CH2-CH3       ---> propyl {function = Id::radical, bonds = 1, carbons = 5, iso = false}        
+    /* EXAMPLES:
+    *=O                ---> ketone {function = Id:ketone, bonds = 2}
+
+    *-CH2-CH2-CH3      ---> propyl {function = Id::radical, bonds = 1, carbons = 5, iso = false}        
 
                   CH3
                  / 
-    *-CH2-CH2-CH2       ---> isopentyl {function = Id::radical, bonds = 1, carbons = 5, iso = true}
+    *-CH2-CH2-CH2      ---> isopentyl {function = Id::radical, bonds = 1, carbons = 5, iso = true}
                  \
                   CH3
     */
@@ -88,6 +93,9 @@ namespace substituents {
     Substituent fluorine(Id::fluorine, 1);
     Substituent iodine(Id::iodine, 1);
     Substituent hydrogen(Id::hydrogen, 1);
+
+    Substituent methyl(Id::radical, 1, 1, false);
+    //Handy methyl constant
 
     const map<Id, Substituent> list = {
         {Id::acid, acid},
@@ -223,20 +231,43 @@ public:
                 }
                 quantities.push_back(count);
             }
+
             if (subs_temp.size() > 1) {
+
                 for (unsigned short i = 0; i < subs_temp.size(); i++) {
-                    if (subs_temp[i].getBonds() > 1) {
+                    if (subs_temp[i].getBonds() > 1)
                         result += texts.find(subs_temp[i].getFunction())->second;
-                    }
                     else {
                         result += "(";
                         if(subs_temp[i].getFunction() != Id::radical)
                             result += texts.find(subs_temp[i].getFunction())->second;
                         else {
-                            for (unsigned short j = 0; j < subs_temp[i].getCarbons() - 1; j++) {
-                                result += "CH2";
+                            unsigned short quantity = quantities[i];
+                            if (subs_temp[i].getFunction() != Id::radical) {
+                                if (quantity == 1 && !thereIs(Id::hydrogen)) {
+                                    result += texts.find(subs_temp[i].getFunction())->second;
+                                }
+                                else {
+                                    result += "(" + texts.find(subs_temp[0].getFunction())->second + ")" + toDigit(quantity);
+                                }
                             }
-                            result += "CH3";
+                            else {
+                                if (!subs_temp[i].getIso()) {
+                                    result += "(";
+                                    for (unsigned short j = 0; j < subs_temp[i].getCarbons() - 1; j++)
+                                        result += "CH2";
+                                    result += "CH3)" + toDigit(quantities[i]);
+                                }
+                                else {
+                                    if (quantities[i] > 1)
+                                        result += "(";
+                                    for (unsigned short j = 0; j < subs_temp[i].getCarbons() - 2; j++)
+                                        result += "CH2";
+                                    result += "(CH3)2";
+                                    if (quantities[i] > 1)
+                                        result += ")" + toDigit(quantities[i]);
+                                }
+                            }
                         }
                         result += ")" + toDigit(quantities[i]);
                     }
@@ -253,6 +284,7 @@ public:
                     }
                 }
                 else {
+                    result += "(";
                     if (!subs_temp[0].getIso()) {
                         result += "(";
                         for (unsigned short j = 0; j < subs_temp[0].getCarbons() - 1; j++) 
@@ -264,10 +296,11 @@ public:
                             result += "(";
                         for (unsigned short j = 0; j < subs_temp[0].getCarbons() - 2; j++) 
                             result += "CH2";
-                        result += "(CH3)2" + toDigit(quantities[0]);
+                        result += "(CH3)2";
                         if (quantities[0] > 1) 
-                            result += ")";
+                            result += ")" + toDigit(quantities[0]);
                     }
+                    result += ")";
                 }
             }
         }
@@ -540,11 +573,23 @@ private:
         //Ordena alfabéticamente los prefijos sin tener en cuenta los multiplicadores
         unsigned short i = 0;
         while (i < prefixes.size() - 1) {
-            if (prefixes[i].text.at(0) > prefixes[i + 1].text.at(0)) {
-                swap(prefixes[i], prefixes[i + 1]);
-                i = 0;
+            unsigned short min_length;
+            if (prefixes[i].text.length() < prefixes[i + 1].text.length())
+                min_length = prefixes[i].text.length();
+            else
+                min_length = prefixes[i + 1].text.length();
+
+            for (unsigned short j = 0; j < min_length; j++) {
+                if (prefixes[i].text.at(j) > prefixes[i + 1].text.at(j)) {
+                    swap(prefixes[i], prefixes[i + 1]);
+                    i = 0;
+                    break;
+                }
+                else if (prefixes[i].text.at(j) < prefixes[i + 1].text.at(j)) {
+                    i++;
+                    break;
+                }
             }
-            else i++;
         }
         return prefixes;
     }
@@ -670,6 +715,10 @@ private:
     void correct() {
         /*cadena principal vs. radicales*/
         if (functions.size()) {
+            //Corrección de radicales
+            if (thereIs(Id::radical)) {
+                
+            }
             //Amida no principal -> carbamoil del anterior
             if (functions[0] != Id::amide) {
                 //Hay otro terminal de mayor preferencia uno de los dos extremos
@@ -823,10 +872,10 @@ public:
             bonds += "-";
 
         string mult = multiplier(chain.size());
+        if (!isVowel(firstLetterOf(bonds)))
+            mult += "a";
         if (!isLetter(bonds.at(0))) 
             mult += "-";
-        if (!isVowel(firstLetterOf(bonds))) 
-            mult += "a";
         if (thereIs(Id::acid)) 
             pre = "ácido " + pre;
 
@@ -1026,14 +1075,21 @@ int main() {
                                 chain.addSubstituent(Substituent(Id::radical, 1, carbons, false));
                             }
                             else if (input == 1) {
-                                do {
+                                while(true){
                                     cout << endl << "               CH3" << endl <<
                                         "              /" << endl << " -CH2-...-CH2" << endl <<
                                         "  {---------} \\" << endl << "               CH3"
                                         << endl << endl << " Carbonos de la cadena recta: ";
                                     cin >> carbons;
-                                } while (carbons || chain.freeBonds() > 1);
-                                chain.addSubstituent(Substituent(Id::radical, 1, carbons + 2, true));
+                                    if (carbons)
+                                        chain.addSubstituent(Substituent(Id::radical, 1, carbons + 2, true));
+                                    else if (chain.freeBonds() > 1) {
+                                        chain.addSubstituent(substituents::methyl);
+                                        chain.addSubstituent(substituents::methyl);
+                                    }
+                                    else continue;
+                                    break;
+                                }
                             }
                         }
                         else if (available[i] == Id::halogen) {
