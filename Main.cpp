@@ -233,7 +233,6 @@ public:
             }
 
             if (subs_temp.size() > 1) {
-
                 for (unsigned short i = 0; i < subs_temp.size(); i++) {
                     if (subs_temp[i].getBonds() > 1)
                         result += texts.find(subs_temp[i].getFunction())->second;
@@ -253,19 +252,14 @@ public:
                             }
                             else {
                                 if (!subs_temp[i].getIso()) {
-                                    result += "(";
                                     for (unsigned short j = 0; j < subs_temp[i].getCarbons() - 1; j++)
                                         result += "CH2";
-                                    result += "CH3)" + toDigit(quantities[i]);
+                                    result += "CH3";
                                 }
                                 else {
-                                    if (quantities[i] > 1)
-                                        result += "(";
                                     for (unsigned short j = 0; j < subs_temp[i].getCarbons() - 2; j++)
                                         result += "CH2";
                                     result += "(CH3)2";
-                                    if (quantities[i] > 1)
-                                        result += ")" + toDigit(quantities[i]);
                                 }
                             }
                         }
@@ -284,7 +278,6 @@ public:
                     }
                 }
                 else {
-                    result += "(";
                     if (!subs_temp[0].getIso()) {
                         result += "(";
                         for (unsigned short j = 0; j < subs_temp[0].getCarbons() - 1; j++) 
@@ -300,7 +293,6 @@ public:
                         if (quantities[0] > 1) 
                             result += ")" + toDigit(quantities[0]);
                     }
-                    result += ")";
                 }
             }
         }
@@ -1059,14 +1051,14 @@ int main() {
                 for (unsigned short i = 0; i < available.size(); i++)
                     if (input == i) {
                         if (available[i] == Id::radical) {
-                            cout << " ----------------------" << endl << " 0) -CH2-...-CH3" << endl << 
+                            cout << " ----------------------" << endl << " 1) -CH2-...-CH3" << endl << 
                                 " ----------------------"<< endl << "                  CH3" << endl << 
-                                "                 /" << endl << " 1) -CH2-...-CH2" <<  endl << 
+                                "                 /" << endl << " 2) -CH2-...-CH2" <<  endl << 
                                 "                 \\" << endl << "                  CH3" << 
                                 endl << " ----------------------" << endl << " Seleccionar: ";
                             cin >> input;
                             unsigned short carbons;
-                            if (input == 0) {
+                            if (input == 1) {
                                 do {
                                     cout << endl << " -CH2-...-CH3" << endl <<
                                         "  {---------}" << endl << endl << " Carbonos del radical: ";
@@ -1074,7 +1066,7 @@ int main() {
                                 } while (!carbons);
                                 chain.addSubstituent(Substituent(Id::radical, 1, carbons, false));
                             }
-                            else if (input == 1) {
+                            else if (input == 2) {
                                 while(true){
                                     cout << endl << "               CH3" << endl <<
                                         "              /" << endl << " -CH2-...-CH2" << endl <<
@@ -1095,25 +1087,25 @@ int main() {
                         else if (available[i] == Id::halogen) {
                             do {
                                 cout << " ----------------------" << endl;
-                                cout << " 0) " << "-Br" << endl << " ----------------------" << endl;
-                                cout << " 1) " << "-Cl" << endl << " ----------------------" << endl;
-                                cout << " 2) " << "-F" << endl << " ----------------------" << endl;
-                                cout << " 3) " << "-I" << endl << " ----------------------" << endl;
+                                cout << " 1) " << "-Br" << endl << " ----------------------" << endl;
+                                cout << " 2) " << "-Cl" << endl << " ----------------------" << endl;
+                                cout << " 3) " << "-F" << endl << " ----------------------" << endl;
+                                cout << " 4) " << "-I" << endl << " ----------------------" << endl;
                                 cout << " Seleccionar: ";
                                 cin >> input;
                             } while (input > 4);
                             switch (input)
                             {
-                            case 0:
+                            case 1:
                                 chain.addSubstituent(substituents::bromine);
                                 break;
-                            case 1:
+                            case 2:
                                 chain.addSubstituent(substituents::chlorine);
                                 break;
-                            case 2:
+                            case 3:
                                 chain.addSubstituent(substituents::fluorine);
                                 break;
-                            case 3:
+                            case 4:
                                 chain.addSubstituent(substituents::iodine);
                                 break;
                             }
