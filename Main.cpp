@@ -4,8 +4,9 @@
 #include <map>
 #include <algorithm>
 
-#include <ctime>	//for time 
-#include <cstdlib>	//for random generator
+//Random:
+#include <ctime>
+#include <cstdlib> 
 
 using namespace std;
 
@@ -37,9 +38,9 @@ private:
     // The substituent's kind
     unsigned short bonds; 
     // Amount of e- it shares with the carbon
-    unsigned short carbons; 
+    unsigned short carbons = 0; 
     // Only for radicals
-    bool iso; 
+    bool iso = false; 
     // Only for radicals
 
     /* EXAMPLES:
@@ -177,7 +178,7 @@ public:
         used_bonds += 1;
     }
 
-    void unbondCarbon() {
+    void deleteBond() {
         used_bonds -= 1;
     }
 
@@ -285,13 +286,11 @@ public:
                         result += "CH3)" + toDigit(quantities[0]);
                     }
                     else {
-                        if (quantities[0] > 1) 
-                            result += "(";
+                        result += "(";
                         for (unsigned short j = 0; j < subs_temp[0].getCarbons() - 2; j++) 
                             result += "CH2";
                         result += "(CH3)2";
-                        if (quantities[0] > 1) 
-                            result += ")" + toDigit(quantities[0]);
+                        result += ")" + toDigit(quantities[0]);
                     }
                 }
             }
@@ -302,6 +301,10 @@ public:
 };
 
 class Piece {
+    /* EXAMPLES:
+    2,3-diol = {"2,3", "di", "ol"}
+    tetrain = {"", "tetra", "in"}
+    fluoro = {"", "", "fluoro"} */
 public:
     string positions = "";
     string multiplier = "";
@@ -707,21 +710,87 @@ private:
     void correct() {
         /*cadena principal vs. radicales*/
         if (functions.size()) {
-            //Corrección de radicales
-            if (thereIs(Id::radical)) {
-                
+            //Radical en el primer carbono -> extensión por el principio
+            if (chain[0].thereIs(Id::radical)) { 
+                Substituent largest_radical(Id::radical, 1, 0, false);
+                for (Substituent s : chain[0].getSubstituents()) {
+                    if (s.getFunction() == Id::radical) {
+                        unsigned short a = largest_radical.getCarbons();
+                        unsigned short b = s.getCarbons();
+                        if (largest_radical.getIso()) a =- 1;
+                        if (s.getIso()) b = -1;
+                        if (b > a || (a == b && s.getIso())) 
+                            largest_radical = s;
+                    }
+                }
+                chain[0].removeSubstituent(largest_radical);
+                vector<Carbon> subchain;
+                Carbon CH2(2);
+                CH2.addSubstituent(substituents::hydrogen);
+                CH2.addSubstituent(substituents::hydrogen);
+                for (unsigned short i = 0; i < largest_radical.getCarbons() - 1; i++) 
+                    subchain.push_back(CH2);
+                if (largest_radical.getIso()) {
+                    subchain[subchain.size() - 2].addSubstituent(substituents::methyl);
+                    subchain[subchain.size() - 2].deleteBond();
+                }
+                else {
+                    Carbon CH3(1);
+                    CH3.addSubstituent(substituents::hydrogen);
+                    CH3.addSubstituent(substituents::hydrogen);
+                    CH3.addSubstituent(substituents::hydrogen);
+                    subchain.push_back(CH3);
+                }
+                reverse(subchain.begin(), subchain.end());
+                chain.insert(chain.begin(), subchain.begin(), subchain.end());
             }
+            //Radical en el primer último -> extensión por el final
+            if (chain[chain.size() - 1].thereIs(Id::radical)) {
+                Substituent largest_radical(Id::radical, 1, 0, false);
+                for (Substituent s : chain[chain.size() - 1].getSubstituents()) {
+                    if (s.getFunction() == Id::radical) {
+                        unsigned short a = largest_radical.getCarbons();
+                        unsigned short b = s.getCarbons();
+                        if (largest_radical.getIso()) a = -1;
+                        if (s.getIso()) b = -1;
+                        if (b > a || (a == b && s.getIso()))
+                            largest_radical = s;
+                    }
+                }
+                chain[chain.size() - 1].removeSubstituent(largest_radical);
+                vector<Carbon> subchain;
+                Carbon CH2(2);
+                CH2.addSubstituent(substituents::hydrogen);
+                CH2.addSubstituent(substituents::hydrogen);
+                for (unsigned short i = 0; i < largest_radical.getCarbons() - 1; i++)
+                    subchain.push_back(CH2);
+                if (largest_radical.getIso()) {
+                    subchain[subchain.size() - 2].addSubstituent(substituents::methyl);
+                    subchain[subchain.size() - 2].deleteBond();
+                    subchain[subchain.size() - 1].addSubstituent(substituents::hydrogen);
+                }
+                else {
+                    Carbon CH3(1);
+                    CH3.addSubstituent(substituents::hydrogen);
+                    CH3.addSubstituent(substituents::hydrogen);
+                    CH3.addSubstituent(substituents::hydrogen);
+                    subchain.push_back(CH3);
+                }
+                chain.insert(chain.begin(), subchain.begin(), subchain.end());
+            }
+            //Radical más largo que el resto de la cadena (simple o iso-) -> se cambian
+
             //Amida no principal -> carbamoil del anterior
             if (functions[0] != Id::amide) {
                 //Hay otro terminal de mayor preferencia uno de los dos extremos
                 if (chain[0].thereIs(Id::amide)) {
-                    chain[1].unbondCarbon();
+                    chain[1].deleteBond();
                     chain[1].addSubstituent(substituents::carbamoyl);
                     chain.erase(chain.begin());
                     listFunctions();
                 }
                 else if (chain[chain.size() - 1].thereIs(Id::amide)) {
-                    chain[chain.size() - 1 - 1].unbondCarbon();
+                    chain[chain.size() - 1 - 1].deleteBond();
                     chain[chain.size() - 1 - 1].addSubstituent(substituents::carbamoyl);
                     chain.pop_back();
                     listFunctions();
@@ -731,13 +800,13 @@ private:
             if (functions[0] != Id::nitrile) {
                 //Hay otro terminal de mayor preferencia uno de los dos extremos
                 if (chain[0].thereIs(Id::nitrile)) {
-                    chain[1].unbondCarbon();
+                    chain[1].deleteBond();
                     chain[1].addSubstituent(substituents::cyanide);
                     chain.erase(chain.begin());
                     listFunctions();
                 }
                 else if (chain[chain.size() - 1].thereIs(Id::nitrile)) {
-                    chain[chain.size() - 1 - 1].unbondCarbon();
+                    chain[chain.size() - 1 - 1].deleteBond();
                     chain[chain.size() - 1 - 1].addSubstituent(substituents::cyanide);
                     chain.pop_back();
                     listFunctions();
@@ -1116,8 +1185,9 @@ int main() {
             }
             else chain.nextCarbon();
         }
-        cout << " ---> " << chain.getFormula();
-        cout << endl << " " << chain.getName() << endl;
+        
+        cout << " " << chain.getName() << endl;
+        cout << " ---> " << chain.getFormula() << endl;
         system("pause");
     } while (true);
 
