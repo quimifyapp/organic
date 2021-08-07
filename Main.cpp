@@ -824,24 +824,41 @@ private:
             for (unsigned short i = 0; i < chain.size(); i++) {
                 radicals = chain[i].listSubstituents(Id::radical);
                 for (unsigned short j = 0; j < radicals.size(); j++) {
+
                     bool change_left = true;
                     if (i != 0 && 
                         radicals[j].getCarbons() - radicals[j].getIso() > i) 
                         for (unsigned short k = 0; k < i; k++) 
                             for (Substituent s : chain[k].getSubstituents()) 
-                                if (s.getFunction() != Id::hydrogen) {
+                                if (s.getFunction() != Id::hydrogen &&
+                                    !(!s.getIso() && s.getCarbons() == 1 &&
+                                        (i == 1 || i != chain.size() - 2))) {
                                     change_left = false;
                                     break;
                                 }
                     bool change_right = true;
+                    unsigned short carbons_right = chain.size() - 1 - i;
                     if (i != chain.size() - 1 && 
-                        radicals[j].getCarbons() - radicals[j].getIso() > chain.size() - 1 - i)
-                        for (unsigned short k = i; k < i; k++)
-                            for (Substituent s : chain[k].getSubstituents())
-                                if (s.getFunction() != Id::hydrogen) {
-                                    change_left = false;
+                        radicals[j].getCarbons() - radicals[j].getIso() > carbons_right)
+                        for (unsigned short k = i; k < chain.size(); k++)
+                            for (Substituent s : chain[k].getSubstituents()) 
+                                if (s.getFunction() != Id::hydrogen &&
+                                    !(!s.getIso() && s.getCarbons() == 1 &&
+                                        (i == 1 || i != chain.size() - 2))) {
+                                    change_right = false;
                                     break;
                                 }
+
+                    if (change_left && change_right) {
+                        if (i >= carbons_right) {
+                            //es iso la cadena?
+                            //es iso el radical?
+                        }
+                        else {
+                            //es iso la cadena?
+                            //es iso el radical?
+                        }
+                    }
                 }
             }
 
