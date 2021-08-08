@@ -734,6 +734,7 @@ private:
         if (functions.size()) {
             //Radical en el primer carbono sin terminal -> extensión por el principio
             if (thereIs(Id::radical)) {
+                bool changed = false;
                 unsigned short i = 0;
                 while (i < chain.size()) {
                     //Se extrae el radical más largo:
@@ -833,12 +834,32 @@ private:
                             }
                             chain.insert(it, apendix.begin(), apendix.end());
                             i = 0;
+                            if (!changed) changed = true;
                         }
                         else i++;
                     }
                     else i++;
                 }
-                
+                if(changed) listFunctions();
+            }
+            //Cetona y alcohol terminales -> ácido
+            if (chain[0].thereIs(Id::ketone) && chain[0].thereIs(Id::alcohol)) {
+                chain[0].deleteSubstituent(sbts::list.find(Id::ketone)->second);
+                chain[0].deleteBond();
+                chain[0].deleteBond();
+                chain[0].deleteSubstituent(sbts::list.find(Id::alcohol)->second);
+                chain[0].deleteBond();
+                chain[0].addSubstituent(sbts::list.find(Id::acid)->second);
+                listFunctions();
+            }
+            if (chain[chain.size() - 1].thereIs(Id::ketone) && chain[chain.size() - 1].thereIs(Id::alcohol)) {
+                chain[chain.size() - 1].deleteSubstituent(sbts::list.find(Id::ketone)->second);
+                chain[chain.size() - 1].deleteBond();
+                chain[chain.size() - 1].deleteBond();
+                chain[chain.size() - 1].deleteSubstituent(sbts::list.find(Id::alcohol)->second);
+                chain[chain.size() - 1].deleteBond();
+                chain[chain.size() - 1].addSubstituent(sbts::list.find(Id::acid)->second);
+                listFunctions();
             }
             //Amida no principal -> carbamoil del anterior
             if (functions[0] != Id::amide) {
@@ -906,6 +927,7 @@ private:
             }
         }
     }
+
 public:
     string getName() {
         listFunctions();
