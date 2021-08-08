@@ -731,7 +731,6 @@ private:
     }
 
     void correct() {
-        /*cadena principal vs. radicales*/
         if (functions.size()) {
             //Radical en el primer carbono sin terminal -> extensión por el principio
             if (thereIs(Id::radical)) {
@@ -810,15 +809,14 @@ private:
                             else
                                 apendix.push_back(CH3);
                             chain[i].deleteSubstituent(largest_radical);
+                            chain[i].deleteBond();
                             Substituent new_radical;
                             vector<Carbon>::iterator it;
                             if (change_right) {
                                 new_radical = Substituent(Id::radical, 1, i, chain.size() > 2 && chain[chain.size() - 2].thereIs(sbts::methyl));
                                 //La cadena convertida en sustituyente
-                                if (new_radical.getCarbons()) {
+                                if (new_radical.getCarbons()) 
                                     chain[i].addSubstituent(new_radical);
-                                    chain[i].deleteBond();
-                                }
                                 while(chain.size() - 1 > i)
                                     chain.pop_back();
                                 it = chain.end();
@@ -826,16 +824,13 @@ private:
                             else {
                                 new_radical = Substituent(Id::radical, 1, i, chain.size() > 2 && chain[1].thereIs(sbts::methyl));
                                 //La cadena convertida en sustituyente
-                                if (new_radical.getCarbons()) {
+                                if (new_radical.getCarbons()) 
                                     chain[i].addSubstituent(new_radical);
-                                    chain[i].deleteBond();
-                                }
                                 for(unsigned short j = i; j; j--)
                                     chain.erase(chain.begin());
                                 reverse(apendix.begin(), apendix.end());
                                 it = chain.begin();
                             }
-                            
                             chain.insert(it, apendix.begin(), apendix.end());
                             i = 0;
                         }
