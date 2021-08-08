@@ -323,7 +323,7 @@ public:
     }
 };
 
-class Piece {
+class Locator {
     /* EXAMPLES:
     2,3-diol = {"2,3", "di", "ol"}
     tetrain = {"", "tetra", "in"}
@@ -587,7 +587,7 @@ private:
         }
     }
 
-    vector<Piece> sortPrefixes(vector<Piece> prefixes) {
+    vector<Locator> sortPrefixes(vector<Locator> prefixes) {
         //Ordena alfabéticamente los prefijos sin tener en cuenta los multiplicadores
         unsigned short i = 0;
         while (i < prefixes.size() - 1) {
@@ -687,21 +687,21 @@ private:
         return false;
     }
 
-    Piece pieceFor(Id function, vector<unsigned short> positions, string text) {
-        Piece piece;
-        piece.multiplier = quantifier(positions.size());
-        piece.text = text;
+    Locator pieceFor(Id function, vector<unsigned short> positions, string text) {
+        Locator Locator;
+        Locator.multiplier = quantifier(positions.size());
+        Locator.text = text;
         if (isRedundant(function, positions))
-            return piece;
+            return Locator;
         for (unsigned short i = 0; i < positions.size() - 1; i++) {
-            piece.positions += to_string(positions[i] + 1);
-            piece.positions += ",";
+            Locator.positions += to_string(positions[i] + 1);
+            Locator.positions += ",";
         }
-        piece.positions += to_string(positions[positions.size() - 1] + 1);
-        return piece;
+        Locator.positions += to_string(positions[positions.size() - 1] + 1);
+        return Locator;
     }
 
-    Piece prefixForRadical(Substituent radical) {
+    Locator prefixForRadical(Substituent radical) {
         string s;
         if (radical.getIso())
             s += "iso";
@@ -709,7 +709,7 @@ private:
         return pieceFor(Id::radical, listPositionsOf(radical), s);
     }
 
-    Piece prefixFor(Id function) {
+    Locator prefixFor(Id function) {
         const static map<Id, string> texts = {{Id::carbamoyl, "carbamoil"},{Id::cyanide, "ciano"},
             {Id::ketone, "oxo"}, {Id::alcohol, "hidroxi"},{Id::amine, "amino"},{Id::nitro, "nitro"},
             {Id::bromine, "bromo"},{Id::chlorine, "cloro"},{Id::fluorine, "fluoro"},{Id::iodine, "yodo"}};
@@ -931,15 +931,15 @@ public:
             !isHalogen(functions[0]))
                 sufix = sufixFor(functions[count++]);
           
-        vector<Piece> prefixes;
-        Piece piece;
+        vector<Locator> prefixes;
+        Locator locator;
         while (count < functions.size()) {
             if (functions[count] != Id::alkene && 
                 functions[count] != Id::alkyne &&
                 functions[count] != Id::radical) {
-                piece = prefixFor(functions[count]);
-                if (piece.text != "") 
-                    prefixes.push_back(piece);
+                locator = prefixFor(functions[count]);
+                if (locator.text != "") 
+                    prefixes.push_back(locator);
             }
             count++;
         }
@@ -947,9 +947,9 @@ public:
         //Aquí las cadenas simples
         vector<Substituent> radicals = listSubstituents(Id::radical);
         for (Substituent radical : radicals) {
-            piece = prefixForRadical(radical);
-            if (piece.text != "")
-                prefixes.push_back(piece);
+            locator = prefixForRadical(radical);
+            if (locator.text != "")
+                prefixes.push_back(locator);
         }
             
         string pre;
@@ -966,20 +966,20 @@ public:
         string bonds;
         vector<unsigned short> positions = listPositionsOf(Id::alkene);
         if (positions.size()) {
-            piece = pieceFor(Id::alkene, positions, "en");
-            if (piece.text != "") {
-                if (isDigit(piece.text.at(0)))
+            locator = pieceFor(Id::alkene, positions, "en");
+            if (locator.text != "") {
+                if (isDigit(locator.text.at(0)))
                     bonds += "-";
-                bonds += piece.toString();
+                bonds += locator.toString();
             }
         }
         positions = listPositionsOf(Id::alkyne);
         if (positions.size()) {
-            piece = pieceFor(Id::alkyne, listPositionsOf(Id::alkyne), "in");
-            if (piece.text != "") {
-                if (isDigit(piece.text.at(0)))
+            locator = pieceFor(Id::alkyne, listPositionsOf(Id::alkyne), "in");
+            if (locator.text != "") {
+                if (isDigit(locator.text.at(0)))
                     bonds += "-";
-                bonds += piece.toString();
+                bonds += locator.toString();
             }
         }
         
@@ -991,7 +991,7 @@ public:
             bonds += "-";
 
         string mult = multiplier(chain.size());
-        if (!isVowel(firstLetterOf(bonds)))
+        if (!isVowel(firstLetterOf(bonds)) || mult.at(mult.size() - 1) == 'c')
             mult += "a";
         if (!isLetter(bonds.at(0))) 
             mult += "-";
