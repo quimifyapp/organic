@@ -189,23 +189,15 @@ public:
         used_bonds -= 1;
     }
 
-    vector<Substituent> listSubstituents(Id function) {
+    vector<Substituent> getAllSubstituents(Id function) {
         vector<Substituent> result;
-        for (Substituent s : getSubstituents())
-            if (s.getFunction() == function) {
-                bool add = true;
-                for (Substituent s2 : result) {
-                    if (s.equals(s2)) {
-                        add = false;
-                        break;
-                    }
-                }
-                if (add) result.push_back(s);
-            }
+        for (Substituent s : getAllSubstituents())
+            if (s.getFunction() == function) 
+                result.push_back(s);
         return result;
     }
 
-    vector<Substituent> getSubstituents() {
+    vector<Substituent> getAllSubstituents() {
         return substituents;
     }
 
@@ -318,7 +310,6 @@ public:
                 }
             }
         }
-        //result = replaceAll(result, "HH", "H2"); 
         return result;
     }
 };
@@ -344,98 +335,6 @@ class Chain {
 private:
     vector<Carbon> chain;
     vector<Id> functions;
-
-    string greekPrefix(unsigned short n) {
-        switch (n) {
-        case 5:
-            return "pent";
-        case 6:
-            return "hex";
-        case 7:
-            return "hept";
-        case 8:
-            return "oct";
-        case 9:
-            return "non";
-        case 0:
-            return "";
-        case 1:
-            return "hen";
-        case 2:
-            return "do";
-        case 3:
-            return "tri";
-        case 4:
-            return "tetra";
-        }
-    }
-
-    string multiplier(unsigned short n) {
-        if (n < 10) { // [1, 9]
-            switch (n) {
-            case 0:
-                return "";
-            case 1:
-                return "met";
-            case 2:
-                return "et";
-            case 3:
-                return "prop";
-            case 4:
-                return "but";
-            }
-            return greekPrefix(n); // [5, 9]
-        }
-        unsigned short ten = n / 10;
-        unsigned short unit = n - (ten * 10);
-        if (n < 20) { // [10, 19]
-            if (n == 11) 
-                return "undec";
-            if(n < 15) 
-                return greekPrefix(unit) + "dec";
-            return greekPrefix(unit) + "adec";
-        } 
-        if (n < 30) { // [20, 29]
-            switch (n) {
-            case 20:
-                return "icos";
-            case 21:
-                return "heneicos";
-            }
-            if (n < 25) return greekPrefix(unit) + "cos";
-            return greekPrefix(unit) + "acos";
-        }
-        string s;
-        if (n < 100) { // [30, 99]
-            s = greekPrefix(unit);
-            if (unit > 4)
-                s += "a";
-            s += greekPrefix(ten);
-            if (ten == 4)
-                s += "cont";
-            else s += "acont";
-            return s;
-        } 
-        // [100, 999]
-        unsigned short hundred = n / 100; 
-        ten = ten - (hundred * 10);
-        s = multiplier(ten * 10 + unit);
-        if (n == 100) 
-            return "hect";
-        switch (hundred)
-        {
-        case 1:
-            return s + "ahect";
-        case 2:
-            return s + "adict";
-        case 3:
-            return s + "atrict";
-        case 4:
-            return s + "atetract";
-        default:
-            return s + "a" + greekPrefix(hundred) + "act";
-        }
-    }
 
     bool thereIs(Id function) {
         if (function == Id::alkene) {
@@ -483,13 +382,13 @@ private:
     vector<unsigned short> listPositionsOf(Substituent sub) {
         vector<unsigned short> positions;
         for (unsigned short i = 0; i < chain.size(); i++)
-            for (Substituent s : chain[i].getSubstituents())
+            for (Substituent s : chain[i].getAllSubstituents())
                 if (s.equals(sub))
                     positions.push_back(i);
         return positions;
     }
 
-    void listFunctions() {
+    void listUniqueFunctions() {
         functions.clear();
         for (Carbon c : chain) {
             if (c.freeBonds() == 1) {
@@ -500,7 +399,7 @@ private:
                 if (find(functions.begin(), functions.end(), Id::alkyne) == functions.end())
                     functions.push_back(Id::alkyne);
             }    
-            for (Substituent s : c.getSubstituents()) 
+            for (Substituent s : c.getAllSubstituents()) 
                 if (find(functions.begin(), functions.end(), s.getFunction()) == functions.end() &&
                     s.getFunction() != Id::hydrogen)
                     functions.push_back(s.getFunction());
@@ -508,22 +407,122 @@ private:
         sort(functions.begin(), functions.end());
     }
 
-    vector<Substituent> listSubstituents(Id function) {
+    vector<Substituent> getUniqueSubstituents(Id function) {
         vector<Substituent> result;
         for (Carbon c : chain)
-            for (Substituent s : c.getSubstituents())
+            for (Substituent s : c.getAllSubstituents())
                 if (s.getFunction() == function) {
                     bool add = true;
-                    for (Substituent s2 : result) {
+                    for (Substituent s2 : result) 
                         if (s.equals(s2)) {
                             add = false;
                             break;
                         }
-                    }
                     if(add) result.push_back(s);
                 }
                     
         return result;
+    }
+
+    vector<Substituent> getAllSubstituents(Id function) {
+        vector<Substituent> result;
+        for (Carbon c : chain)
+            for (Substituent s : c.getAllSubstituents())
+                if (s.getFunction() == function)
+                    result.push_back(s);
+        return result;
+    }
+
+    string greekPrefix(unsigned short n) {
+        switch (n) {
+        case 5:
+            return "pent";
+        case 6:
+            return "hex";
+        case 7:
+            return "hept";
+        case 8:
+            return "oct";
+        case 9:
+            return "non";
+        case 0:
+            return "";
+        case 1:
+            return "hen";
+        case 2:
+            return "do";
+        case 3:
+            return "tri";
+        case 4:
+            return "tetra";
+        }
+    }
+
+    string multiplier(unsigned short n) {
+        if (n < 10) { // [1, 9]
+            switch (n) {
+            case 0:
+                return "";
+            case 1:
+                return "met";
+            case 2:
+                return "et";
+            case 3:
+                return "prop";
+            case 4:
+                return "but";
+            }
+            return greekPrefix(n); // [5, 9]
+        }
+        unsigned short ten = n / 10;
+        unsigned short unit = n - (ten * 10);
+        if (n < 20) { // [10, 19]
+            if (n == 11)
+                return "undec";
+            if (n < 15)
+                return greekPrefix(unit) + "dec";
+            return greekPrefix(unit) + "adec";
+        }
+        if (n < 30) { // [20, 29]
+            switch (n) {
+            case 20:
+                return "icos";
+            case 21:
+                return "heneicos";
+            }
+            if (n < 25) return greekPrefix(unit) + "cos";
+            return greekPrefix(unit) + "acos";
+        }
+        string s;
+        if (n < 100) { // [30, 99]
+            s = greekPrefix(unit);
+            if (unit > 4)
+                s += "a";
+            s += greekPrefix(ten);
+            if (ten == 4)
+                s += "cont";
+            else s += "acont";
+            return s;
+        }
+        // [100, 999]
+        unsigned short hundred = n / 100;
+        ten = ten - (hundred * 10);
+        s = multiplier(ten * 10 + unit);
+        if (n == 100)
+            return "hect";
+        switch (hundred)
+        {
+        case 1:
+            return s + "ahect";
+        case 2:
+            return s + "adict";
+        case 3:
+            return s + "atrict";
+        case 4:
+            return s + "atetract";
+        default:
+            return s + "a" + greekPrefix(hundred) + "act";
+        }
     }
 
     string quantifier(unsigned short n) {
@@ -543,17 +542,10 @@ private:
                 return c;
     }
 
-    unsigned short sum(vector<unsigned short> vector) {
-        unsigned short sum = 0;
-        for (unsigned short n : vector)
-            sum += n;
-        return sum;
-    }
-
     Chain(vector<Carbon> v) {
         for (Carbon c : v) {
             nextCarbon();
-            for (Substituent s : c.getSubstituents())
+            for (Substituent s : c.getAllSubstituents())
                 addSubstituent(s);
         }
     }
@@ -570,6 +562,16 @@ private:
         return ch > 48 && ch < 58;
     }
 
+    unsigned short sum(vector<unsigned short> vector) {
+        unsigned short sum = 0;
+        for (unsigned short n : vector)
+            sum += n;
+        return sum;
+    }
+
+    //REVISAR TODOS LOS USOS Y DECLARACIONES DE LOS LIST Y GET
+    //ORDENAR MÉTODOS
+
     void reorder() {
         Chain reversed;
         vector<Carbon> v;
@@ -584,31 +586,58 @@ private:
                     chain = reversed.chain;
                 break;
             }
+            else if (function == Id::radical) {
+                //Misma suma y radicales
+                vector<string> normal_radicals;
+                vector<Substituent> v = getAllSubstituents(Id::radical);
+                for (Substituent s : v) 
+                    s.getIso() ? 
+                        normal_radicals.push_back("iso" + multiplier(s.getCarbons())) : 
+                        normal_radicals.push_back(multiplier(s.getCarbons()));
+                vector<string> reversed_radicals;
+                v = reversed.getAllSubstituents(Id::radical);
+                for (Substituent s : v)
+                    s.getIso() ?
+                    reversed_radicals.push_back("iso" + multiplier(s.getCarbons())) :
+                    reversed_radicals.push_back(multiplier(s.getCarbons()));
+                for (unsigned short i = 0; i < normal_radicals.size(); i++) {
+                    unsigned short result = compareAlphabetically(normal_radicals[i], reversed_radicals[i]);
+                    if (result == 1) 
+                        chain = reversed.chain;
+                    if (result != 2)  
+                        break;
+                }
+            }
         }
+    }
+
+    unsigned short compareAlphabetically(string a, string b) {
+        unsigned short min_length = (a.length() < b.length()) ? a.length() : b.length();
+        for (unsigned short i = 0; i < min_length; i++) {
+            if (a.at(i) < b.at(i)) 
+                return 0;
+            if (a.at(i) > b.at(i)) 
+                return 1;
+        }
+        return 2;
     }
 
     vector<Locator> sortPrefixes(vector<Locator> prefixes) {
         //Ordena alfabéticamente los prefijos sin tener en cuenta los multiplicadores
         unsigned short i = 0;
-        while (i < prefixes.size() - 1) {
-            unsigned short min_length;
-            if (prefixes[i].text.length() < prefixes[i + 1].text.length())
-                min_length = prefixes[i].text.length();
-            else
-                min_length = prefixes[i + 1].text.length();
-
-            for (unsigned short j = 0; j < min_length; j++) {
-                if (prefixes[i].text.at(j) > prefixes[i + 1].text.at(j)) {
-                    swap(prefixes[i], prefixes[i + 1]);
-                    i = 0;
-                    break;
-                }
-                else if (prefixes[i].text.at(j) < prefixes[i + 1].text.at(j)) {
-                    i++;
-                    break;
-                }
+        while (i < prefixes.size() - 1) 
+            switch (compareAlphabetically(prefixes[i].text, prefixes[i + 1].text))
+            {
+            case 0:
+                return prefixes;
+            case 1:
+                swap(prefixes[i], prefixes[i + 1]);
+                i = 0;
+                break;
+            default:
+                i++;
+                break;
             }
-        }
         return prefixes;
     }
 
@@ -627,11 +656,12 @@ private:
 
     bool everySubstituentIs(Id function) {
         for (Carbon c : chain)
-            for (Substituent s : c.getSubstituents())
+            for (Substituent s : c.getAllSubstituents())
                 if (s.getFunction() != function)
                     return false;
         return true;
     }
+
 
     bool isRedundant(Id function, vector<unsigned short> positions) {
         /*
@@ -739,7 +769,7 @@ private:
                 while (i < chain.size()) {
                     //Se extrae el radical más largo:
                     Substituent largest_radical(Id::radical, 1);
-                    vector<Substituent> radicals = chain[i].listSubstituents(Id::radical);
+                    vector<Substituent> radicals = chain[i].getAllSubstituents(Id::radical);
                     unsigned short a, b;
                     for (Substituent s : radicals) {
                         a = largest_radical.getCarbons();
@@ -758,7 +788,7 @@ private:
                             change_left = true;
                             for (unsigned short k = 0; k < i; k++)
                                 //Los carbonos desde el primero hasta antes que chain[i]
-                                for (Substituent s : chain[k].getSubstituents())
+                                for (Substituent s : chain[k].getAllSubstituents())
                                     //Los sustituyentes de esos carbonos
                                     if (s.getFunction() != Id::hydrogen &&
                                         !(k == 1 && !s.getIso() && s.getCarbons() == 1)) {
@@ -775,7 +805,7 @@ private:
                             change_right = true;
                             for (unsigned short k = i + 1; k < chain.size(); k++)
                                 //Los carbonos desde después que chain[i] hasta el final
-                                for (Substituent s : chain[k].getSubstituents())
+                                for (Substituent s : chain[k].getAllSubstituents())
                                     //Los sustituyentes de esos carbonos
                                     if (s.getFunction() != Id::hydrogen &&
                                         !(k == chain.size() - 2 && !s.getIso() && s.getCarbons() == 1)) {
@@ -784,7 +814,7 @@ private:
                                         break;
                                     }
                         }
-                        //Se hace el cambio si es que se puede:
+                        //Se hace el cambio si se puede:
                         if (change_left || change_right) {
                             //Si puede por ambos, se hará por la derecha por eficiencia
                             vector<Carbon> apendix;
@@ -840,7 +870,7 @@ private:
                     }
                     else i++;
                 }
-                if(changed) listFunctions();
+                if(changed) listUniqueFunctions();
             }
             //Cetona y alcohol terminales -> ácido
             if (chain[0].thereIs(Id::ketone) && chain[0].thereIs(Id::alcohol)) {
@@ -850,7 +880,7 @@ private:
                 chain[0].deleteSubstituent(sbts::list.find(Id::alcohol)->second);
                 chain[0].deleteBond();
                 chain[0].addSubstituent(sbts::list.find(Id::acid)->second);
-                listFunctions();
+                listUniqueFunctions();
             }
             if (chain[chain.size() - 1].thereIs(Id::ketone) && chain[chain.size() - 1].thereIs(Id::alcohol)) {
                 chain[chain.size() - 1].deleteSubstituent(sbts::list.find(Id::ketone)->second);
@@ -859,7 +889,7 @@ private:
                 chain[chain.size() - 1].deleteSubstituent(sbts::list.find(Id::alcohol)->second);
                 chain[chain.size() - 1].deleteBond();
                 chain[chain.size() - 1].addSubstituent(sbts::list.find(Id::acid)->second);
-                listFunctions();
+                listUniqueFunctions();
             }
             //Amida no principal -> carbamoil del anterior
             if (functions[0] != Id::amide) {
@@ -868,13 +898,13 @@ private:
                     chain[1].deleteBond();
                     chain[1].addSubstituent(sbts::carbamoyl);
                     chain.erase(chain.begin());
-                    listFunctions();
+                    listUniqueFunctions();
                 }
                 else if (chain[chain.size() - 1].thereIs(Id::amide)) {
                     chain[chain.size() - 1 - 1].deleteBond();
                     chain[chain.size() - 1 - 1].addSubstituent(sbts::carbamoyl);
                     chain.pop_back();
-                    listFunctions();
+                    listUniqueFunctions();
                 }
             }
             //Nitrilo no principal -> ciano del anterior
@@ -884,13 +914,13 @@ private:
                     chain[1].deleteBond();
                     chain[1].addSubstituent(sbts::cyanide);
                     chain.erase(chain.begin());
-                    listFunctions();
+                    listUniqueFunctions();
                 }
                 else if (chain[chain.size() - 1].thereIs(Id::nitrile)) {
                     chain[chain.size() - 1 - 1].deleteBond();
                     chain[chain.size() - 1 - 1].addSubstituent(sbts::cyanide);
                     chain.pop_back();
-                    listFunctions();
+                    listUniqueFunctions();
                 }
             }
             //Cetona e hidrógeno terminales -> aldehído
@@ -900,13 +930,13 @@ private:
                     chain[0].deleteSubstituent(sbts::ketone);
                     chain[0].deleteSubstituent(sbts::hydrogen);
                     chain[0].addSubstituent(sbts::aldehyde);
-                    listFunctions();
+                    listUniqueFunctions();
                 }
                 if (chain[chain.size() - 1].thereIs(Id::ketone) && chain[chain.size() - 1].thereIs(Id::hydrogen)) {
                     chain[chain.size() - 1].deleteSubstituent(sbts::ketone);
                     chain[chain.size() - 1].deleteSubstituent(sbts::hydrogen);
                     chain[chain.size() - 1].addSubstituent(sbts::aldehyde);
-                    listFunctions();
+                    listUniqueFunctions();
                 }
             }
             //Aldehído sin ser el grupo principal -> cetona
@@ -916,13 +946,13 @@ private:
                     chain[chain.size() - 1].deleteSubstituent(sbts::aldehyde);
                     chain[chain.size() - 1].addSubstituent(sbts::ketone);
                     chain[chain.size() - 1].addSubstituent(sbts::hydrogen);
-                    listFunctions();
+                    listUniqueFunctions();
                 }
                 else if (chain[0].thereIs(Id::aldehyde)) {
                     chain[0].deleteSubstituent(sbts::aldehyde);
                     chain[0].addSubstituent(sbts::ketone);
                     chain[0].addSubstituent(sbts::hydrogen);
-                    listFunctions();
+                    listUniqueFunctions();
                 }
             }
         }
@@ -930,7 +960,7 @@ private:
 
 public:
     string getName() {
-        listFunctions();
+        listUniqueFunctions();
         correct();
         reorder();
         /*-REDUNDANCIA
@@ -967,7 +997,7 @@ public:
         }
 
         //Aquí las cadenas simples
-        vector<Substituent> radicals = listSubstituents(Id::radical);
+        vector<Substituent> radicals = getUniqueSubstituents(Id::radical);
         for (Substituent radical : radicals) {
             locator = prefixForRadical(radical);
             if (locator.text != "")
@@ -1013,7 +1043,7 @@ public:
             bonds += "-";
 
         string mult = multiplier(chain.size());
-        if (!isVowel(firstLetterOf(bonds)) || mult.at(mult.size() - 1) == 'c')
+        if (!isVowel(firstLetterOf(bonds)))
             mult += "a";
         if (!isLetter(bonds.at(0))) 
             mult += "-";
