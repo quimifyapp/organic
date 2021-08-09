@@ -734,6 +734,10 @@ private:
         tetrain = {"", "tetra", "in"}
         fluoro = {"", "", "fluoro"} */
 
+        Locator(string new_text) {
+            text = new_text;
+        }
+
         string toString() {
             if (positions != "")
                 return positions + "-" + multiplier + text;
@@ -742,21 +746,20 @@ private:
     };
 
     Locator pieceFor(Id function, vector<unsigned short> positions, string text) {
-        Locator Locator;
+        Locator locator(text);
         if (isHalogen(function) && everySubstituentIs(function) && chain.size() > 1) {
-            //Locator.multiplier = "per";
-            //return Locator;
+            //locator.multiplier = "per";
+            //return locator;
         }
-        Locator.multiplier = quantifier(positions.size());
-        Locator.text = text;
+        locator.multiplier = quantifier(positions.size());
         if (isRedundant(function, positions))
-            return Locator;
+            return locator;
         for (unsigned short i = 0; i < positions.size() - 1; i++) {
-            Locator.positions += to_string(positions[i] + 1);
-            Locator.positions += ",";
+            locator.positions += to_string(positions[i] + 1);
+            locator.positions += ",";
         }
-        Locator.positions += to_string(positions[positions.size() - 1] + 1);
-        return Locator;
+        locator.positions += to_string(positions[positions.size() - 1] + 1);
+        return locator;
     }
 
     Locator prefixForRadical(Substituent radical) {
