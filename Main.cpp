@@ -580,16 +580,15 @@ private:
         if (chain.size() == 1)
             return true;
         else if (chain.size() == 2) {
-            vector<Substituent> subs = getAllSubstituents();
-            if (subs.size() == 1)
+            if (getAllSubstituents().size() == 1)
                 //Solo es uno
                 return true;
             if (function == Id::alkene || function == Id::alkyne)
                 //Es alqueno o alquino
                 return true;
-            if (subs.size() == 2 && (thereIs(Id::alkene) || thereIs(Id::alkyne)))
+            //if (functions.size() == 2 && (thereIs(Id::alkene) || thereIs(Id::alkyne)))
                 //Solo es uno y hay un alqueno o alquino
-                return true;
+              //  return true;
             vector<Id> functions_temp; //Functions sin los alquenos y alquinos
             for (Id f : functions)
                 if (f != Id::alkene && f != Id::alkyne)
