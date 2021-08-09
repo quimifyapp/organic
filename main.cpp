@@ -743,6 +743,10 @@ private:
 
     Locator pieceFor(Id function, vector<unsigned short> positions, string text) {
         Locator Locator;
+        if (isHalogen(function) && everySubstituentIs(function) && chain.size() > 1) {
+            //Locator.multiplier = "per";
+            //return Locator;
+        }
         Locator.multiplier = quantifier(positions.size());
         Locator.text = text;
         if (isRedundant(function, positions))
@@ -769,8 +773,6 @@ private:
             {Id::bromine, "bromo"},{Id::chlorine, "cloro"},{Id::fluorine, "fluoro"},{Id::iodine, "yodo"}};
 
         vector<unsigned short> positions = listPositionsOf(function);
-        //if (isHalogen(function) && everySubstituentIs(function) && chain.size() > 1) 
-        //    return "per"                        ;
         return pieceFor(function, positions, texts.find(function)->second);
     }
 
