@@ -56,10 +56,12 @@ private:
 
 public:
     Substituent() {}
+
     Substituent(Id new_function, unsigned short new_bonds) {
         function = new_function;
         bonds = new_bonds;
     }
+
     Substituent(Id new_function, unsigned short new_bonds, unsigned short new_carbons, bool new_iso) {
         function = new_function;
         bonds = new_bonds;
@@ -313,8 +315,6 @@ public:
     }
 };
 
-
-
 class Chain {
 private:
     vector<Carbon> chain;
@@ -329,100 +329,6 @@ private:
     }
 
     //PREPROCESSING:
-
-    bool isRedundant(Id function, vector<unsigned short> positions) {
-        /*
-        -dobles o triples enlaces si solo son uno (eteno, propeno si no hay nada más,...?)
-                -propeno
-                    -grupos k no son finales
-                    -grupos si son finales
-
-                    //propano si hay doble sust de 3 enlaces
-        */
-        if (chain.size() == 1)
-            return true;
-        else if (chain.size() == 2) {
-            if (functions.size() == 1)
-                //Solo es uno
-                return true;
-            if (function == Id::alkene || function == Id::alkyne)
-                //Es alqueno o alquino
-                return true;
-            if (functions.size() == 2 && (thereIs(Id::alkene) || thereIs(Id::alkyne)))
-                //Solo es uno y hay un alqueno o alquino
-                return true;
-            vector<Id> functions_temp; //Functions sin los alquenos y alquinos
-            for (Id f : functions)
-                if (f != Id::alkene && f != Id::alkyne)
-                    functions_temp.push_back(f);
-            if (functions_temp.size() == 2) {
-                //Hay dos sustituyentes
-                unsigned short sum = sbts::list.find(functions_temp[0])->second.getBonds() +
-                    sbts::list.find(functions_temp[1])->second.getBonds();
-                if (sum > 3)
-                    //No caben en un solo carbono
-                    return true;
-                if (sum > 1 && thereIs(Id::alkene))
-                    //No caben en un solo carbono con un alqueno
-                    return true;
-                if (thereIs(Id::alkyne))
-                    //No caben en un solo carbono con un alquino
-                    return true;
-                if (functions[0] == function)
-                    //De los dos, es el de mayor preferencia (1)
-                    return true;
-            }
-        }
-        else if (chain.size() == 3) {
-            if (function == Id::ketone && functions[0] >= Id::aldehyde)
-                //Propanona
-                return true;
-            if (functions.size() == 1 && (function == Id::alkene || function == Id::alkyne))
-                //Es propeno, propadieno o propino 
-                return true;
-        }
-        return false;
-    }
-
-    void reorder() {
-        Chain reversed;
-        vector<Carbon> v;
-        for (Id function : functions) {
-            v = chain;
-            reverse(v.begin(), v.end());
-            reversed = Chain(v);
-            unsigned short normal_sum = sum(listPositionsOf(function));
-            unsigned short reversed_sum = sum(reversed.listPositionsOf(function));
-            if (normal_sum != reversed_sum) {
-                if (normal_sum > reversed_sum)
-                    chain = reversed.chain;
-                break;
-            }
-            else if (function == Id::radical) {
-                //Misma suma y radicales
-                vector<string> normal_radicals;
-                vector<Substituent> v = getAllSubstituents(Id::radical);
-                for (Substituent s : v) 
-                    s.getIso() ? 
-                        normal_radicals.push_back("iso" + multiplier(s.getCarbons())) : 
-                        normal_radicals.push_back(multiplier(s.getCarbons()));
-                vector<string> reversed_radicals;
-                v = reversed.getAllSubstituents(Id::radical);
-                for (Substituent s : v)
-                    s.getIso() ?
-                    reversed_radicals.push_back("iso" + multiplier(s.getCarbons())) :
-                    reversed_radicals.push_back(multiplier(s.getCarbons()));
-                for (unsigned short i = 0; i < normal_radicals.size(); i++) {
-                    unsigned short result = compareAlphabetically(normal_radicals[i], reversed_radicals[i]);
-                    if (result == 1) 
-                        chain = reversed.chain;
-                    if (result != 2)  
-                        break;
-                }
-            }
-        }
-    }
-
     void correct() {
         if (functions.size()) {
             //Radical en el primer carbono sin terminal -> extensión por el principio
@@ -507,20 +413,22 @@ private:
                             Substituent new_radical;
                             vector<Carbon>::iterator it;
                             if (change_right) {
-                                new_radical = Substituent(Id::radical, 1, i, chain.size() > 2 && chain[chain.size() - 2].thereIs(sbts::methyl));
+                                new_radical = Substituent(Id::radical, 1, chain.size() - 1 - i,
+                                    chain.size() > 2 && chain[chain.size() - 2].thereIs(sbts::methyl));
                                 //La cadena convertida en sustituyente
-                                if (new_radical.getCarbons()) 
+                                if (new_radical.getCarbons())
                                     chain[i].addSubstituent(new_radical);
-                                while(chain.size() - 1 > i)
+                                while (chain.size() - 1 > i)
                                     chain.pop_back();
                                 it = chain.end();
                             }
                             else {
-                                new_radical = Substituent(Id::radical, 1, i, chain.size() > 2 && chain[1].thereIs(sbts::methyl));
+                                new_radical = Substituent(Id::radical, 1, i, 
+                                    chain.size() > 2 && chain[1].thereIs(sbts::methyl));
                                 //La cadena convertida en sustituyente
-                                if (new_radical.getCarbons()) 
+                                if (new_radical.getCarbons())
                                     chain[i].addSubstituent(new_radical);
-                                for(unsigned short j = i; j; j--)
+                                for (unsigned short j = i; j; j--)
                                     chain.erase(chain.begin());
                                 reverse(apendix.begin(), apendix.end());
                                 it = chain.begin();
@@ -533,7 +441,7 @@ private:
                     }
                     else i++;
                 }
-                if(changed) listUniqueFunctions();
+                if (changed) listUniqueFunctions();
             }
             //Cetona y alcohol terminales -> ácido
             if (chain[0].thereIs(Id::ketone) && chain[0].thereIs(Id::alcohol)) {
@@ -621,8 +529,101 @@ private:
         }
     }
 
-    //WRITERS:
+    void reorder() {
+        Chain reversed;
+        vector<Carbon> v;
+        for (Id function : functions) {
+            v = chain;
+            reverse(v.begin(), v.end());
+            reversed = Chain(v);
+            unsigned short normal_sum = sum(listPositionsOf(function));
+            unsigned short reversed_sum = sum(reversed.listPositionsOf(function));
+            if (normal_sum != reversed_sum) {
+                if (normal_sum > reversed_sum)
+                    chain = reversed.chain;
+                break;
+            }
+            else if (function == Id::radical) {
+                //Misma suma y radicales
+                vector<string> normal_radicals;
+                vector<Substituent> v = getAllSubstituents(Id::radical);
+                for (Substituent s : v) 
+                    s.getIso() ? 
+                        normal_radicals.push_back("iso" + multiplier(s.getCarbons())) : 
+                        normal_radicals.push_back(multiplier(s.getCarbons()));
+                vector<string> reversed_radicals;
+                v = reversed.getAllSubstituents(Id::radical);
+                for (Substituent s : v)
+                    s.getIso() ?
+                    reversed_radicals.push_back("iso" + multiplier(s.getCarbons())) :
+                    reversed_radicals.push_back(multiplier(s.getCarbons()));
+                for (unsigned short i = 0; i < normal_radicals.size(); i++) {
+                    unsigned short result = compareAlphabetically(normal_radicals[i], reversed_radicals[i]);
+                    if (result == 1) 
+                        chain = reversed.chain;
+                    if (result != 2)  
+                        break;
+                }
+            }
+        }
+    }
 
+    bool isRedundant(Id function, vector<unsigned short> positions) {
+        /*
+        -dobles o triples enlaces si solo son uno (eteno, propeno si no hay nada más,...?)
+                -propeno
+                    -grupos k no son finales
+                    -grupos si son finales
+
+                    //propano si hay doble sust de 3 enlaces
+        */
+        if (chain.size() == 1)
+            return true;
+        else if (chain.size() == 2) {
+            vector<Substituent> subs = getAllSubstituents();
+            if (subs.size() == 1)
+                //Solo es uno
+                return true;
+            if (function == Id::alkene || function == Id::alkyne)
+                //Es alqueno o alquino
+                return true;
+            if (subs.size() == 2 && (thereIs(Id::alkene) || thereIs(Id::alkyne)))
+                //Solo es uno y hay un alqueno o alquino
+                return true;
+            vector<Id> functions_temp; //Functions sin los alquenos y alquinos
+            for (Id f : functions)
+                if (f != Id::alkene && f != Id::alkyne)
+                    functions_temp.push_back(f);
+            if (functions_temp.size() == 2) {
+                //Hay dos sustituyentes
+                unsigned short sum = sbts::list.find(functions_temp[0])->second.getBonds() +
+                    sbts::list.find(functions_temp[1])->second.getBonds();
+                if (sum > 3)
+                    //No caben en un solo carbono
+                    return true;
+                if (sum > 1 && thereIs(Id::alkene))
+                    //No caben en un solo carbono con un alqueno
+                    return true;
+                if (thereIs(Id::alkyne))
+                    //No caben en un solo carbono con un alquino
+                    return true;
+                if (functions[0] == function)
+                    //De los dos, es el de mayor preferencia (1)
+                    return true;
+            }
+        }
+        else if (chain.size() == 3) {
+            if (function == Id::ketone && functions[0] >= Id::aldehyde)
+                //Propanona
+                return true;
+            if (functions.size() == 1 && (function == Id::alkene || function == Id::alkyne))
+                //Es propeno, propadieno o propino 
+                return true;
+        }
+        return false;
+    }
+
+    //WRITERS:
     string greekPrefix(unsigned short n) {
         switch (n) {
         case 5:
@@ -772,8 +773,8 @@ private:
             {Id::bromine, "bromo"},{Id::chlorine, "cloro"},{Id::fluorine, "fluoro"},{Id::iodine, "yodo"}};
 
         vector<unsigned short> positions = listPositionsOf(function);
-        //if (isHalogen(function) && everySubstituentIs(function) && chain.size() > 1) // per???????????????????????
-          //  return "per" + texts.find(function)->second;
+        //if (isHalogen(function) && everySubstituentIs(function) && chain.size() > 1) 
+        //    return "per"                        ;
         return pieceFor(function, positions, texts.find(function)->second);
     }
 
@@ -788,7 +789,6 @@ private:
     }
 
     //DATA INQUIRES:
-
     bool thereIs(Id function) {
         if (function == Id::alkene) {
             for (unsigned short i = 0; i < chain.size(); i++)
@@ -886,6 +886,14 @@ private:
         return result;
     }
 
+    vector<Substituent> getAllSubstituents() {
+        vector<Substituent> result;
+        for (Carbon c : chain)
+            for (Substituent s : c.getAllSubstituents())
+                result.push_back(s);
+        return result;
+    }
+
     bool everySubstituentIs(Id function) {
         for (Carbon c : chain)
             for (Substituent s : c.getAllSubstituents())
@@ -901,8 +909,7 @@ private:
     }
 
     //UTILITIES:
-
-    vector<Locator> sortPrefixes(vector<Locator> prefixes) {
+    vector<Locator> sortPrefixesAlphabetically(vector<Locator> prefixes) {
         //Ordena alfabéticamente los prefijos sin tener en cuenta los multiplicadores
         unsigned short i = 0;
         while (i < prefixes.size() - 1)
@@ -973,13 +980,7 @@ public:
         listUniqueFunctions();
         correct();
         reorder();
-        /*-REDUNDANCIA
-        -RADICALES:
-                -VERIFICAR
-                    -ARREGLAR CADENA
-                -REORDENAR
-                    -SOLO cuando dos simple chain mismo numero (mismos carbonos), es x orden alfabetico
-                -NOMBRAR
+        /*
             -ETER, ESTER, AMINAS MULTIPLES
             -AROMÁTICOS
             -¿CICLOS?*/
@@ -1016,7 +1017,7 @@ public:
             
         string pre;
         if (prefixes.size()) {
-            prefixes = sortPrefixes(prefixes);
+            prefixes = sortPrefixesAlphabetically(prefixes);
             for (unsigned short i = 0; i < prefixes.size() - 1; i++) {
                 pre += prefixes[i].toString();
                 if(!isLetter(prefixes[i + 1].toString().at(0)))
@@ -1030,7 +1031,7 @@ public:
         if (positions.size()) {
             locator = pieceFor(Id::alkene, positions, "en");
             if (locator.text != "") {
-                if (isDigit(locator.text.at(0)))
+                if (isDigit(locator.toString().at(0)))
                     bonds += "-";
                 bonds += locator.toString();
             }
@@ -1039,7 +1040,7 @@ public:
         if (positions.size()) {
             locator = pieceFor(Id::alkyne, listPositionsOf(Id::alkyne), "in");
             if (locator.text != "") {
-                if (isDigit(locator.text.at(0)))
+                if (isDigit(locator.toString().at(0)))
                     bonds += "-";
                 bonds += locator.toString();
             }
@@ -1055,8 +1056,6 @@ public:
         string mult = multiplier(chain.size());
         if (!isVowel(firstLetterOf(bonds)))
             mult += "a";
-        if (!isLetter(bonds.at(0))) 
-            mult += "-";
         if (thereIs(Id::acid)) 
             pre = "ácido " + pre;
 
@@ -1175,16 +1174,6 @@ int main() {
     do {
         Chain chain;
 
-        /*chain.addSubstituent(sbts::iodine);
-        chain.addSubstituent(sbts::iodine);
-        chain.nextCarbon();
-        chain.addSubstituent(sbts::iodine);
-        chain.nextCarbon();
-        chain.addSubstituent(sbts::iodine);
-        chain.nextCarbon();
-        chain.addSubstituent(sbts::iodine);
-        chain.addSubstituent(sbts::iodine);*/
-        //peryodobuta-1,3-dieno
         /*chain.addSubstituent(sbts::hydrogen);
         chain.nextCarbon();
         chain.nextCarbon();
