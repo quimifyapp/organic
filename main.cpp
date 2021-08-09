@@ -586,15 +586,15 @@ private:
             if (function == Id::alkene || function == Id::alkyne)
                 //Es alqueno o alquino
                 return true;
-            if (functions.size() == 2 && thereIs(Id::alkyne))
-                //Solo hay un sustituyente y un alquino
+            if (thereIs(Id::alkyne))
+                //Con un alquino solo cabe un sustituyente en cada carbono
                 return true;
-            vector<Id> functions_temp; //Functions sin los alquenos y alquinos
+            vector<Id> functions_temp;
             for (Id f : functions)
                 if (f != Id::alkene && f != Id::alkyne)
                     functions_temp.push_back(f);
             if (functions_temp.size() == 2) {
-                //Hay dos sustituyentes
+                //Hay dos funciones no alqueno o alquino
                 unsigned short sum = sbts::list.find(functions_temp[0])->second.getBonds() +
                     sbts::list.find(functions_temp[1])->second.getBonds();
                 if (sum > 3)
@@ -602,9 +602,6 @@ private:
                     return true;
                 if (sum > 1 && thereIs(Id::alkene))
                     //No caben en un solo carbono con un alqueno
-                    return true;
-                if (thereIs(Id::alkyne))
-                    //No caben en un solo carbono con un alquino
                     return true;
                 if (functions[0] == function)
                     //De los dos, es el de mayor preferencia (1)
