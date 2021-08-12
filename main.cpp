@@ -1156,7 +1156,7 @@ void aleatorios() {
     std::srand(static_cast<unsigned int>(std::time(nullptr)));
     while (true) {
         Chain chain2;
-        unsigned short amount = getRandomNumber(0, 5);
+        unsigned short amount = getRandomNumber(0, 10);
         for (unsigned short i = 0; i < amount; i++) {
             for (vector<Id> available = chain2.availableSubstituents(); available.size() && chain2.freeBonds() > 1; available = chain2.availableSubstituents()) {
                 //chain2.addSubstituent(sbts::hydrogen);
@@ -1165,13 +1165,13 @@ void aleatorios() {
                 number = getRandomNumber(0, available.size() - 1);
                 if (available[number] == Id::radical && 1 < chain2.freeBonds()) {
                     if (getRandomNumber(0, 1)) 
-                        chain2.addSubstituent(Substituent(Id::radical, 1, getRandomNumber(1, 5), false));
-                    else if (chain2.freeBonds() > 2) {
+                        chain2.addSubstituent(Substituent(Id::radical, 1, getRandomNumber(1, 10), false));
+                    else if (chain2.freeBonds() > 2 && getRandomNumber(0, 1)) {
                         chain2.addSubstituent(sbts::methyl);
                         chain2.addSubstituent(sbts::methyl);
                     }
                     else 
-                        chain2.addSubstituent(Substituent(Id::radical, 1, getRandomNumber(3, 5), true));
+                        chain2.addSubstituent(Substituent(Id::radical, 1, getRandomNumber(3, 10), true));
                     
                 }
                 else if (available[number] == Id::halogen && 1 < chain2.freeBonds()) {
@@ -1222,8 +1222,8 @@ int main() {
         {Id::aldehyde, "=O & -H"},{Id::ketone, "=O"},{Id::alcohol, "-OH"},{Id::amine, "-NH2"},
         {Id::nitro, "-NO2"},{Id::halogen, "-X"},{Id::radical, "-CH2-CH2..."},{Id::hydrogen, "-H"}};
 
-    //aleatorios();
-
+    aleatorios();
+    //C(OH)(NO2)(CH2CH2CH2CH2CH2CH2(CH3)2)CH(CH3)CH3
     do {
         Chain chain;
 
