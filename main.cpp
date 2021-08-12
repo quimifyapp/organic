@@ -202,6 +202,20 @@ public:
         return substituents;
     }
 
+    vector<Substituent> getUniqueSubstituents() {
+        vector<Substituent> result;
+            for (Substituent s : substituents) {
+                bool add = true;
+                for (Substituent s2 : result)
+                    if (s.equals(s2)) {
+                        add = false;
+                        break;
+                    }
+                if (add) result.push_back(s);
+            }
+        return result;
+    }
+
     string toString() {
         const static map<Id, string> texts = {{Id::acid,"OOH"},{Id::amide,"ONH2"},{Id::carbamoyl,"CONH2"},
             {Id::nitrile,"N"},{Id::cyanide,"CN"},{Id::aldehyde,"HO"},{Id::ketone,"O"},{Id::alcohol,"OH"},{Id::amine,"NH2"},
@@ -264,7 +278,7 @@ public:
                                     result += texts.find(subs_temp[i].getFunction())->second;
                                 }
                                 else {
-                                    result += "(" + texts.find(subs_temp[0].getFunction())->second + ")" + toDigit(quantity);
+                                    result += texts.find(subs_temp[0].getFunction())->second + ")" + toDigit(quantity);
                                 }
                             }
                             else {
@@ -330,119 +344,136 @@ private:
 
     //PREPROCESSING:
     void correct() {
-        if (functions.size()) {
-            //Radical en el primer carbono sin terminal -> extensión por el principio
-            if (thereIs(Id::radical)) {
-                bool changed = false;
-                unsigned short i = 0;
-                while (i < chain.size()) {
-                    //Se extrae el radical más largo:
-                    Substituent largest_radical(Id::radical, 1);
-                    vector<Substituent> radicals = chain[i].getAllSubstituents(Id::radical);
-                    unsigned short a, b;
-                    for (Substituent s : radicals) {
-                        a = largest_radical.getCarbons();
-                        b = s.getCarbons();
-                        if (largest_radical.getIso()) a = -1;
-                        if (s.getIso()) b = -1;
-                        if (b > a || (a == b && s.getIso()))
-                            largest_radical = s;
-                    }
-                    if (largest_radical.getCarbons()) {
-                        //Ha habido al menos un radical en el carbono chain[i]  
-                        //Por la izquierda:
-                        bool change_left = false;
-                        if (largest_radical.getCarbons() - largest_radical.getIso() > i) {
-                            //La longitud del radical es mayor a la cadena por la izquierda de chain[i]
-                            change_left = true;
-                            for (unsigned short k = 0; k < i; k++)
-                                //Los carbonos desde el primero hasta antes que chain[i]
-                                for (Substituent s : chain[k].getAllSubstituents())
-                                    //Los sustituyentes de esos carbonos
-                                    if (s.getFunction() != Id::hydrogen &&
-                                        !(k == 1 && !s.getIso() && s.getCarbons() == 1)) {
-                                        //El sustituyente ni es hidrógeno, ni metil en el primero (iso)
-                                        change_left = false;
-                                        break;
-                                    }
+        //Radical en el primer carbono sin terminal -> extensión por el principio
+        if (functions.size() && thereIs(Id::radical)) {
+            bool changed = false;
+            unsigned short i = 0;
+            while (i < chain.size()) {
+                //Se extrae el radical más largo:
+                Substituent largest_radical(Id::radical, 1);
+                vector<Substituent> radicals = chain[i].getAllSubstituents(Id::radical);
+                unsigned short a, b;
+                for (Substituent s : radicals) {
+                    a = largest_radical.getCarbons();
+                    b = s.getCarbons();
+                    if (largest_radical.getIso()) a -= 1;
+                    if (s.getIso()) b -= 1;
+                    if (b > a || (a == b && s.getIso()))
+                        largest_radical = s;
+                }
+                if (largest_radical.getCarbons()) {
+                    //Ha habido al menos un radical en el carbono chain[i]  
+                    //Por la izquierda:
+                    bool change_left = false;
+                    if (largest_radical.getCarbons() - largest_radical.getIso() > i) {
+                        //La longitud del radical es mayor a la cadena por la izquierda de chain[i]
+                        change_left = true;
+                        for (unsigned short k = 0; k < i && change_left; k++) {
+                            if (chain[k].freeBonds()) {
+                                change_left = false;
+                                break;
+                            }
+                            //Los carbonos desde el primero hasta antes que chain[i]
+                            for (Substituent s : chain[k].getAllSubstituents())
+                                //Los sustituyentes de esos carbonos
+                                if (s.getFunction() != Id::hydrogen &&
+                                    !(k == chain.size() - 2 && s.equals(sbts::methyl) &&
+                                        chain[k].getUniqueSubstituents().size() == 2 &&
+                                        chain[k].thereIs(Id::hydrogen))) {
+                                    //El sustituyente ni es hidrógeno, ni metil en el primero (iso)
+                                    change_left = false;
+                                    break;
+                                }
                         }
-                        //Por la derecha:
-                        bool change_right = false;
-                        unsigned short carbons_right = chain.size() - 1 - i;
-                        if (largest_radical.getCarbons() - largest_radical.getIso() > carbons_right) {
-                            //La longitud del radical es mayor a la cadena por la derecha de chain[i]
-                            change_right = true;
-                            for (unsigned short k = i + 1; k < chain.size(); k++)
+                    }
+                    //Por la derecha:
+                    bool change_right = false;
+                    unsigned short carbons_right = chain.size() - 1 - i;
+                    if (largest_radical.getCarbons() - largest_radical.getIso() > carbons_right) {
+                        //La longitud del radical es mayor a la cadena por la derecha de chain[i]
+                        change_right = true;
+                        if (!chain[i].freeBonds()) {
+                            for (unsigned short k = i + 1; k < chain.size() && change_right; k++) {
                                 //Los carbonos desde después que chain[i] hasta el final
-                                for (Substituent s : chain[k].getAllSubstituents())
+                                for (Substituent s : chain[k].getAllSubstituents()) {
                                     //Los sustituyentes de esos carbonos
                                     if (s.getFunction() != Id::hydrogen &&
-                                        !(k == chain.size() - 2 && !s.getIso() && s.getCarbons() == 1)) {
-                                        //El sustituyente ni es hidrógeno, ni metil en el penúltimo (iso)
+                                        !(k == chain.size() - 2 && s.equals(sbts::methyl) &&
+                                            chain[k].getUniqueSubstituents().size() == 2 &&
+                                            chain[k].thereIs(Id::hydrogen))) {
+                                        //El sustituyente ni es hidrógeno, ni un solo metil en el penúltimo (iso)
                                         change_right = false;
                                         break;
                                     }
+                                }
+                            }
                         }
-                        //Se hace el cambio si se puede:
-                        if (change_left || change_right) {
-                            //Si puede por ambos, se hará por la derecha por eficiencia
-                            vector<Carbon> apendix;
-                            //Será el radical convertido a cadena que se apenda
-                            Carbon CH2(2);
-                            CH2.addSubstituent(sbts::hydrogen);
-                            CH2.addSubstituent(sbts::hydrogen);
-                            //Eslabón CH2, constante útil
-                            Carbon CH3(1);
-                            CH3.addSubstituent(sbts::hydrogen);
-                            CH3.addSubstituent(sbts::hydrogen);
-                            CH3.addSubstituent(sbts::hydrogen);
-                            //Eslabón CH3, constante útil
-                            for (unsigned short i = 0; i < largest_radical.getCarbons() - 1; i++)
-                                apendix.push_back(CH2);
-                            if (largest_radical.getIso()) {
-                                apendix[apendix.size() - 2].deleteSubstituent(sbts::hydrogen);
-                                apendix[apendix.size() - 2].deleteBond();
-                                apendix[apendix.size() - 2].addSubstituent(sbts::methyl);
-                                apendix[apendix.size() - 1].addSubstituent(sbts::hydrogen);
-                                apendix[apendix.size() - 1].deleteBond();
-                            }
-                            else
-                                apendix.push_back(CH3);
-                            chain[i].deleteSubstituent(largest_radical);
-                            chain[i].deleteBond();
-                            Substituent new_radical;
-                            vector<Carbon>::iterator it;
-                            if (change_right) {
-                                new_radical = Substituent(Id::radical, 1, chain.size() - 1 - i,
-                                    chain.size() > 2 && chain[chain.size() - 2].thereIs(sbts::methyl));
-                                //La cadena convertida en sustituyente
-                                if (new_radical.getCarbons())
-                                    chain[i].addSubstituent(new_radical);
-                                while (chain.size() - 1 > i)
-                                    chain.pop_back();
-                                it = chain.end();
-                            }
-                            else {
-                                new_radical = Substituent(Id::radical, 1, i, 
-                                    chain.size() > 2 && chain[1].thereIs(sbts::methyl));
-                                //La cadena convertida en sustituyente
-                                if (new_radical.getCarbons())
-                                    chain[i].addSubstituent(new_radical);
-                                for (unsigned short j = i; j; j--)
-                                    chain.erase(chain.begin());
-                                reverse(apendix.begin(), apendix.end());
-                                it = chain.begin();
-                            }
-                            chain.insert(it, apendix.begin(), apendix.end());
-                            i = 0;
-                            if (!changed) changed = true;
+                        else change_right = false;
+                    }
+                    //Se hace el cambio si se puede:
+                    if (change_left || change_right) {
+                        //Si puede por ambos, se hará por la derecha por eficiencia
+                        vector<Carbon> apendix;
+                        //Será el radical convertido a cadena que se apenda
+                        Carbon CH2(2);
+                        CH2.addSubstituent(sbts::hydrogen);
+                        CH2.addSubstituent(sbts::hydrogen);
+                        //Eslabón CH2, constante útil
+                        Carbon CH3(1);
+                        CH3.addSubstituent(sbts::hydrogen);
+                        CH3.addSubstituent(sbts::hydrogen);
+                        CH3.addSubstituent(sbts::hydrogen);
+                        //Eslabón CH3, constante útil
+                        for (unsigned short i = 0; i < largest_radical.getCarbons() - 1; i++)
+                            apendix.push_back(CH2);
+                        if (largest_radical.getIso()) {
+                            apendix[apendix.size() - 2].deleteSubstituent(sbts::hydrogen);
+                            apendix[apendix.size() - 2].deleteBond();
+                            apendix[apendix.size() - 2].addSubstituent(sbts::methyl);
+                            apendix[apendix.size() - 1].addSubstituent(sbts::hydrogen);
+                            apendix[apendix.size() - 1].deleteBond();
                         }
-                        else i++;
+                        else
+                            apendix.push_back(CH3);
+                        chain[i].deleteSubstituent(largest_radical);
+                        Substituent new_radical;
+                        vector<Carbon>::iterator it;
+                        if (change_right) {
+                            new_radical = Substituent(Id::radical, 1, chain.size() - 1 - i,
+                                chain.size() > 2 && chain[chain.size() - 2].thereIs(sbts::methyl));
+                            //La cadena convertida en sustituyente
+                            if (new_radical.getCarbons()) {
+                                chain[i].addSubstituent(new_radical);
+                                chain[i].deleteBond();
+                            }
+                            while (chain.size() - 1 > i)
+                                chain.pop_back();
+                            it = chain.end();
+                        }
+                        else {
+                            new_radical = Substituent(Id::radical, 1, i,
+                                chain.size() > 2 && chain[1].thereIs(sbts::methyl));
+                            //La cadena convertida en sustituyente
+                            if (new_radical.getCarbons()) {
+                                chain[i].addSubstituent(new_radical);
+                                chain[i].deleteBond();
+                            }
+                            for (unsigned short j = i; j; j--)
+                                chain.erase(chain.begin());
+                            reverse(apendix.begin(), apendix.end());
+                            it = chain.begin();
+                        }
+                        chain.insert(it, apendix.begin(), apendix.end());
+                        i = 0;
+                        if (!changed) changed = true;
                     }
                     else i++;
                 }
-                if (changed) listUniqueFunctions();
+                else i++;
             }
+            if (changed) listUniqueFunctions();
+        }
+        if(functions.size()){
             //Cetona y alcohol terminales -> ácido
             if (chain[0].thereIs(Id::ketone) && chain[0].thereIs(Id::alcohol)) {
                 chain[0].deleteSubstituent(sbts::list.find(Id::ketone)->second);
@@ -734,10 +765,6 @@ private:
         tetrain = {"", "tetra", "in"}
         fluoro = {"", "", "fluoro"} */
 
-        Locator(string new_text) {
-            text = new_text;
-        }
-
         string toString() {
             if (positions != "")
                 return positions + "-" + multiplier + text;
@@ -746,7 +773,8 @@ private:
     };
 
     Locator pieceFor(Id function, vector<unsigned short> positions, string text) {
-        Locator locator(text);
+        Locator locator;
+        locator.text = text;
         if (isHalogen(function) && everySubstituentIs(function) && chain.size() > 1) {
             //locator.multiplier = "per";
             //return locator;
@@ -987,22 +1015,22 @@ public:
             -¿CICLOS?*/
         unsigned short count = 0;
         string sufix;
-        if (functions.size() && 
-            functions[0] != Id::nitro && 
-            functions[0] != Id::radical && 
-            functions[0] != Id::alkene && 
-            functions[0] != Id::alkyne && 
+        if (functions.size() &&
+            functions[0] != Id::nitro &&
+            functions[0] != Id::radical &&
+            functions[0] != Id::alkene &&
+            functions[0] != Id::alkyne &&
             !isHalogen(functions[0]))
-                sufix = sufixFor(functions[count++]);
-          
+            sufix = sufixFor(functions[count++]);
+
         vector<Locator> prefixes;
         Locator locator;
         while (count < functions.size()) {
-            if (functions[count] != Id::alkene && 
+            if (functions[count] != Id::alkene &&
                 functions[count] != Id::alkyne &&
                 functions[count] != Id::radical) {
                 locator = prefixFor(functions[count]);
-                if (locator.text != "") 
+                if (locator.text != "")
                     prefixes.push_back(locator);
             }
             count++;
@@ -1015,13 +1043,13 @@ public:
             if (locator.text != "")
                 prefixes.push_back(locator);
         }
-            
+
         string pre;
         if (prefixes.size()) {
             prefixes = sortPrefixesAlphabetically(prefixes);
             for (unsigned short i = 0; i < prefixes.size() - 1; i++) {
                 pre += prefixes[i].toString();
-                if(!isLetter(prefixes[i + 1].toString().at(0)))
+                if (!isLetter(prefixes[i + 1].toString().at(0)))
                     pre += "-";
             }
             pre += prefixes[prefixes.size() - 1].toString();
@@ -1046,25 +1074,25 @@ public:
                 bonds += locator.toString();
             }
         }
-        
-        if (bonds == "") 
+
+        if (bonds == "")
             bonds = "an";
         if (sufix == "" || !isVowel(firstLetterOf(sufix)))
             bonds += "o";
-        if (sufix != "" && isDigit(sufix.at(0))) 
+        if (sufix != "" && isDigit(sufix.at(0)))
             bonds += "-";
 
         string mult = multiplier(chain.size());
         if (!isVowel(firstLetterOf(bonds)))
             mult += "a";
-        if (thereIs(Id::acid)) 
+        if (thereIs(Id::acid))
             pre = "ácido " + pre;
 
         return pre + mult + bonds + sufix;
     }
 
     string getFormula() {
-        string s = ""; 
+        string s = "";
         for (unsigned short i = 0; i < chain.size(); i++) {
             /*if (i) {
                 if (chain[i - 1].freeBonds()) {
@@ -1074,7 +1102,7 @@ public:
                 else s += "-";
             }
             */
-            s += chain[i].toString() ;
+            s += chain[i].toString();
         }
         return s;
     }
@@ -1120,47 +1148,72 @@ public:
 };
 
 unsigned short getRandomNumber(unsigned short min, unsigned short max) {
-    static constexpr double fraction{1.0 / (RAND_MAX + 1.0)};
+    static constexpr double fraction{ 1.0 / (RAND_MAX + 1.0) };
     return min + static_cast<unsigned short>((max - min + 1) * (std::rand() * fraction));
 }
 
 void aleatorios() {
     std::srand(static_cast<unsigned int>(std::time(nullptr)));
-    try {
-        while (true) {
-            Chain chain2;
-            unsigned short amount = getRandomNumber(0, 20);
-            for (unsigned short i = 0; i < amount; i++) {
-                for (vector<Id> available = chain2.availableSubstituents(); available.size() && chain2.freeBonds() > 1; available = chain2.availableSubstituents()) {
-                    //chain2.addSubstituent(sbts::hydrogen);
-
-                    unsigned short number;
-                    do {
-                        number = getRandomNumber(0, available.size() - 1);
-                        //cout << number + 1 << endl;
-                        if (available[number] != Id::radical && (sbts::list.find(available[number])->second.getBonds() < chain2.freeBonds()))
-                            break;
-                    } while (true);
-                    chain2.addSubstituent(sbts::list.find(available[number])->second);
-                    if (!getRandomNumber(0, 2))
-                        break;
-                }
-                chain2.nextCarbon();
-            }
-            for (vector<Id> available = chain2.availableSubstituents(); available.size(); available = chain2.availableSubstituents()) {
+    while (true) {
+        Chain chain2;
+        unsigned short amount = getRandomNumber(0, 5);
+        for (unsigned short i = 0; i < amount; i++) {
+            for (vector<Id> available = chain2.availableSubstituents(); available.size() && chain2.freeBonds() > 1; available = chain2.availableSubstituents()) {
+                //chain2.addSubstituent(sbts::hydrogen);
+                Substituent s;
                 unsigned short number;
-                do {
-                    number = getRandomNumber(0, available.size() - 1);
-                    //cout << number + 1 << endl;
-                } while (available[number] == Id::radical);
-                chain2.addSubstituent(sbts::list.find(available[number])->second);
+                number = getRandomNumber(0, available.size() - 1);
+                if (available[number] == Id::radical && 1 < chain2.freeBonds()) {
+                    if (getRandomNumber(0, 1)) 
+                        chain2.addSubstituent(Substituent(Id::radical, 1, getRandomNumber(1, 5), false));
+                    else if (chain2.freeBonds() > 2) {
+                        chain2.addSubstituent(sbts::methyl);
+                        chain2.addSubstituent(sbts::methyl);
+                    }
+                    else 
+                        chain2.addSubstituent(Substituent(Id::radical, 1, getRandomNumber(3, 5), true));
+                    
+                }
+                else if (available[number] == Id::halogen && 1 < chain2.freeBonds()) {
+                    switch (getRandomNumber(0, 3))
+                    {
+                    case 0:
+                        s = sbts::bromine;
+                        break;
+                    case 1:
+                        s = sbts::chlorine;
+                        break;
+                    case 2:
+                        s = sbts::fluorine;
+                        break;
+                    case 3:
+                        s = sbts::iodine;
+                        break;
+                    }
+                    chain2.addSubstituent(s);
+                }
+                else if (sbts::list.find(available[number])->second.getBonds() < chain2.freeBonds()) {
+                    s = sbts::list.find(available[number])->second;
+                    chain2.addSubstituent(s);
+                }
+                //cout << number + 1 << endl;
+                
+                if (!getRandomNumber(0, 2))
+                    break;
             }
-            //string s =  chain2.getFormula() + ": " + chain2.getName();
-            cout << chain2.getFormula() << endl << chain2.getName() << endl << endl;
+            chain2.nextCarbon();
         }
-    }
-    catch (...) {
-        cout << "Error";
+        for (vector<Id> available = chain2.availableSubstituents(); available.size(); available = chain2.availableSubstituents()) {
+            unsigned short number;
+            do {
+                number = getRandomNumber(0, available.size() - 1);
+                //cout << number + 1 << endl;
+            } while (available[number] == Id::radical || available[number] == Id::halogen);
+            chain2.addSubstituent(sbts::list.find(available[number])->second);
+        }
+        //string s =  chain2.getFormula() + ": " + chain2.getName();
+        cout << chain2.getFormula() << endl;
+        cout << chain2.getName() << endl << endl;
     }
 }
 
@@ -1171,9 +1224,19 @@ int main() {
 
     //aleatorios();
 
-    Chain chain;
     do {
         Chain chain;
+
+        chain.addSubstituent(sbts::alcohol);
+        chain.addSubstituent(sbts::nitro);
+        chain.addSubstituent(Substituent(Id::radical, 1, 3, false));
+        chain.nextCarbon();
+        chain.addSubstituent(sbts::methyl);
+        chain.addSubstituent(sbts::methyl);
+        chain.nextCarbon();
+        chain.addSubstituent(sbts::hydrogen);
+        chain.addSubstituent(sbts::hydrogen);
+        chain.addSubstituent(sbts::hydrogen);
 
         /*chain.addSubstituent(sbts::hydrogen);
         chain.nextCarbon();
