@@ -439,7 +439,7 @@ private:
                         Substituent new_radical;
                         vector<Carbon>::iterator it;
                         if (change_right) {
-                            new_radical = Substituent(Id::radical, 1, chain.size() - 1 - i,
+                            new_radical = Substituent(Id::radical, 1, chain.size()- i,
                                 chain.size() > 2 && chain[chain.size() - 2].thereIs(sbts::methyl));
                             //La cadena convertida en sustituyente
                             if (new_radical.getCarbons()) {
@@ -1156,7 +1156,7 @@ void aleatorios() {
     std::srand(static_cast<unsigned int>(std::time(nullptr)));
     while (true) {
         Chain chain2;
-        unsigned short amount = getRandomNumber(0, 10);
+        unsigned short amount = getRandomNumber(0, 333);
         for (unsigned short i = 0; i < amount; i++) {
             for (vector<Id> available = chain2.availableSubstituents(); available.size() && chain2.freeBonds() > 1; available = chain2.availableSubstituents()) {
                 //chain2.addSubstituent(sbts::hydrogen);
@@ -1165,13 +1165,13 @@ void aleatorios() {
                 number = getRandomNumber(0, available.size() - 1);
                 if (available[number] == Id::radical && 1 < chain2.freeBonds()) {
                     if (getRandomNumber(0, 1)) 
-                        chain2.addSubstituent(Substituent(Id::radical, 1, getRandomNumber(1, 10), false));
+                        chain2.addSubstituent(Substituent(Id::radical, 1, getRandomNumber(1, 333), false));
                     else if (chain2.freeBonds() > 2 && getRandomNumber(0, 1)) {
                         chain2.addSubstituent(sbts::methyl);
                         chain2.addSubstituent(sbts::methyl);
                     }
                     else 
-                        chain2.addSubstituent(Substituent(Id::radical, 1, getRandomNumber(3, 10), true));
+                        chain2.addSubstituent(Substituent(Id::radical, 1, getRandomNumber(3, 334), true));
                     
                 }
                 else if (available[number] == Id::halogen && 1 < chain2.freeBonds()) {
@@ -1223,20 +1223,8 @@ int main() {
         {Id::nitro, "-NO2"},{Id::halogen, "-X"},{Id::radical, "-CH2-CH2..."},{Id::hydrogen, "-H"}};
 
     aleatorios();
-    //C(OH)(NO2)(CH2CH2CH2CH2CH2CH2(CH3)2)CH(CH3)CH3
     do {
         Chain chain;
-
-        chain.addSubstituent(sbts::alcohol);
-        chain.addSubstituent(sbts::nitro);
-        chain.addSubstituent(Substituent(Id::radical, 1, 3, false));
-        chain.nextCarbon();
-        chain.addSubstituent(sbts::methyl);
-        chain.addSubstituent(sbts::methyl);
-        chain.nextCarbon();
-        chain.addSubstituent(sbts::hydrogen);
-        chain.addSubstituent(sbts::hydrogen);
-        chain.addSubstituent(sbts::hydrogen);
 
         /*chain.addSubstituent(sbts::hydrogen);
         chain.nextCarbon();
