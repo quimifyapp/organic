@@ -1121,24 +1121,24 @@ public:
 
     vector<Id> availableSubstituents() {
         vector<Id> result;
-        unsigned short free = chain.back().freeBonds();
-        if (free) { // 1 bond
-            result.push_back(Id::hydrogen);
+        switch (chain.back().freeBonds()) {
+        case 4:
+        case 3:
+            result.push_back(Id::acid); 
+            result.push_back(Id::amide);
+            result.push_back(Id::nitrile);
+            result.push_back(Id::aldehyde);
+        case 2:
+            result.push_back(Id::ketone);
+        case 1:
             result.push_back(Id::alcohol);
             result.push_back(Id::amine);
             result.push_back(Id::nitro);
             result.push_back(Id::halogen);
-        }
-        if (free > 1) // 2 bonds
-            result.push_back(Id::ketone);
-        if (free > 2) { //3 bonds
-            result.push_back(Id::aldehyde);
-            result.push_back(Id::nitrile);
-            result.push_back(Id::amide);
-            result.push_back(Id::acid);
-        }
-        if (free)
             result.push_back(Id::radical);
+            result.push_back(Id::hydrogen);
+        }
+        reverse(result.begin(), result.end());
         return result;
     }
 
@@ -1172,7 +1172,6 @@ void aleatorios() {
                     }
                     else 
                         chain2.addSubstituent(Substituent(Id::radical, 1, getRandomNumber(3, 334), true));
-                    
                 }
                 else if (available[number] == Id::halogen && 1 < chain2.freeBonds()) {
                     switch (getRandomNumber(0, 3))
@@ -1218,11 +1217,11 @@ void aleatorios() {
 }
 
 int main() {
-    const map<Id, string> texts = {{Id::acid, "=O & -OH"},{Id::amide, "=O & -NH2"},{Id::nitrile, "-=N"},
-        {Id::aldehyde, "=O & -H"},{Id::ketone, "=O"},{Id::alcohol, "-OH"},{Id::amine, "-NH2"},
+    const map<Id, string> texts = {{Id::acid, "-=OOH"},{Id::amide, "-=ONH2"},{Id::nitrile, "-=N"},
+        {Id::aldehyde, "-=OH"},{Id::ketone, "=O"},{Id::alcohol, "-OH"},{Id::amine, "-NH2"},
         {Id::nitro, "-NO2"},{Id::halogen, "-X"},{Id::radical, "-CH2-CH2..."},{Id::hydrogen, "-H"}};
 
-    aleatorios();
+    //aleatorios();
     do {
         Chain chain;
 
