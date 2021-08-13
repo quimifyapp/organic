@@ -1220,7 +1220,6 @@ int main() {
     const map<Id, string> texts = {{Id::acid, "-=OOH"},{Id::amide, "-=ONH2"},{Id::nitrile, "-=N"},
         {Id::aldehyde, "-=OH"},{Id::ketone, "=O"},{Id::alcohol, "-OH"},{Id::amine, "-NH2"},
         {Id::nitro, "-NO2"},{Id::halogen, "-X"},{Id::radical, "-CH2-CH2..."},{Id::hydrogen, "-H"}};
-
     //aleatorios();
     do {
         Chain chain;
