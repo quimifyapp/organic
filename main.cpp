@@ -62,9 +62,9 @@ public:
         bonds = new_bonds;
     }
 
-    Substituent(Id new_function, unsigned short new_bonds, unsigned short new_carbons, bool new_iso) {
-        function = new_function;
-        bonds = new_bonds;
+    Substituent(unsigned short new_carbons, bool new_iso) {
+        function = Id::radical;
+        bonds = 1;
         carbons = new_carbons;
         iso = new_iso;
     }
@@ -96,7 +96,7 @@ namespace sbts {
     Substituent iodine(Id::iodine, 1);
     Substituent hydrogen(Id::hydrogen, 1);
 
-    Substituent methyl(Id::radical, 1, 1, false);
+    Substituent methyl(1, false);
     //Handy methyl constant
 
     const map<Id, Substituent> list = {
@@ -441,7 +441,7 @@ private:
                         bool iso;
                         if (change_right) {
                             iso = chain.size() > 2 && chain[chain.size() - 2].thereIs(sbts::methyl);
-                            new_radical = Substituent(Id::radical, 1, chain.size() - 1 - i + iso, iso);
+                            new_radical = Substituent(chain.size() - 1 - i + iso, iso);
                             //La cadena convertida en sustituyente
                             if (new_radical.getCarbons()) {
                                 chain[i].addSubstituent(new_radical);
@@ -453,7 +453,7 @@ private:
                         }
                         else { //Left
                             iso = chain.size() > 2 && chain[1].thereIs(sbts::methyl);
-                            new_radical = Substituent(Id::radical, 1, i + iso, iso);
+                            new_radical = Substituent(i + iso, iso);
                             //La cadena convertida en sustituyente
                             if (new_radical.getCarbons()) {
                                 chain[i].addSubstituent(new_radical);
@@ -1129,10 +1129,10 @@ public:
         case 2:
             result.push_back(Id::ketone);
         case 1:
-            //result.push_back(Id::alcohol);
-            //result.push_back(Id::amine);
-            //result.push_back(Id::nitro);
-            //result.push_back(Id::halogen);
+            result.push_back(Id::alcohol);
+            result.push_back(Id::amine);
+            result.push_back(Id::nitro);
+            result.push_back(Id::halogen);
             result.push_back(Id::radical);
             result.push_back(Id::hydrogen);
         }
@@ -1163,13 +1163,13 @@ void aleatorios() {
                 number = getRandomNumber(0, available.size() - 1);
                 if (available[number] == Id::radical && 1 < chain2.freeBonds()) {
                     if (getRandomNumber(0, 1)) 
-                        chain2.addSubstituent(Substituent(Id::radical, 1, getRandomNumber(1, 8), false));
+                        chain2.addSubstituent(Substituent(getRandomNumber(1, 8), false));
                     else if (chain2.freeBonds() > 2 && getRandomNumber(0, 8)) {
                         chain2.addSubstituent(sbts::methyl);
                         chain2.addSubstituent(sbts::methyl);
                     }
                     else 
-                        chain2.addSubstituent(Substituent(Id::radical, 1, getRandomNumber(3, 8), true));
+                        chain2.addSubstituent(Substituent(getRandomNumber(3, 8), true));
                 }
                 else if (available[number] == Id::halogen && 1 < chain2.freeBonds()) {
                     switch (getRandomNumber(0, 3))
@@ -1193,8 +1193,6 @@ void aleatorios() {
                     s = sbts::list.find(available[number])->second;
                     chain2.addSubstituent(s);
                 }
-                //cout << number + 1 << endl;
-                
                 if (!getRandomNumber(0, 2))
                     break;
             }
@@ -1204,11 +1202,9 @@ void aleatorios() {
             unsigned short number;
             do {
                 number = getRandomNumber(0, available.size() - 1);
-                //cout << number + 1 << endl;
             } while (available[number] == Id::radical || available[number] == Id::halogen);
             chain2.addSubstituent(sbts::list.find(available[number])->second);
         }
-        //string s =  chain2.getFormula() + ": " + chain2.getName();
         cout << chain2.getFormula() << endl;
         cout << chain2.getName() << endl << endl;
     }
@@ -1218,29 +1214,29 @@ int main() {
     const map<Id, string> texts = {{Id::acid, "-=OOH"},{Id::amide, "-=ONH2"},{Id::nitrile, "-=N"},
         {Id::aldehyde, "-=OH"},{Id::ketone, "=O"},{Id::alcohol, "-OH"},{Id::amine, "-NH2"},
         {Id::nitro, "-NO2"},{Id::halogen, "-X"},{Id::radical, "-CH2-CH2..."},{Id::hydrogen, "-H"}};
-    //aleatorios();
+    aleatorios();
     do {
         Chain chain;
 
         chain.addSubstituent(sbts::hydrogen);
         chain.addSubstituent(sbts::hydrogen);
-        chain.addSubstituent(Substituent(Id::radical, 1, 3, true));
+        chain.addSubstituent(Substituent(3, true));
         chain.nextCarbon();
         chain.addSubstituent(sbts::hydrogen);
-        chain.addSubstituent(Substituent(Id::radical, 1, 3, true));
+        chain.addSubstituent(Substituent(3, true));
         chain.nextCarbon();
         chain.addSubstituent(sbts::hydrogen);
-        chain.addSubstituent(Substituent(Id::radical, 1, 3, true));
+        chain.addSubstituent(Substituent(3, true));
         chain.nextCarbon();
         chain.addSubstituent(sbts::hydrogen);
-        chain.addSubstituent(Substituent(Id::radical, 1, 3, true));
+        chain.addSubstituent(Substituent(3, true));
         chain.nextCarbon();
         chain.addSubstituent(sbts::hydrogen);
-        chain.addSubstituent(Substituent(Id::radical, 1, 3, true));
+        chain.addSubstituent(Substituent(3, true));
         chain.nextCarbon();
         chain.addSubstituent(sbts::hydrogen);
         chain.addSubstituent(sbts::hydrogen);
-        chain.addSubstituent(Substituent(Id::radical, 1, 3, true));
+        chain.addSubstituent(Substituent(3, true));
 
         /*chain.addSubstituent(sbts::hydrogen);
         chain.nextCarbon();
@@ -1306,7 +1302,7 @@ int main() {
                                         "  {---------}" << endl << endl << " Carbonos del radical: ";
                                     cin >> carbons;
                                 } while (!carbons);
-                                chain.addSubstituent(Substituent(Id::radical, 1, carbons, false));
+                                chain.addSubstituent(Substituent(carbons, false));
                             }
                             else if (input == 2) {
                                 while(true){
@@ -1316,7 +1312,7 @@ int main() {
                                         << endl << endl << " Carbonos de la cadena recta: ";
                                     cin >> carbons;
                                     if (carbons)
-                                        chain.addSubstituent(Substituent(Id::radical, 1, carbons + 2, true));
+                                        chain.addSubstituent(Substituent(carbons + 2, true));
                                     else if (chain.freeBonds() > 1) {
                                         chain.addSubstituent(sbts::methyl);
                                         chain.addSubstituent(sbts::methyl);
