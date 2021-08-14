@@ -438,9 +438,10 @@ private:
                         chain[i].deleteSubstituent(largest_radical);
                         Substituent new_radical;
                         vector<Carbon>::iterator it;
+                        bool iso;
                         if (change_right) {
-                            new_radical = Substituent(Id::radical, 1, chain.size()- i,
-                                chain.size() > 2 && chain[chain.size() - 2].thereIs(sbts::methyl));
+                            iso = chain.size() > 2 && chain[chain.size() - 2].thereIs(sbts::methyl);
+                            new_radical = Substituent(Id::radical, 1, chain.size() - 1 - i + iso, iso);
                             //La cadena convertida en sustituyente
                             if (new_radical.getCarbons()) {
                                 chain[i].addSubstituent(new_radical);
@@ -450,9 +451,9 @@ private:
                                 chain.pop_back();
                             it = chain.end();
                         }
-                        else {
-                            new_radical = Substituent(Id::radical, 1, i,
-                                chain.size() > 2 && chain[1].thereIs(sbts::methyl));
+                        else { //Left
+                            iso = chain.size() > 2 && chain[1].thereIs(sbts::methyl);
+                            new_radical = Substituent(Id::radical, 1, i + iso, iso);
                             //La cadena convertida en sustituyente
                             if (new_radical.getCarbons()) {
                                 chain[i].addSubstituent(new_radical);
@@ -938,21 +939,29 @@ private:
     }
 
     //UTILITIES:
+    unsigned short compareAlphabetically(string a, string b) {
+        unsigned short min_length = (a.length() < b.length()) ? a.length() : b.length();
+        for (unsigned short i = 0; i < min_length; i++) {
+            if (a.at(i) < b.at(i))
+                return 0;
+            if (a.at(i) > b.at(i))
+                return 1;
+        }
+        return 2;
+    }
+
     vector<Locator> sortPrefixesAlphabetically(vector<Locator> prefixes) {
         //Ordena alfabéticamente los prefijos sin tener en cuenta los multiplicadores
         unsigned short i = 0;
         while (i < prefixes.size() - 1)
             switch (compareAlphabetically(prefixes[i].text, prefixes[i + 1].text))
             {
-            case 0:
-                return prefixes;
             case 1:
                 swap(prefixes[i], prefixes[i + 1]);
                 i = 0;
                 break;
             default:
                 i++;
-                break;
             }
         return prefixes;
     }
@@ -969,17 +978,6 @@ private:
         for (string s : vector)
             result += "-" + s;
         return result;
-    }
-
-    unsigned short compareAlphabetically(string a, string b) {
-        unsigned short min_length = (a.length() < b.length()) ? a.length() : b.length();
-        for (unsigned short i = 0; i < min_length; i++) {
-            if (a.at(i) < b.at(i))
-                return 0;
-            if (a.at(i) > b.at(i))
-                return 1;
-        }
-        return 2;
     }
 
     char firstLetterOf(string s) {
@@ -1131,10 +1129,10 @@ public:
         case 2:
             result.push_back(Id::ketone);
         case 1:
-            result.push_back(Id::alcohol);
-            result.push_back(Id::amine);
-            result.push_back(Id::nitro);
-            result.push_back(Id::halogen);
+            //result.push_back(Id::alcohol);
+            //result.push_back(Id::amine);
+            //result.push_back(Id::nitro);
+            //result.push_back(Id::halogen);
             result.push_back(Id::radical);
             result.push_back(Id::hydrogen);
         }
@@ -1156,22 +1154,22 @@ void aleatorios() {
     std::srand(static_cast<unsigned int>(std::time(nullptr)));
     while (true) {
         Chain chain2;
-        unsigned short amount = getRandomNumber(0, 333);
+        unsigned short amount = getRandomNumber(0, 8);
         for (unsigned short i = 0; i < amount; i++) {
+            chain2.addSubstituent(sbts::hydrogen);
             for (vector<Id> available = chain2.availableSubstituents(); available.size() && chain2.freeBonds() > 1; available = chain2.availableSubstituents()) {
-                //chain2.addSubstituent(sbts::hydrogen);
                 Substituent s;
                 unsigned short number;
                 number = getRandomNumber(0, available.size() - 1);
                 if (available[number] == Id::radical && 1 < chain2.freeBonds()) {
                     if (getRandomNumber(0, 1)) 
-                        chain2.addSubstituent(Substituent(Id::radical, 1, getRandomNumber(1, 333), false));
-                    else if (chain2.freeBonds() > 2 && getRandomNumber(0, 1)) {
+                        chain2.addSubstituent(Substituent(Id::radical, 1, getRandomNumber(1, 8), false));
+                    else if (chain2.freeBonds() > 2 && getRandomNumber(0, 8)) {
                         chain2.addSubstituent(sbts::methyl);
                         chain2.addSubstituent(sbts::methyl);
                     }
                     else 
-                        chain2.addSubstituent(Substituent(Id::radical, 1, getRandomNumber(3, 334), true));
+                        chain2.addSubstituent(Substituent(Id::radical, 1, getRandomNumber(3, 8), true));
                 }
                 else if (available[number] == Id::halogen && 1 < chain2.freeBonds()) {
                     switch (getRandomNumber(0, 3))
@@ -1223,6 +1221,26 @@ int main() {
     //aleatorios();
     do {
         Chain chain;
+
+        chain.addSubstituent(sbts::hydrogen);
+        chain.addSubstituent(sbts::hydrogen);
+        chain.addSubstituent(Substituent(Id::radical, 1, 3, true));
+        chain.nextCarbon();
+        chain.addSubstituent(sbts::hydrogen);
+        chain.addSubstituent(Substituent(Id::radical, 1, 3, true));
+        chain.nextCarbon();
+        chain.addSubstituent(sbts::hydrogen);
+        chain.addSubstituent(Substituent(Id::radical, 1, 3, true));
+        chain.nextCarbon();
+        chain.addSubstituent(sbts::hydrogen);
+        chain.addSubstituent(Substituent(Id::radical, 1, 3, true));
+        chain.nextCarbon();
+        chain.addSubstituent(sbts::hydrogen);
+        chain.addSubstituent(Substituent(Id::radical, 1, 3, true));
+        chain.nextCarbon();
+        chain.addSubstituent(sbts::hydrogen);
+        chain.addSubstituent(sbts::hydrogen);
+        chain.addSubstituent(Substituent(Id::radical, 1, 3, true));
 
         /*chain.addSubstituent(sbts::hydrogen);
         chain.nextCarbon();
@@ -1341,8 +1359,8 @@ int main() {
             else chain.nextCarbon();
         }
         
-        cout << " " << chain.getName() << endl;
-        cout << " ---> " << chain.getFormula() << endl;
+        cout << " " << chain.getFormula() << endl;
+        cout << " ---> " << chain.getName() << endl;
         system("pause");
     } while (true);
 
