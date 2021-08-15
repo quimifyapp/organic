@@ -11,42 +11,34 @@
 using namespace std;
 
 enum class Id { //Substituent's kinds ordered by nomenclature priority
-    acid,
-    amide,
-    carbamoyl,
-    nitrile,
-    cyanide,
+    acid, carboxyl,
+    amide, carbamoyl,
+    nitrile, cyanide,
     aldehyde,
     ketone,
     alcohol,
     amine,
-    alkene,
-    alkyne,
+    alkene, alkyne,
     nitro,
-    halogen,
-    bromine,
-    chlorine,
-    fluorine,
-    iodine,
+    halogen, bromine, chlorine, fluorine, iodine,
     radical,
     hydrogen
 };
 
 class Substituent {
 private:
+    // The substituent's kind:
     Id function; 
-    // The substituent's kind
+    // Amount of e- it shares with the carbon:
     unsigned short bonds; 
-    // Amount of e- it shares with the carbon
+    // Only for radicals:
     unsigned short carbons = 0; 
-    // Only for radicals
     bool iso = false; 
-    // Only for radicals
 
     /* EXAMPLES:
     *=O                ---> ketone {function = Id:ketone, bonds = 2}
 
-    *-CH2-CH2-CH3      ---> propyl {function = Id::radical, bonds = 1, carbons = 5, iso = false}        
+    *-CH2-CH2-CH3      ---> propyl {function = Id::radical, bonds = 1, carbons = 3, iso = false}        
 
                   CH3
                  / 
@@ -81,6 +73,7 @@ public:
 
 namespace sbts {
     Substituent acid(Id::acid, 3);
+    Substituent carboxyl(Id::carboxyl, 1);
     Substituent amide(Id::amide, 3);
     Substituent carbamoyl(Id::carbamoyl, 1);
     Substituent nitrile(Id::nitrile, 3);
@@ -100,10 +93,11 @@ namespace sbts {
     //Handy methyl constant
 
     const map<Id, Substituent> list = {
-        {Id::acid, acid},
-        {Id::amide, amide},
+        {Id::acid, acid}, 
+        {Id::carboxyl, carboxyl},
+        {Id::amide, amide}, 
         {Id::carbamoyl, carbamoyl},
-        {Id::nitrile, nitrile},
+        {Id::nitrile, nitrile}, 
         {Id::cyanide, cyanide},
         {Id::aldehyde, aldehyde},
         {Id::ketone, ketone},
@@ -123,7 +117,7 @@ private:
     vector<Substituent> substituents;
     unsigned short used_bonds;
     
-     string replaceAll(std::string str, const std::string& from, const std::string& to) {
+    string replaceAll(std::string str, const std::string& from, const std::string& to) {
         size_t start_pos = 0;
         while ((start_pos = str.find(from, start_pos)) != std::string::npos) {
             str.replace(start_pos, from.length(), to);
@@ -333,14 +327,6 @@ class Chain {
 private:
     vector<Carbon> chain;
     vector<Id> functions;
-
-    Chain(vector<Carbon> v) {
-        for (Carbon c : v) {
-            nextCarbon();
-            for (Substituent s : c.getAllSubstituents())
-                addSubstituent(s);
-        }
-    }
 
     //PREPROCESSING:
     void correct() {
@@ -558,6 +544,14 @@ private:
                     listUniqueFunctions();
                 }
             }
+        }
+    }
+
+    Chain(vector<Carbon> v) {
+        for (Carbon c : v) {
+            nextCarbon();
+            for (Substituent s : c.getAllSubstituents())
+                addSubstituent(s);
         }
     }
 
@@ -1145,6 +1139,68 @@ public:
     }
 };
 
+class Cyclic {
+private:
+    vector<Carbon> cycle;
+    /* EXAMPLES:
+     B           
+      \       
+       CH - CH2
+      /        \
+    CH2        CH2 ---> CH(A)-CH(B)-CH2-CH2-CH2-CH2
+      \        /
+       CH2 - CH
+               \
+                A
+    */
+public:
+    Cyclic() {
+        nextCarbon();
+    }
+
+    void nextCarbon() {
+        if (cycle.size()) {
+            cycle.back().bondCarbon();
+            cycle.push_back(Carbon(cycle.back().freeBonds()));
+        }
+        else cycle.push_back(Carbon(1));
+    }
+
+    vector<Id> availableSubstituents() {
+        vector<Id> result;
+        unsigned short free = cycle.back().freeBonds();
+        if (free) {
+            result.push_back(Id::carboxyl);
+            result.push_back(Id::carbamoyl);
+            result.push_back(Id::cyanide);
+            if(free == 2) result.push_back(Id::ketone);
+            result.push_back(Id::alcohol);
+            result.push_back(Id::amine);
+            result.push_back(Id::nitro);
+            result.push_back(Id::halogen);
+            result.push_back(Id::radical);
+            result.push_back(Id::hydrogen);
+        }
+        return result;
+    }
+
+    string getFormula() {
+        string s = "-";
+        for (unsigned short i = 0; i < cycle.size(); i++) {
+            /*if (i) {
+                if (chain[i - 1].freeBonds()) {
+                    if (chain[i - 1].freeBonds() == 1) s += "=";
+                    else s += "≡";
+                }
+                else s += "-";
+            }
+            */
+            s += cycle[i].toString();
+        }
+        return s + "-";
+    }
+};
+
 unsigned short getRandomNumber(unsigned short min, unsigned short max) {
     static constexpr double fraction{ 1.0 / (RAND_MAX + 1.0) };
     return min + static_cast<unsigned short>((max - min + 1) * (std::rand() * fraction));
@@ -1211,33 +1267,30 @@ void aleatorios() {
 }
 
 int main() {
-    const map<Id, string> texts = {{Id::acid, "-=OOH"},{Id::amide, "-=ONH2"},{Id::nitrile, "-=N"},
-        {Id::aldehyde, "-=OH"},{Id::ketone, "=O"},{Id::alcohol, "-OH"},{Id::amine, "-NH2"},
-        {Id::nitro, "-NO2"},{Id::halogen, "-X"},{Id::radical, "-CH2-CH2..."},{Id::hydrogen, "-H"}};
-    aleatorios();
-    do {
+    const map<Id, string> texts = {{Id::acid, "-=OOH"},{Id::carboxyl, "-COOH"},{Id::amide, "-=ONH2"},
+        {Id::carbamoyl, "-CONH2"},{Id::nitrile, "-=N"},{Id::cyanide, "-CN"},{Id::aldehyde, "-=OH"},
+        {Id::ketone, "=O"},{Id::alcohol, "-OH"},{Id::amine, "-NH2"},{Id::nitro, "-NO2"},
+        {Id::halogen, "-X"},{Id::radical, "-CH2-CH2..."},{Id::hydrogen, "-H"}};
+    //aleatorios();
+
+    while (true) {
+        Cyclic cyclic;
+        bool first = true;
+        for (vector<Id> available = cyclic.availableSubstituents(); available.size(); available = cyclic.availableSubstituents()) {
+            cout << " ---> " << cyclic.getFormula() << endl;
+            if (!first)
+                cout << " ----------------------" << endl << " 0) " << "-C-" << endl;
+            else first = false;
+
+            cout << " ----------------------" << endl;
+            for (unsigned short i = 0; i < available.size(); i++)
+                cout << ' ' << i + 1 << ") " << texts.find(available[i])->second << endl << " ----------------------" << endl;
+        }
+        system("pause");
+    }
+
+    while(false) {
         Chain chain;
-
-        chain.addSubstituent(sbts::hydrogen);
-        chain.addSubstituent(sbts::hydrogen);
-        chain.addSubstituent(Substituent(3, true));
-        chain.nextCarbon();
-        chain.addSubstituent(sbts::hydrogen);
-        chain.addSubstituent(Substituent(3, true));
-        chain.nextCarbon();
-        chain.addSubstituent(sbts::hydrogen);
-        chain.addSubstituent(Substituent(3, true));
-        chain.nextCarbon();
-        chain.addSubstituent(sbts::hydrogen);
-        chain.addSubstituent(Substituent(3, true));
-        chain.nextCarbon();
-        chain.addSubstituent(sbts::hydrogen);
-        chain.addSubstituent(Substituent(3, true));
-        chain.nextCarbon();
-        chain.addSubstituent(sbts::hydrogen);
-        chain.addSubstituent(sbts::hydrogen);
-        chain.addSubstituent(Substituent(3, true));
-
         /*chain.addSubstituent(sbts::hydrogen);
         chain.nextCarbon();
         chain.nextCarbon();
@@ -1249,7 +1302,8 @@ int main() {
         chain.addSubstituent(sbts::hydrogen);
         chain.addSubstituent(sbts::hydrogen);*/
         //CH -= C - CI2 - C(Cl) = CH2
-        /*for (unsigned short n = 0; n < 999; n++) {
+        /*
+        for (unsigned short n = 4; n < 999; n++) {
             Chain ch;
             chain = ch;
             chain.addSubstituent(sbts::hydrogen);
@@ -1267,9 +1321,9 @@ int main() {
             chain.addSubstituent(sbts::hydrogen);
 
             cout << n + 1 << ": " << chain.getName() << endl;
-        }*/
+        }
+        */
         //Cadenas con bucle
-
         bool first = true;
         for (vector<Id> available = chain.availableSubstituents(); available.size(); available = chain.availableSubstituents()) {
             cout << " ---> " << chain.getFormula() << endl;
@@ -1358,7 +1412,7 @@ int main() {
         cout << " " << chain.getFormula() << endl;
         cout << " ---> " << chain.getName() << endl;
         system("pause");
-    } while (true);
+    }
 
     return 0;
 }
