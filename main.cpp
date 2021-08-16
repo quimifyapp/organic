@@ -1226,7 +1226,7 @@ public:
     }
 
     vector<Id> availableSubstituents() {
-        static vector<Id> available_subs{Id::hydrogen, Id::radical,Id::halogen,Id::nitro,Id::amine,Id::alcohol};
+        static vector<Id> available_subs{Id::hydrogen,Id::radical,Id::halogen,Id::nitro,Id::amine,Id::alcohol};
         static vector<Id> principal_subs{Id::cyanide,Id::carbamoyl,Id::carboxyl};
         if (!used_principal_sub) {
             vector<Id> result = available_subs;
