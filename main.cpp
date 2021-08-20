@@ -330,7 +330,154 @@ public:
 };
 
 class Organic {
+protected:
+    string greekPrefix(unsigned short n) {
+        switch (n) {
+        case 5:
+            return "pent";
+        case 6:
+            return "hex";
+        case 7:
+            return "hept";
+        case 8:
+            return "oct";
+        case 9:
+            return "non";
+        case 0:
+            return "";
+        case 1:
+            return "hen";
+        case 2:
+            return "do";
+        case 3:
+            return "tri";
+        case 4:
+            return "tetra";
+        }
+    }
 
+    string multiplier(unsigned short n) {
+        if (n < 10) { // [1, 9]
+            switch (n) {
+            case 0:
+                return "";
+            case 1:
+                return "met";
+            case 2:
+                return "et";
+            case 3:
+                return "prop";
+            case 4:
+                return "but";
+            }
+            return greekPrefix(n); // [5, 9]
+        }
+        unsigned short ten = n / 10;
+        unsigned short unit = n - (ten * 10);
+        if (n < 20) { // [10, 19]
+            if (n == 11)
+                return "undec";
+            if (n < 15)
+                return greekPrefix(unit) + "dec";
+            return greekPrefix(unit) + "adec";
+        }
+        if (n < 30) { // [20, 29]
+            switch (n) {
+            case 20:
+                return "icos";
+            case 21:
+                return "heneicos";
+            }
+            if (n < 25) return greekPrefix(unit) + "cos";
+            return greekPrefix(unit) + "acos";
+        }
+        string s;
+        if (n < 100) { // [30, 99]
+            s = greekPrefix(unit);
+            if (unit > 4)
+                s += "a";
+            s += greekPrefix(ten);
+            if (ten == 4)
+                s += "cont";
+            else s += "acont";
+            return s;
+        }
+        // [100, 999]
+        unsigned short hundred = n / 100;
+        ten = ten - (hundred * 10);
+        s = multiplier(ten * 10 + unit);
+        if (n == 100)
+            return "hect";
+        switch (hundred)
+        {
+        case 1:
+            return s + "ahect";
+        case 2:
+            return s + "adict";
+        case 3:
+            return s + "atrict";
+        case 4:
+            return s + "atetract";
+        default:
+            return s + "a" + greekPrefix(hundred) + "act";
+        }
+    }
+
+    string quantifier(unsigned short n) {
+        switch (n) {
+        case 1: return "";
+        case 2: return "di";
+        case 3: return "tri";
+        case 4: return "tetra";
+        default:
+            return multiplier(n) + "a";
+        }
+    }
+
+    class Locator {
+    public:
+        string positions = "";
+        string multiplier = "";
+        string text = "";
+
+        /* EXAMPLES:
+        2,3-diol = {"2,3", "di", "ol"}
+        tetrain = {"", "tetra", "in"}
+        fluoro = {"", "", "fluoro"} */
+
+        Locator(){}
+
+        Locator(string new_positions, string new_multiplier, string new_text) {
+            positions = new_positions;
+            multiplier = new_multiplier;
+            text = new_text;
+        }
+
+        string toString() {
+            if (positions != "")
+                return positions + "-" + multiplier + text;
+            else return multiplier + text;
+        }
+    };
+
+    Locator pieceFor(vector<unsigned short> positions, string text) {
+        string s_positions;
+        if (positions.size()) {
+            for (unsigned short i = 0; i < positions.size() - 1; i++) {
+                s_positions += to_string(positions[i] + 1);
+                s_positions += ",";
+            }
+            s_positions += to_string(positions[positions.size() - 1] + 1);
+        }
+        
+        return Locator(s_positions, quantifier(positions.size()), text);
+    }
+
+    Locator prefixForRadical(Substituent radical, vector<unsigned short> positions) {
+        if (radical.getIso())
+            return pieceFor(positions, "iso" + multiplier(radical.getCarbons()) + "il");
+        return pieceFor(positions, multiplier(radical.getCarbons()) + "il");
+    }
 };
 
 class Basic : private Organic {
@@ -656,160 +803,17 @@ private:
     }
 
     //WRITERS:
-    string greekPrefix(unsigned short n) {
-        switch (n) {
-        case 5:
-            return "pent";
-        case 6:
-            return "hex";
-        case 7:
-            return "hept";
-        case 8:
-            return "oct";
-        case 9:
-            return "non";
-        case 0:
-            return "";
-        case 1:
-            return "hen";
-        case 2:
-            return "do";
-        case 3:
-            return "tri";
-        case 4:
-            return "tetra";
-        }
-    }
-
-    string multiplier(unsigned short n) {
-        if (n < 10) { // [1, 9]
-            switch (n) {
-            case 0:
-                return "";
-            case 1:
-                return "met";
-            case 2:
-                return "et";
-            case 3:
-                return "prop";
-            case 4:
-                return "but";
-            }
-            return greekPrefix(n); // [5, 9]
-        }
-        unsigned short ten = n / 10;
-        unsigned short unit = n - (ten * 10);
-        if (n < 20) { // [10, 19]
-            if (n == 11)
-                return "undec";
-            if (n < 15)
-                return greekPrefix(unit) + "dec";
-            return greekPrefix(unit) + "adec";
-        }
-        if (n < 30) { // [20, 29]
-            switch (n) {
-            case 20:
-                return "icos";
-            case 21:
-                return "heneicos";
-            }
-            if (n < 25) return greekPrefix(unit) + "cos";
-            return greekPrefix(unit) + "acos";
-        }
-        string s;
-        if (n < 100) { // [30, 99]
-            s = greekPrefix(unit);
-            if (unit > 4)
-                s += "a";
-            s += greekPrefix(ten);
-            if (ten == 4)
-                s += "cont";
-            else s += "acont";
-            return s;
-        }
-        // [100, 999]
-        unsigned short hundred = n / 100;
-        ten = ten - (hundred * 10);
-        s = multiplier(ten * 10 + unit);
-        if (n == 100)
-            return "hect";
-        switch (hundred)
-        {
-        case 1:
-            return s + "ahect";
-        case 2:
-            return s + "adict";
-        case 3:
-            return s + "atrict";
-        case 4:
-            return s + "atetract";
-        default:
-            return s + "a" + greekPrefix(hundred) + "act";
-        }
-    }
-
-    string quantifier(unsigned short n) {
-        switch (n) {
-        case 1: return "";
-        case 2: return "di";
-        case 3: return "tri";
-        case 4: return "tetra";
-        default:
-            return multiplier(n) + "a";
-        }
-    }
-
-    class Locator {
-    public:
-        string positions = "";
-        string multiplier = "";
-        string text = "";
-
-        /* EXAMPLES:
-        2,3-diol = {"2,3", "di", "ol"}
-        tetrain = {"", "tetra", "in"}
-        fluoro = {"", "", "fluoro"} */
-
-        string toString() {
-            if (positions != "")
-                return positions + "-" + multiplier + text;
-            else return multiplier + text;
-        }
-    };
-
-    Locator pieceFor(Id function, vector<unsigned short> positions, string text) {
-        Locator locator;
-        locator.text = text;
-        if (isHalogen(function) && everySubstituentIs(function) && basic_chain.size() > 1) {
-            //locator.multiplier = "per";
-            //return locator;
-        }
-        locator.multiplier = quantifier(positions.size());
-        if (isRedundant(function, positions))
-            return locator;
-        for (unsigned short i = 0; i < positions.size() - 1; i++) {
-            locator.positions += to_string(positions[i] + 1);
-            locator.positions += ",";
-        }
-        locator.positions += to_string(positions[positions.size() - 1] + 1);
-        return locator;
-    }
-
-    Locator prefixForRadical(Substituent radical) {
-        string s;
-        if (radical.getIso())
-            s += "iso";
-        s += multiplier(radical.getCarbons()) + "il";
-        return pieceFor(Id::radical, listPositionsOf(radical), s);
-    }
-
     Locator prefixFor(Id function) {
         const static map<Id, string> texts = {{Id::carbamoyl, "carbamoil"},{Id::cyanide, "ciano"},
             {Id::ketone, "oxo"}, {Id::alcohol, "hidroxi"},{Id::amine, "amino"},{Id::nitro, "nitro"},
             {Id::bromine, "bromo"},{Id::chlorine, "cloro"},{Id::fluorine, "fluoro"},{Id::iodine, "yodo"}};
 
         vector<unsigned short> positions = listPositionsOf(function);
-        return pieceFor(function, positions, texts.find(function)->second);
+        if (isRedundant(function, positions)) 
+            return Locator("", quantifier(positions.size()), texts.find(function)->second);
+        if (isHalogen(function) && functions.size() == 1) 
+            return Locator("", "per", texts.find(function)->second);
+        return pieceFor(positions, texts.find(function)->second);
     }
 
     string sufixFor(Id function) {
@@ -817,9 +821,9 @@ private:
             {Id::aldehyde, "al"},{Id::ketone, "ona"},{Id::alcohol, "ol"},{Id::amine, "amina"}};
 
         vector<unsigned short> positions = listPositionsOf(function);
-        if ((sbts::list.find(function)->second).getBonds() == 3) 
+        if ((sbts::list.find(function)->second).getBonds() == 3)
             return quantifier(positions.size()) + texts.find(function)->second;
-        return pieceFor(function, positions, texts.find(function)->second).toString();
+        return pieceFor(positions, texts.find(function)->second).toString();
     }
 
     //DATA INQUIRES:
@@ -928,14 +932,6 @@ private:
         return result;
     }
 
-    bool everySubstituentIs(Id function) {
-        for (Carbon c : basic_chain)
-            for (Substituent s : c.getAllSubstituents())
-                if (s.getFunction() != function)
-                    return false;
-        return true;
-    }
-
     bool isHalogen(Id function) {
         if (function == Id::bromine || function == Id::chlorine || function == Id::fluorine || function == Id::iodine)
             return true;
@@ -1038,7 +1034,7 @@ public:
         //Aquí las cadenas simples
         vector<Substituent> radicals = getUniqueSubstituents(Id::radical);
         for (Substituent radical : radicals) {
-            locator = prefixForRadical(radical);
+            locator = prefixForRadical(radical, listPositionsOf(radical));
             if (locator.text != "")
                 prefixes.push_back(locator);
         }
@@ -1057,21 +1053,23 @@ public:
         string bonds;
         vector<unsigned short> positions = listPositionsOf(Id::alkene);
         if (positions.size()) {
-            locator = pieceFor(Id::alkene, positions, "en");
-            if (locator.text != "") {
-                if (isDigit(locator.toString().at(0)))
-                    bonds += "-";
-                bonds += locator.toString();
-            }
+            if (!isRedundant(Id::alkene, positions))
+                locator = pieceFor(positions, "en");
+            else
+                locator = Locator("", quantifier(positions.size()), "en");
+            if (isDigit(locator.toString().at(0)))
+                bonds += "-";
+            bonds += locator.toString();
         }
         positions = listPositionsOf(Id::alkyne);
         if (positions.size()) {
-            locator = pieceFor(Id::alkyne, listPositionsOf(Id::alkyne), "in");
-            if (locator.text != "") {
-                if (isDigit(locator.toString().at(0)))
-                    bonds += "-";
-                bonds += locator.toString();
-            }
+            if (!isRedundant(Id::alkyne, positions))
+                locator = pieceFor(positions, "in");
+            else
+                locator = Locator("", quantifier(positions.size()), "in");
+            if (isDigit(locator.toString().at(0)))
+                bonds += "-";
+            bonds += locator.toString();
         }
 
         if (bonds == "")
@@ -1146,7 +1144,7 @@ public:
     }
 };
 
-class Cyclic : private Organic {
+class Cyclic : protected Organic {
 protected:
     vector<Carbon> cycle;
     /* EXAMPLES:
@@ -1160,6 +1158,27 @@ protected:
                \
                 A
     */
+    vector<Id> functions;
+
+    void listUniqueFunctions() {
+        functions.clear();
+        for (Carbon c : cycle) {
+            if (c.freeBonds() == 1) {
+                if (find(functions.begin(), functions.end(), Id::alkene) == functions.end())
+                    functions.push_back(Id::alkene);
+            }
+            else if (c.freeBonds() == 2) {
+                if (find(functions.begin(), functions.end(), Id::alkyne) == functions.end())
+                    functions.push_back(Id::alkyne);
+            }
+            for (Substituent s : c.getAllSubstituents())
+                if (find(functions.begin(), functions.end(), s.getFunction()) == functions.end() &&
+                    s.getFunction() != Id::hydrogen)
+                    functions.push_back(s.getFunction());
+        }
+        sort(functions.begin(), functions.end());
+    }
+
 public:
     Cyclic() {
         nextCarbon();
@@ -1211,6 +1230,18 @@ public:
 class Aromatic : private Cyclic {
 private:
     bool used_principal_sub = false;
+
+    void listUniqueFunctions() {
+        functions.clear();
+        for (Carbon c : cycle) {
+            for (Substituent s : c.getAllSubstituents())
+                if (find(functions.begin(), functions.end(), s.getFunction()) == functions.end() &&
+                    s.getFunction() != Id::hydrogen)
+                    functions.push_back(s.getFunction());
+        }
+        sort(functions.begin(), functions.end());
+    }
+
 public:
     Aromatic() {
         nextCarbon();
@@ -1226,14 +1257,35 @@ public:
     }
 
     vector<Id> availableSubstituents() {
-        static vector<Id> available_subs{Id::hydrogen, Id::radical,Id::halogen,Id::nitro,Id::amine,Id::alcohol};
+        static vector<Id> available_subs{Id::hydrogen,Id::radical,Id::halogen,Id::nitro,Id::amine,Id::alcohol};
         static vector<Id> principal_subs{Id::cyanide,Id::carbamoyl,Id::carboxyl};
         if (!used_principal_sub) {
             vector<Id> result = available_subs;
             result.insert(result.end(), principal_subs.begin(), principal_subs.end());
+            used_principal_sub = true;
             return result;
         }
         else return available_subs;
+    }
+
+    string getName() {
+        listUniqueFunctions();
+        /*
+        unsigned short count = 0;
+        vector<Locator> prefixes;
+        Locator locator;
+        while (count < functions.size()) {
+            if (functions[count] != Id::alkene &&
+                functions[count] != Id::alkyne &&
+                functions[count] != Id::radical) {
+                locator = prefixFor(functions[count]);
+                if (locator.text != "")
+                    prefixes.push_back(locator);
+            }
+            count++;
+        }
+        */
+        
     }
 
     string getFormula() {
@@ -1321,7 +1373,7 @@ int main() {
         {Id::halogen, "-X"},{Id::radical, "-CH2-CH2..."},{Id::hydrogen, "-H"}};
     //aleatorios();
 
-    while (true) {
+    while (false) {
         Aromatic aromatic;
         bool first = true;
         vector<Id> available;
@@ -1343,7 +1395,7 @@ int main() {
         system("pause");
     }
 
-    while(false) {
+    while(true) {
         Basic basic_chain;
         /*basic_chain.addSubstituent(sbts::hydrogen);
         basic_chain.nextCarbon();
