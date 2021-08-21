@@ -1273,6 +1273,10 @@ public:
 
     string getName() {
         listUniqueFunctions();
+        if (!functions.size())
+            return "benceno";
+
+        return "";
         /*
         unsigned short count = 0;
         vector<Locator> prefixes;
@@ -1465,7 +1469,7 @@ int main() {
                 }
         }
         cout << " " << aromatic.getFormula() << endl;
-        //cout << " ---> " << basic_chain.getName() << endl;
+        cout << " ---> " << aromatic.getName() << endl;
         system("pause");
     }
 
