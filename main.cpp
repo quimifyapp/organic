@@ -181,6 +181,11 @@ public:
         return false;
     }
 
+    bool isHalogen(Id function) {
+        return (function == Id::bromine || function == Id::chlorine || function == Id::fluorine || function == Id::iodine)
+            ? true : false;
+    }
+
     vector<Substituent> getAllSubstituents(Id function) {
         vector<Substituent> result;
         for(unsigned short i = 0; i < substituents.size(); i++)
@@ -294,7 +299,11 @@ public:
                         result += texts.find(subs_temp[0].getFunction())->second;
                     }
                     else {
-                        result += "(" + texts.find(subs_temp[0].getFunction())->second + ")" + toDigit(quantity);
+                        string text = texts.find(subs_temp[0].getFunction())->second;
+                        if(text.size() != 1 && !isHalogen(subs_temp[0].getFunction()))
+                            result += "(" + text + ")" + toDigit(quantity);
+                        else
+                            result += text + toDigit(quantity);
                     }
                 }
                 else {
@@ -993,7 +1002,8 @@ private:
             {Id::aldehyde, "al"},{Id::ketone, "ona"},{Id::alcohol, "ol"},{Id::amine, "amina"}};
 
         vector<unsigned short> positions = listPositionsOf(function);
-        if ((sbts::list.find(function)->second).getBonds() == 3)
+        if (sbts::list.find(function)->second.getBonds() == 3 || 
+            isRedundant(sbts::list.find(function)->second.getFunction(), positions))
             return quantifier(positions.size()) + texts.find(function)->second;
         return pieceFor(positions, texts.find(function)->second).toString();
     }
@@ -1006,6 +1016,8 @@ public:
     //RESULTS:
     string getName() {
         listUniqueFunctions();
+        if (carbons.size() == 1 && functions.size() == 1 && functions[0] == Id::ketone)
+            return "dióxido de carbono";
         correct();
         reorder();
         
@@ -1292,7 +1304,6 @@ public:
             count++;
         }
         */
-        
     }
 
     string getFormula() {
@@ -1387,7 +1398,7 @@ int main() {
         {Id::halogen, "-X"},{Id::radical, "-CH2-CH2..."},{Id::hydrogen, "-H"}};
     //aleatorios();
 
-    while (true) {
+    while (false) {
         Aromatic aromatic;
         bool first = true;
         vector<Id> available;
@@ -1475,6 +1486,7 @@ int main() {
 
     while(true) {
         Basic basic_chain;
+        /*
         basic_chain.addSubstituent(sbts::hydrogen);
         basic_chain.nextCarbon();
         basic_chain.nextCarbon();
@@ -1485,6 +1497,7 @@ int main() {
         basic_chain.nextCarbon();
         basic_chain.addSubstituent(sbts::hydrogen);
         basic_chain.addSubstituent(sbts::hydrogen);
+        */
         //CH -= C - CI2 - C(Cl) = CH2
         /*
         for (unsigned short n = 4; n < 999; n++) {
