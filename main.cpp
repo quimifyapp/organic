@@ -1044,7 +1044,7 @@ public:
             count++;
         }
 
-        //Aquí las cadenas simples
+        //Cadenas simples
         vector<Substituent> radicals = getUniqueSubstituents(Id::radical);
         for (unsigned short i = 0; i < radicals.size(); i++) {
             locator = prefixForRadical(radicals[i], listPositionsOf(radicals[i]));
@@ -1062,6 +1062,9 @@ public:
             }
             pre += prefixes[prefixes.size() - 1].toString();
         }
+
+        if (thereIs(Id::acid))
+            pre = "ácido " + pre;
 
         string bonds;
         vector<unsigned short> positions = listPositionsOf(Id::alkene);
@@ -1095,9 +1098,7 @@ public:
         string mult = multiplier(carbons.size());
         if (!isVowel(firstLetterOf(bonds)))
             mult += "a";
-        if (thereIs(Id::acid))
-            pre = "ácido " + pre;
-
+ 
         return pre + mult + bonds + sufix;
     }
 
@@ -1283,27 +1284,71 @@ public:
         else return available_subs;
     }
 
+    bool isRedundant(Id function, vector<unsigned short> positions) {
+        return false;
+    }
+
+    Locator doublePrefixFor(Id function1, Id function2) {
+
+    }
+
+    Locator prefixFor(Id function) {
+        const static map<Id, string> texts = {{Id::carbamoyl, "carbamoil"},{Id::cyanide, "ciano"},
+            {Id::alcohol, "hidroxi"},{Id::amine, "amino"},{Id::nitro, "nitro"},{Id::bromine, "bromo"},
+            {Id::chlorine, "cloro"},{Id::fluorine, "fluoro"},{Id::iodine, "yodo"}};
+
+        vector<unsigned short> positions = listPositionsOf(function);
+        if (isRedundant(function, positions))
+            return Locator("", quantifier(positions.size()), texts.find(function)->second);
+        return pieceFor(positions, texts.find(function)->second);
+    }
+
     string getName() {
         listUniqueFunctions();
-        if (!functions.size())
-            return "benceno";
 
-        return "";
-        /*
         unsigned short count = 0;
+
+        //Prefijos
+        if (functions.size() == 2) {
+            vector<unsigned short> first = listPositionsOf(functions[0]);
+            vector<unsigned short> second = listPositionsOf(functions[1]);
+        }
         vector<Locator> prefixes;
         Locator locator;
         while (count < functions.size()) {
-            if (functions[count] != Id::alkene &&
-                functions[count] != Id::alkyne &&
-                functions[count] != Id::radical) {
+            if (functions[count] != Id::radical) {
                 locator = prefixFor(functions[count]);
                 if (locator.text != "")
                     prefixes.push_back(locator);
             }
             count++;
         }
-        */
+        //Prefijos de radicales
+        vector<Substituent> radicals = getUniqueSubstituents(Id::radical);
+        for (unsigned short i = 0; i < radicals.size(); i++) {
+            locator = prefixForRadical(radicals[i], listPositionsOf(radicals[i]));
+            if (locator.text != "")
+                prefixes.push_back(locator);
+        }
+        //Unión de los prefijos
+        string pre;
+        if (prefixes.size()) {
+            prefixes = sortPrefixesAlphabetically(prefixes);
+            for (unsigned short i = 0; i < prefixes.size() - 1; i++) {
+                pre += prefixes[i].toString();
+                if (!isLetter(prefixes[i + 1].toString().at(0)))
+                    pre += "-";
+            }
+            pre += prefixes[prefixes.size() - 1].toString();
+        }
+        if (thereIs(Id::acid))
+            pre = "ácido " + pre;
+
+        //CHO benzaldehido
+        //OH fenol
+        //...?
+
+        return pre + "benceno";
     }
 
     string getFormula() {
@@ -1605,7 +1650,6 @@ int main() {
             }
             else basic_chain.nextCarbon();
         }
-        
         cout << " " << basic_chain.getFormula() << endl;
         cout << " ---> " << basic_chain.getName() << endl;
         system("pause");
