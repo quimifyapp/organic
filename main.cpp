@@ -410,8 +410,7 @@ protected:
         s = multiplier(ten * 10 + unit);
         if (n == 100)
             return "hect";
-        switch (hundred)
-        {
+        switch (hundred) {
         case 1:
             return s + "ahect";
         case 2:
@@ -462,7 +461,7 @@ protected:
         }
     };
 
-    Locator pieceFor(vector<unsigned short> positions, string text) {
+    Locator locatorFor(vector<unsigned short> positions, string text) {
         string s_positions;
         if (positions.size()) {
             for (unsigned short i = 0; i < positions.size() - 1; i++) {
@@ -474,10 +473,10 @@ protected:
         return Locator(s_positions, quantifier(positions.size()), text);
     }
 
-    Locator prefixForRadical(Substituent radical, vector<unsigned short> positions) {
-        if (radical.getIso())
-            return pieceFor(positions, "iso" + multiplier(radical.getCarbons()) + "il");
-        return pieceFor(positions, multiplier(radical.getCarbons()) + "il");
+    string radicalName(Substituent radical) {
+        return (radical.getIso())
+            ? "iso" + multiplier(radical.getCarbons()) + "il"
+            : multiplier(radical.getCarbons()) + "il";
     }
 
     //DATA INQUIRES:
@@ -640,8 +639,7 @@ protected:
         //Ordena alfabéticamente los prefijos sin tener en cuenta los multiplicadores
         unsigned short i = 0;
         while (i < prefixes.size() - 1)
-            switch (compareAlphabetically(prefixes[i].text, prefixes[i + 1].text))
-            {
+            switch (compareAlphabetically(prefixes[i].text, prefixes[i + 1].text)) {
             case 1:
                 swap(prefixes[i], prefixes[i + 1]);
                 i = 0;
@@ -651,7 +649,7 @@ protected:
             }
         return prefixes;
     }
-
+    
     unsigned short sum(vector<unsigned short> vector) {
         unsigned short sum = 0;
         for (unsigned short i = 0; i < vector.size();  i++)
@@ -994,7 +992,7 @@ private:
             return Locator("", quantifier(positions.size()), texts.find(function)->second);
         if (isHalogen(function) && getUniqueSubstituents().size() == 1) 
             return Locator("", "per", texts.find(function)->second);
-        return pieceFor(positions, texts.find(function)->second);
+        return locatorFor(positions, texts.find(function)->second);
     }
 
     string sufixFor(Id function) {
@@ -1005,7 +1003,7 @@ private:
         if (sbts::list.find(function)->second.getBonds() == 3 || 
             isRedundant(sbts::list.find(function)->second.getFunction(), positions))
             return quantifier(positions.size()) + texts.find(function)->second;
-        return pieceFor(positions, texts.find(function)->second).toString();
+        return locatorFor(positions, texts.find(function)->second).toString();
     }
 
 public:
@@ -1047,12 +1045,12 @@ public:
         //Cadenas simples
         vector<Substituent> radicals = getUniqueSubstituents(Id::radical);
         for (unsigned short i = 0; i < radicals.size(); i++) {
-            locator = prefixForRadical(radicals[i], listPositionsOf(radicals[i]));
+            locator = locatorFor(listPositionsOf(radicals[i]), radicalName(radicals[i]));
             if (locator.text != "")
                 prefixes.push_back(locator);
         }
 
-        string pre;
+        string pre = (thereIs(Id::acid)) ? "ácido " : "";
         if (prefixes.size()) {
             prefixes = sortPrefixesAlphabetically(prefixes);
             for (unsigned short i = 0; i < prefixes.size() - 1; i++) {
@@ -1063,14 +1061,11 @@ public:
             pre += prefixes[prefixes.size() - 1].toString();
         }
 
-        if (thereIs(Id::acid))
-            pre = "ácido " + pre;
-
         string bonds;
         vector<unsigned short> positions = listPositionsOf(Id::alkene);
         if (positions.size()) {
             if (!isRedundant(Id::alkene, positions))
-                locator = pieceFor(positions, "en");
+                locator = locatorFor(positions, "en");
             else
                 locator = Locator("", quantifier(positions.size()), "en");
             if (isDigit(locator.toString().at(0)))
@@ -1080,7 +1075,7 @@ public:
         positions = listPositionsOf(Id::alkyne);
         if (positions.size()) {
             if (!isRedundant(Id::alkyne, positions))
-                locator = pieceFor(positions, "in");
+                locator = locatorFor(positions, "in");
             else
                 locator = Locator("", quantifier(positions.size()), "in");
             if (isDigit(locator.toString().at(0)))
@@ -1288,19 +1283,51 @@ public:
         return false;
     }
 
-    Locator doublePrefixFor(Id function1, Id function2) {
-
-    }
-
-    Locator prefixFor(Id function) {
+    string prefixName(Id function) {
         const static map<Id, string> texts = {{Id::carbamoyl, "carbamoil"},{Id::cyanide, "ciano"},
             {Id::alcohol, "hidroxi"},{Id::amine, "amino"},{Id::nitro, "nitro"},{Id::bromine, "bromo"},
             {Id::chlorine, "cloro"},{Id::fluorine, "fluoro"},{Id::iodine, "yodo"}};
+        return texts.find(function)->second;
+    }
 
+    Locator prefixFor(Id function) {
         vector<unsigned short> positions = listPositionsOf(function);
         if (isRedundant(function, positions))
-            return Locator("", quantifier(positions.size()), texts.find(function)->second);
-        return pieceFor(positions, texts.find(function)->second);
+            return Locator("", quantifier(positions.size()), prefixName(function));
+        return locatorFor(positions, prefixName(function));
+    }
+
+    Locator doublePrefixFor(Substituent sub1, Substituent sub2, unsigned short pos2) {
+        Locator locator;
+        string text1 = (sub1.getFunction() == Id::radical)
+            ? radicalName(sub1)
+            : prefixName(sub1.getFunction());
+        if (sub1.equals(sub2)) {
+            locator.multiplier = "di";
+            locator.text = text1;
+        }
+        else {
+            string text2 = (sub2.getFunction() == Id::radical)
+                ? radicalName(sub2)
+                : prefixName(sub2.getFunction());
+            locator.text = (compareAlphabetically(text1, text2))
+                ? text2 + text1
+                : text1 + text2;
+        }
+
+        switch (pos2) {
+        case(1):
+            locator.positions = "o";
+            break;
+        case(2):
+            locator.positions = "m";
+            break;
+        case(3):
+            locator.positions = "p";
+            break;
+        }
+
+        return locator;
     }
 
     string getName() {
@@ -1309,44 +1336,52 @@ public:
         unsigned short count = 0;
 
         //Prefijos
-        if (functions.size() == 2) {
-            vector<unsigned short> first = listPositionsOf(functions[0]);
-            vector<unsigned short> second = listPositionsOf(functions[1]);
+        string pre = (thereIs(Id::acid)) ? "ácido " : "";
+        vector<Substituent> subs = getUniqueSubstituents();
+
+        //iguales en cualquier lado: bien
+        //distintos en o: bien
+        //distintos en m, p: mal
+
+        if (subs.size() == 3 && thereIs(Id::hydrogen)) { // o,m,p-clorometil
+            //pre = doublePrefixFor(subs[0], subs[1], listPositionsOf(subs[1])[0]).toString();
         }
-        vector<Locator> prefixes;
-        Locator locator;
-        while (count < functions.size()) {
-            if (functions[count] != Id::radical) {
-                locator = prefixFor(functions[count]);
+        else if (subs.size() == 2 && listPositionsOf(subs[0]).size() == 2) { // o,m,p-dimetil
+            pre = doublePrefixFor(subs[0], subs[0], listPositionsOf(subs[0])[1]).toString();
+        }
+        else if(subs.size() > 1) {
+            vector<Locator> prefixes;
+            Locator locator;
+            while (count < functions.size()) {
+                if (functions[count] != Id::radical) {
+                    locator = prefixFor(functions[count]);
+                    if (locator.text != "")
+                        prefixes.push_back(locator);
+                }
+                count++;
+            }
+            //Prefijos de radicales
+            vector<Substituent> radicals = getUniqueSubstituents(Id::radical);
+            for (unsigned short i = 0; i < radicals.size(); i++) {
+                locator = locatorFor(listPositionsOf(radicals[i]), radicalName(radicals[i]));
                 if (locator.text != "")
                     prefixes.push_back(locator);
             }
-            count++;
-        }
-        //Prefijos de radicales
-        vector<Substituent> radicals = getUniqueSubstituents(Id::radical);
-        for (unsigned short i = 0; i < radicals.size(); i++) {
-            locator = prefixForRadical(radicals[i], listPositionsOf(radicals[i]));
-            if (locator.text != "")
-                prefixes.push_back(locator);
-        }
-        //Unión de los prefijos
-        string pre;
-        if (prefixes.size()) {
-            prefixes = sortPrefixesAlphabetically(prefixes);
-            for (unsigned short i = 0; i < prefixes.size() - 1; i++) {
-                pre += prefixes[i].toString();
-                if (!isLetter(prefixes[i + 1].toString().at(0)))
-                    pre += "-";
+            //Unión de los prefijos
+            if (prefixes.size()) {
+                prefixes = sortPrefixesAlphabetically(prefixes);
+                for (unsigned short i = 0; i < prefixes.size() - 1; i++) {
+                    pre += prefixes[i].toString();
+                    if (!isLetter(prefixes[i + 1].toString().at(0)))
+                        pre += "-";
+                }
+                pre += prefixes[prefixes.size() - 1].toString();
             }
-            pre += prefixes[prefixes.size() - 1].toString();
         }
-        if (thereIs(Id::acid))
-            pre = "ácido " + pre;
 
         //CHO benzaldehido
         //OH fenol
-        //...?
+        //COOH benzoico o 
 
         return pre + "benceno";
     }
@@ -1443,7 +1478,7 @@ int main() {
         {Id::halogen, "-X"},{Id::radical, "-CH2-CH2..."},{Id::hydrogen, "-H"}};
     //aleatorios();
 
-    while (false) {
+    while (true) {
         Aromatic aromatic;
         bool first = true;
         vector<Id> available;
