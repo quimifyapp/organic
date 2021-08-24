@@ -4,16 +4,12 @@
 #include <map>
 #include <algorithm>
 
-//Random:
-#include <ctime>
-#include <cstdlib> 
-
 using namespace std;
 
 /*
--ETER, ESTER, AMINAS MULTIPLES
--AROMÁTICOS
--¿CICLOS?            
+    -AROMÁTICOS
+    -¿CICLOS?  
+    -ETER, ESTER, AMINAS MULTIPLES    
 */
 
 enum class Id { //Substituent's kinds ordered by nomenclature priority
@@ -1403,6 +1399,12 @@ public:
         return result + "~";
     }
 };
+
+//---------------------------------------------------------------------------------------------------
+
+//Random:
+#include <ctime>
+#include <cstdlib> 
 
 unsigned short getRandomNumber(unsigned short min, unsigned short max) {
     static constexpr double fraction{ 1.0 / (RAND_MAX + 1.0) };
