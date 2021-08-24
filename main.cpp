@@ -268,7 +268,8 @@ public:
                                     result += texts.find(subs_temp[i].getFunction())->second;
                                 }
                                 else {
-                                    result += texts.find(subs_temp[0].getFunction())->second + ")" + toDigit(quantity);
+                                    result += texts.find(subs_temp[0].getFunction())->second + ")" 
+                                        + toDigit(quantity);
                                 }
                             }
                             else {
@@ -542,7 +543,8 @@ protected:
                     functions.push_back(Id::alkyne);
             }
             for (unsigned short j = 0; j < carbons[i].substituents.size(); j++)
-                if (find(functions.begin(), functions.end(), carbons[i].substituents[j].getFunction()) == functions.end() &&
+                if (find(functions.begin(), functions.end(), 
+                    carbons[i].substituents[j].getFunction()) == functions.end() &&
                     carbons[i].substituents[j].getFunction() != Id::hydrogen)
                     functions.push_back(carbons[i].substituents[j].getFunction());
         }
@@ -603,8 +605,8 @@ protected:
     }
 
     bool isHalogen(Id function) {
-        return (function == Id::bromine || function == Id::chlorine || function == Id::fluorine || function == Id::iodine)
-            ?  true : false;
+        return (function == Id::bromine || function == Id::chlorine || 
+                function == Id::fluorine || function == Id::iodine);
     }
 
     //UTILITIES:
@@ -1476,7 +1478,7 @@ int main() {
         {Id::carbamoyl, "-CONH2"},{Id::nitrile, "-=N"},{Id::cyanide, "-CN"},{Id::aldehyde, "-=OH"},
         {Id::ketone, "=O"},{Id::alcohol, "-OH"},{Id::amine, "-NH2"},{Id::nitro, "-NO2"},
         {Id::halogen, "-X"},{Id::radical, "-CH2-CH2..."},{Id::hydrogen, "-H"}};
-    //aleatorios();
+    aleatorios();
 
     while (true) {
         Aromatic aromatic;
