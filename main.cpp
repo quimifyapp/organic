@@ -155,12 +155,8 @@ public:
     }
 
     void deleteSubstituentWithBonds(Substituent sub) {
-        for (unsigned short i = 0; i < substituents.size(); i++)
-            if (substituents[i].equals(sub)) {
-                substituents.erase(substituents.begin() + i);
-                free_bonds += sub.getBonds();
-                break;
-            }
+        deleteSubstituent(sub);
+        free_bonds += sub.getBonds();
     }
 
     void bondCarbon() {
