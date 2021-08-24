@@ -1337,13 +1337,12 @@ public:
 
         //Prefijos
         string pre = (thereIs(Id::acid)) ? "ácido " : "";
-
         if (listPositionsOf(Id::hydrogen).size() == 4) {
             //Only two substituents: o,m,p-...bencene nomenclature
             vector<Substituent> subs = getAllSubstituents();
-            for (unsigned short i = 0; i < subs.size(); i++)
-                if (i && subs[i].getFunction() != Id::hydrogen) {
-                    //First one must have index 0 because the cycle has been ordered
+            for (unsigned short i = 1; i < subs.size(); i++)
+                //First one must have index 0 because the cycle has been ordered
+                if (subs[i].getFunction() != Id::hydrogen) {
                     pre = doublePrefixFor(subs[0], subs[i], i).toString();
                     break;
                 }
