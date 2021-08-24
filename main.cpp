@@ -749,7 +749,8 @@ private:
                                 for (unsigned short j = 0; j < carbons[k].getAllSubstituents().size(); j++)
                                     //Los sustituyentes de esos carbonos
                                     if (carbons[k].getAllSubstituents()[j].getFunction() != Id::hydrogen &&
-                                        !(k == carbons.size() - 2 && carbons[k].getAllSubstituents()[j].equals(sbts::methyl) &&
+                                        !(k == carbons.size() - 2 && 
+                                            carbons[k].getAllSubstituents()[j].equals(sbts::methyl) &&
                                             carbons[k].getAllSubstituents().size() == 2 &&
                                             carbons[k].thereIs(Id::hydrogen))) {
                                         //El sustituyente ni es hidrógeno, ni un solo metil en el penúltimo (iso)
