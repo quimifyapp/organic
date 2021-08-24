@@ -1297,7 +1297,7 @@ public:
         return locatorFor(positions, prefixName(function));
     }
 
-    Locator doublePrefixFor(Substituent sub1, Substituent sub2, unsigned short pos2) {
+    Locator doublePrefixFor(Substituent sub1, Substituent sub2, unsigned short distance) {
         Locator locator;
         string text1 = (sub1.getFunction() == Id::radical)
             ? radicalName(sub1)
@@ -1315,7 +1315,7 @@ public:
                 : text1 + text2;
         }
 
-        switch (pos2) {
+        switch (distance) {
         case(1):
             locator.positions = "o";
             break;
@@ -1337,19 +1337,18 @@ public:
 
         //Prefijos
         string pre = (thereIs(Id::acid)) ? "ácido " : "";
-        vector<Substituent> subs = getUniqueSubstituents();
 
-        //iguales en cualquier lado: bien
-        //distintos en o: bien
-        //distintos en m, p: mal
-
-        if (subs.size() == 3 && thereIs(Id::hydrogen)) { // o,m,p-clorometil
-            //pre = doublePrefixFor(subs[0], subs[1], listPositionsOf(subs[1])[0]).toString();
+        if (listPositionsOf(Id::hydrogen).size() == 4) {
+            //Only two substituents: o,m,p-...bencene nomenclature
+            vector<Substituent> subs = getAllSubstituents();
+            for (unsigned short i = 0; i < subs.size(); i++)
+                if (i && subs[i].getFunction() != Id::hydrogen) {
+                    //First one must have index 0 because the cycle has been ordered
+                    pre = doublePrefixFor(subs[0], subs[i], i).toString();
+                    break;
+                }
         }
-        else if (subs.size() == 2 && listPositionsOf(subs[0]).size() == 2) { // o,m,p-dimetil
-            pre = doublePrefixFor(subs[0], subs[0], listPositionsOf(subs[0])[1]).toString();
-        }
-        else if(subs.size() > 1) {
+        else {
             vector<Locator> prefixes;
             Locator locator;
             while (count < functions.size()) {
