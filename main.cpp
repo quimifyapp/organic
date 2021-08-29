@@ -8,14 +8,6 @@
 
 using namespace std;
 
-/*
-    -AROMÁTICOS
-    -¿CICLOS?  
-    -ETER, ESTER, AMINAS MULTIPLES    
-*/
-
-//----------------------------------------------------------------------------------------------------------------------------
-
 //Random:
 #include <ctime>
 #include <cstdlib> 
