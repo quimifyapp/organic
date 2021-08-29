@@ -17,14 +17,8 @@ enum class Id { //Substituent's kinds ordered by nomenclature priority
 };
 
 class Substituent {
-private:
-    Id function;
-    unsigned short bonds;
-    unsigned short carbons;
-    bool iso;
-
 public:
-    Substituent();
+    Substituent() {}
 
     Substituent(Id new_function, unsigned short new_bonds);
 

@@ -17,7 +17,7 @@ unsigned short getRandomNumber(unsigned short min, unsigned short max) {
     return min + static_cast<unsigned short>((max - min + 1) * (std::rand() * fraction));
 }
 
-void aleatorios() {
+void randomTest() {
     std::srand(static_cast<unsigned int>(std::time(nullptr)));
     while (true) {
         Basic carbons2;
@@ -82,7 +82,7 @@ int main() {
         {Id::carbamoyl, "-CONH2"},{Id::nitrile, "-=N"},{Id::cyanide, "-CN"},{Id::aldehyde, "-=OH"},
         {Id::ketone, "=O"},{Id::alcohol, "-OH"},{Id::amine, "-NH2"},{Id::nitro, "-NO2"},
         {Id::halogen, "-X"},{Id::radical, "-CH2-CH2..."},{Id::hydrogen, "-H"}};
-    aleatorios();
+    //randomTest();
 
     while (true) {
         Aromatic aromatic;
