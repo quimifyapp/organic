@@ -444,15 +444,13 @@ protected:
 
     class Locator {
     public:
-        string positions;
-        string multiplier;
-        string text;
-
-        /* EXAMPLES:
+        string positions, multiplier, text;
+        //EXAMPLES:
+        /*
         2,3-diol = {"2,3", "di", "ol"}
         tetrain = {"", "tetra", "in"}
-        fluoro = {"", "", "fluoro"} */
-
+        fluoro = {"", "", "fluoro"} 
+        */
         Locator() {}
 
         Locator(string new_positions, string new_multiplier, string new_text) {
