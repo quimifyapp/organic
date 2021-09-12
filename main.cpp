@@ -366,7 +366,8 @@ protected:
     }
 
     string multiplier(unsigned short n) {
-        if (n < 10) { // [1, 9]
+        // [1, 9]
+        if (n < 10) { 
             switch (n) {
             case 0:
                 return "";
@@ -379,18 +380,21 @@ protected:
             case 4:
                 return "but";
             }
-            return greekPrefix(n); // [5, 9]
+            // [5, 9]
+            return greekPrefix(n); 
         }
+        // [10, 19]
         unsigned short ten = n / 10;
         unsigned short unit = n - (ten * 10);
-        if (n < 20) { // [10, 19]
+        if (n < 20) { 
             if (n == 11)
                 return "undec";
             if (n < 15)
                 return greekPrefix(unit) + "dec";
             return greekPrefix(unit) + "adec";
         }
-        if (n < 30) { // [20, 29]
+        // [20, 29]
+        if (n < 30) { 
             switch (n) {
             case 20:
                 return "icos";
@@ -400,8 +404,9 @@ protected:
             if (n < 25) return greekPrefix(unit) + "cos";
             return greekPrefix(unit) + "acos";
         }
+        // [30, 99]
         string s;
-        if (n < 100) { // [30, 99]
+        if (n < 100) { 
             s = greekPrefix(unit);
             if (unit > 4)
                 s += "a";
@@ -447,9 +452,9 @@ protected:
         string positions, multiplier, text;
         //EXAMPLES:
         /*
-        2,3-diol = {"2,3", "di", "ol"}
-        tetrain = {"", "tetra", "in"}
-        fluoro = {"", "", "fluoro"} 
+        "2,3-diol" = {"2,3", "di", "ol"}
+        "tetrain" = {"", "tetra", "in"}
+        "fluoro" = {"", "", "fluoro"} 
         */
         Locator() {}
 
@@ -1423,8 +1428,8 @@ public:
 //  #########   ####   ####      ####      ##########   ####    ####   ####     #####     #####   #######     ##########  
 
 #define RANDOM false
-#define AROMATIC true
-#define BASIC false
+#define AROMATIC false
+#define BASIC true
 
 //Random numbers generation:
 #include <ctime>
