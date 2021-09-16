@@ -1193,8 +1193,12 @@ protected:
         sort(functions.begin(), functions.end());
     }
 
+    void reorder() {
+        /////////////////////////////////////////////////////////////////////////////////////
+    }
+
     void correct() {
-        ///////////////////////////////////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////////////////////////////////
     }
 
 public:
@@ -1261,6 +1265,36 @@ private:
         sort(functions.begin(), functions.end());
     }
 
+    vector<Id> getAllFunctions() {
+        vector<Id> result;
+        for (unsigned short i = 0; i < carbons.size(); i++) 
+            for (unsigned short j = 0; j < carbons[i].getAllSubstituents().size(); j++)
+                if (carbons[i].getAllSubstituents()[j].getFunction() != Id::hydrogen)
+                    result.push_back(carbons[i].getAllSubstituents()[j].getFunction());
+        return result;
+    }
+
+    void reorder() {
+        //Diferenciar orden en dos dimensiones (reverse o el complejo)
+        //Con dos es inutil
+        if (functions.size() == 2) {
+            vector<Id> functions = getAllFunctions();
+            vector<unsigned short> positions = listAllPositionsOf(functions[0]);
+            if (positions.size() != 2)
+                positions.push_back(listPositionsOf(functions[1])[0]);
+            unsigned short distance = positions[1] - positions[0];
+            if (distance > carbons.size() / 2) {
+                //Dar la vuelta, pero con 2 es inutil por orto meta para
+            }
+            else if (distance == 0 && positions[0] > carbons.size())
+                reverse(carbons.begin(), carbons.end());
+        }
+    }
+
+    void correct() {
+        //////////////////////////////////////////////////////////////////////
+    }
+
 public:
     Aromatic() {
         nextCarbon();
@@ -1292,7 +1326,7 @@ public:
     }
 
     bool isRedundant(Id function, vector<unsigned short> positions) {
-        return false; /////////////////////////////////////////////////////////////////////////////////////////
+        return false; /////////////////////////////////////////////////////////
     }
 
     string prefixName(Id function) {
@@ -1344,6 +1378,7 @@ public:
 
     string getName() {
         listUniqueFunctions();
+        reorder();
 
         unsigned short count = 0;
 
@@ -1427,13 +1462,13 @@ public:
 //  #########   ####  #####      ####      ##########   ####  #####    ####      ###### ######  ###########   ##########   
 //  #########   ####   ####      ####      ##########   ####    ####   ####     #####     #####   #######     ##########  
 
-#define RANDOM false
-#define AROMATIC false
-#define BASIC true
-
 //Random numbers generation:
 #include <ctime>
 #include <cstdlib> 
+
+#define RANDOM false
+#define AROMATIC 1
+#define BASIC 1
 
 unsigned short getRandomNumber(unsigned short min, unsigned short max) {
     static constexpr double fraction{ 1.0 / (RAND_MAX + 1.0) };
