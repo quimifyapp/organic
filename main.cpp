@@ -616,6 +616,17 @@ protected:
         return result;
     }
 
+    vector<Substituent> getAllSubstituentsNoHydrogen() {
+        vector<Substituent> result, subs;
+        for (unsigned short i = 0; i < carbons.size(); i++) {
+            subs = carbons[i].getAllSubstituents();
+            for (unsigned short j = 0; j < subs.size(); j++)
+                if (subs[j].getFunction() != Id::hydrogen)
+                    result.push_back(subs[j]);
+        }
+        return result;
+    }
+
     bool isHalogen(Id function) {
         return (function == Id::bromine || function == Id::chlorine ||
             function == Id::fluorine || function == Id::iodine);
@@ -947,8 +958,8 @@ private:
         if (carbons.size() == 1)
             return true;
         else if (carbons.size() == 2) {
-            if (getAllSubstituents().size() == 1)
-                //Solo es uno
+            if (getAllSubstituentsNoHydrogen().size() == 1)
+                //Solo es uno distinto del hidrógeno
                 return true;
             if (function == Id::alkene || function == Id::alkyne)
                 //Es alqueno o alquino
@@ -1279,7 +1290,7 @@ private:
         //Con dos es inutil
         if (functions.size() == 2) {
             vector<Id> functions = getAllFunctions();
-            vector<unsigned short> positions = listAllPositionsOf(functions[0]);
+            vector<unsigned short> positions = listPositionsOf(functions[0]);
             if (positions.size() != 2)
                 positions.push_back(listPositionsOf(functions[1])[0]);
             unsigned short distance = positions[1] - positions[0];
@@ -1466,8 +1477,8 @@ public:
 #include <ctime>
 #include <cstdlib> 
 
-#define RANDOM false
-#define AROMATIC 1
+#define RANDOM 0
+#define AROMATIC 0
 #define BASIC 1
 
 unsigned short getRandomNumber(unsigned short min, unsigned short max) {
