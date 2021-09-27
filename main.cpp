@@ -1225,6 +1225,26 @@ public:
         }
         else carbons.push_back(Carbon(0));
     }
+
+    string getFormula() {
+        string result = "~";
+        string pre;
+        //En forma de prisma regular?
+        for (unsigned short i = 0; i < carbons.size(); i++) {
+            if (i)
+                result += i % 2 ? "=" : "-";
+            if (carbons[i].getAllSubstituents().size()) {
+                pre = carbons[i].toString();
+                if (pre[1] == 'H' || pre[1] == '(')
+                    result += pre;
+                else
+                    result += "C(" + pre.substr(1, pre.size() - 1) + ")";
+            }
+            else
+                result += "C*";
+        }
+        return result + "~";
+    }
     /*
     vector<Id> availableSubstituents() {
         vector<Id> result;
@@ -1440,25 +1460,6 @@ public:
         //COOH benzoico o 
 
         return pre + "benceno";
-    }
-
-    string getFormula() {
-        string result = "~";
-        string pre;
-        for (unsigned short i = 0; i < carbons.size(); i++) {
-            if (i)
-                result += i % 2 ? "=" : "-";
-            if (carbons[i].getAllSubstituents().size()) {
-                pre = carbons[i].toString();
-                if (pre[1] == 'H' || pre[1] == '(')
-                    result += pre;
-                else
-                    result += "C(" + pre.substr(1, pre.size() - 1) + ")";
-            }
-            else
-                result += "C*";
-        }
-        return result + "~";
     }
 };
                                                                                                         
