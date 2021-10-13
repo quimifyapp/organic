@@ -93,7 +93,7 @@ namespace sbts
 
     const Substituent methyl(1, false); // Handy methyl
 
-    // Map between substituents and their kinds
+    // Map between substituents and their kinds:
     const map<Id, Substituent> list = 
     {
         {Id::acid, acid},
