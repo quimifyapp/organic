@@ -342,7 +342,6 @@ public:
 								}
 							}
 							else
-
 							{
 								if (!subs_temp[i].getIso())
 								{
