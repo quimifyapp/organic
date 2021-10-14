@@ -1693,7 +1693,7 @@ public:
 		return locatorFor(positions, prefixName(function));
 	}
 
-	Locator doublePrefixFor(Substituent sub1, Substituent sub2,
+	Locator doublePrefixFor(Substituent sub1, Substituent sub2, 
 		unsigned short distance)
 	{
 		Locator locator;
