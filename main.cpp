@@ -150,9 +150,9 @@ private:
 	}
 
 public:
-	Carbon(unsigned short used_bonds)
+	Carbon(unsigned short previous_bonds)
 	{
-		free_bonds -= used_bonds;
+		free_bonds -= previous_bonds;
 	}
 
 	// INTERFACE:
@@ -421,26 +421,16 @@ protected:
 	{
 		switch (n)
 		{
-		case 5:
-			return "pent";
-		case 6:
-			return "hex";
-		case 7:
-			return "hept";
-		case 8:
-			return "oct";
-		case 9:
-			return "non";
-		case 0:
-			return "";
-		case 1:
-			return "hen";
-		case 2:
-			return "do";
-		case 3:
-			return "tri";
-		case 4:
-			return "tetra";
+		case 5: return "pent";
+		case 6: return "hex";
+		case 7: return "hept";
+		case 8: return "oct";
+		case 9: return "non";
+		case 0: return "";
+		case 1: return "hen";
+		case 2: return "do";
+		case 3: return "tri";
+		case 4: return "tetra";
 		}
 	}
 
@@ -451,16 +441,11 @@ protected:
 		{
 			switch (n)
 			{
-			case 0:
-				return "";
-			case 1:
-				return "met";
-			case 2:
-				return "et";
-			case 3:
-				return "prop";
-			case 4:
-				return "but";
+			case 0: return "";
+			case 1: return "met";
+			case 2: return "et";
+			case 3: return "prop";
+			case 4: return "but";
 			}
 			// [5, 9]
 			return greekPrefix(n);
@@ -470,22 +455,15 @@ protected:
 		unsigned short unit = n - (ten * 10);
 		if (n < 20)
 		{
-			if (n == 11)
-				return "undec";
-			if (n < 15)
-				return greekPrefix(unit) + "dec";
+			if (n == 11) return "undec";
+			if (n < 15) return greekPrefix(unit) + "dec";
 			return greekPrefix(unit) + "adec";
 		}
 		// [20, 29]
 		if (n < 30)
 		{
-			switch (n)
-			{
-			case 20:
-				return "icos";
-			case 21:
-				return "heneicos";
-			}
+			if (n == 20) return "icos";
+			if (n == 21) return "heneicos";
 			if (n < 25) return greekPrefix(unit) + "cos";
 			return greekPrefix(unit) + "acos";
 		}
@@ -499,7 +477,8 @@ protected:
 			s += greekPrefix(ten);
 			if (ten == 4)
 				s += "cont";
-			else s += "acont";
+			else 
+				s += "acont";
 			return s;
 		}
 		// [100, 999]
@@ -510,16 +489,11 @@ protected:
 			return "hect";
 		switch (hundred)
 		{
-		case 1:
-			return s + "ahect";
-		case 2:
-			return s + "adict";
-		case 3:
-			return s + "atrict";
-		case 4:
-			return s + "atetract";
-		default:
-			return s + "a" + greekPrefix(hundred) + "act";
+		case 1: return s + "ahect";
+		case 2: return s + "adict";
+		case 3: return s + "atrict";
+		case 4: return s + "atetract";
+		default: return s + "a" + greekPrefix(hundred) + "act";
 		}
 	}
 
@@ -531,8 +505,7 @@ protected:
 		case 2: return "di";
 		case 3: return "tri";
 		case 4: return "tetra";
-		default:
-			return multiplier(n) + "a";
+		default: return multiplier(n) + "a";
 		}
 	}
 
@@ -622,10 +595,8 @@ protected:
 	{
 		switch (function)
 		{
-		case Id::alkene:
-			return listBonds(2);
-		case Id::alkyne:
-			return listBonds(3);
+		case Id::alkene: return listBonds(2);
+		case Id::alkyne: return listBonds(3);
 		default:
 			vector<unsigned short> positions;
 			for (unsigned short i = 0; i < carbons.size(); i++)
