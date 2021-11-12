@@ -38,11 +38,11 @@ private:
 
 	-> propyl: {function = Id::radical, bonds = 1, carbons = 3, iso = false}
 
-				 CH3
-			   	/
+                 CH3
+                /
 	-CH2-CH2-CH2
 				\
-				 CH3
+                 CH3
 
 	-> isopentyl: {function = Id::radical, bonds = 1, carbons = 5, iso = true}
 	*/
@@ -1401,8 +1401,8 @@ class Cyclic : protected Organic
 	CH2        CH2 ---> ~CH(A)-CH(B)-CH2-CH2-CH2-CH2~ | p-[A][B]benceno
 	  \        /
 	   CH2 - CH
-			   \
-				A
+               \
+                A
 	*/
 protected:
 	void listUniqueFunctions()
