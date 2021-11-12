@@ -41,7 +41,7 @@ private:
                  CH3
                 /
 	-CH2-CH2-CH2
-				\
+                \
                  CH3
 
 	-> isopentyl: {function = Id::radical, bonds = 1, carbons = 5, iso = true}
