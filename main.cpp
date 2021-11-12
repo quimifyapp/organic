@@ -40,7 +40,7 @@ private:
 
                  CH3
                 /
-	-CH2-CH2-CH2
+    -CH2-CH2-CH2
                 \
                  CH3
 
@@ -1394,13 +1394,13 @@ class Cyclic : protected Organic
 {
 	// EXAMPLE:
 	/*
-	 B
-	  \
-	   CH - CH2
-	  /        \
-	CH2        CH2 ---> ~CH(A)-CH(B)-CH2-CH2-CH2-CH2~ | p-[A][B]benceno
-	  \        /
-	   CH2 - CH
+     B
+      \
+       CH - CH2
+      /        \
+    CH2        CH2 ---> ~CH(A)-CH(B)-CH2-CH2-CH2-CH2~ | p-[A][B]benceno
+      \        /
+       CH2 - CH
                \
                 A
 	*/
