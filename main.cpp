@@ -38,11 +38,11 @@ private:
 
 	-> propyl: {function = Id::radical, bonds = 1, carbons = 3, iso = false}
 
-				  CH3
-				 /
+				 CH3
+			   	/
 	-CH2-CH2-CH2
-				 \
-				  CH3
+				\
+				 CH3
 
 	-> isopentyl: {function = Id::radical, bonds = 1, carbons = 5, iso = true}
 	*/
@@ -1763,7 +1763,7 @@ public:
 //
 
 #define RANDOM 0
-#define AROMATIC 0
+#define AROMATIC 1
 #define BASIC 1
 
 // Random numbers generation:
