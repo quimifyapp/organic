@@ -1,12 +1,11 @@
-﻿#include <string>
+﻿#include <algorithm>
+#include <string>
 #include <vector>
 #include <map>
-#include <algorithm>
 
 using namespace std;
 
-enum class Id
-{
+enum class Id {
 	// Substituent's kinds, ordered by nomenclature priority:
 	acid, carboxyl,
 	amide, carbamoyl,
@@ -22,52 +21,42 @@ enum class Id
 	hydrogen
 };
 
-class Substituent
-{
+class Substituent {
 private:
 	Id function; // The substituent's kind
 	unsigned short bonds; // Amount of e- it shares with the carbon
 	// Only for radicals:
-	unsigned short carbons = 0;
-	bool iso = false;
+	unsigned short carbons;
+	bool iso;
 	// EXAMPLES:
 	/*
-	=O -> ketone: {function = Id:ketone, bonds = 2}
+	R=O -> "ketone" {Id:ketone, bonds = 2}
 
-	-CH2-CH2-CH3
+	R-CH2-CH2-CH3 -> "propyl" {Id::radical, bon. = 1, carbons = 3, iso = false}
 
-	-> propyl: {function = Id::radical, bonds = 1, carbons = 3, iso = false}
-
-                 CH3
-                /
-    -CH2-CH2-CH2
-                \
-                 CH3
-
-	-> isopentyl: {function = Id::radical, bonds = 1, carbons = 5, iso = true}
+				 CH3
+				/
+	R-CH2-CH2-CH2    -> "isopentyl" {Id::radical, b. = 1, car. = 5, iso = true}
+				\
+				 CH3
 	*/
 public:
 	Substituent() {}
 
-	Substituent(Id new_function, unsigned short new_bonds)
+	Substituent(Id function, unsigned short bonds) :
+		function(function), bonds(bonds), carbons(0), iso(false)
 	{
-		function = new_function;
-		bonds = new_bonds;
 	}
 
-	Substituent(unsigned short new_carbons, bool new_iso)
+	Substituent(unsigned short carbons, bool iso) :
+		function(Id::radical), bonds(1), carbons(carbons), iso(iso)
 	{
-		function = Id::radical;
-		bonds = 1;
-		carbons = new_carbons;
-		iso = new_iso;
 	}
 
 	bool equals(Substituent s)
 	{
-		return function == s.function &&
-			bonds == s.bonds &&
-			carbons == s.carbons;
+		return function == s.function && bonds == s.bonds &&
+			carbons == s.carbons && iso == s.iso;
 	}
 
 	Id getFunction() const { return function; }
@@ -76,8 +65,7 @@ public:
 	bool getIso() const { return iso; }
 };
 
-namespace sbts
-{
+namespace sbts {
 	// Constant substituents:
 	const Substituent acid(Id::acid, 3);
 	const Substituent carboxyl(Id::carboxyl, 1);
@@ -99,7 +87,7 @@ namespace sbts
 	const Substituent methyl(1, false); // Handy methyl
 
 	// Map between substituents and their kinds:
-	const map<Id, Substituent> list {
+	const map<Id, Substituent> list{
 		{Id::acid, acid},
 		{Id::carboxyl, carboxyl},
 		{Id::amide, amide},
@@ -119,17 +107,10 @@ namespace sbts
 	};
 }
 
-/*
-	-AROMÁTICOS
-	-¿CICLOS?
-	-ETER, ESTER, AMINAS MULTIPLES
-*/
-
-class Carbon
-{
+class Carbon {
 private:
 	vector<Substituent> substituents;
-	unsigned short free_bonds = 4;
+	unsigned short free_bonds;
 
 	// WRITERS:
 	string replaceAll(string str, const string& from, const string& to)
@@ -150,9 +131,9 @@ private:
 	}
 
 public:
-	Carbon(unsigned short previous_bonds)
+	Carbon(unsigned short previous_bonds) :
+		free_bonds(4 - previous_bonds)
 	{
-		free_bonds -= previous_bonds;
 	}
 
 	// INTERFACE:
@@ -410,8 +391,7 @@ public:
 	}
 };
 
-class Organic
-{
+class Organic {
 protected:
 	vector<Carbon> carbons;
 	vector<Id> functions;
@@ -421,17 +401,18 @@ protected:
 	{
 		switch (n)
 		{
+		case 1: return "hen";
+		case 2: return "do";
+		case 3: return "tri";
+		case 4: return "tetra";
 		case 5: return "pent";
 		case 6: return "hex";
 		case 7: return "hept";
 		case 8: return "oct";
 		case 9: return "non";
-		case 0: return "";
-		case 1: return "hen";
-		case 2: return "do";
-		case 3: return "tri";
-		case 4: return "tetra";
 		}
+
+		return ""; // Case 0
 	}
 
 	string multiplier(unsigned short n)
@@ -477,7 +458,7 @@ protected:
 			s += greekPrefix(ten);
 			if (ten == 4)
 				s += "cont";
-			else 
+			else
 				s += "acont";
 			return s;
 		}
@@ -505,8 +486,9 @@ protected:
 		case 2: return "di";
 		case 3: return "tri";
 		case 4: return "tetra";
-		default: return multiplier(n) + "a";
 		}
+
+		return multiplier(n) + "a";
 	}
 
 	class Locator
@@ -521,11 +503,9 @@ protected:
 		*/
 		Locator() {}
 
-		Locator(string new_positions, string new_multiplier, string new_text)
+		Locator(string positions, string multiplier, string text) :
+			positions(positions), multiplier(multiplier), text(text)
 		{
-			positions = new_positions;
-			multiplier = new_multiplier;
-			text = new_text;
 		}
 
 		string toString()
@@ -740,7 +720,7 @@ protected:
 
 	bool isVowel(char ch)
 	{
-		return (ch == 'e') || (ch == 'i') || (ch == 'a') || 
+		return (ch == 'e') || (ch == 'i') || (ch == 'a') ||
 			(ch == 'o') || (ch == 'u');
 	}
 
@@ -806,8 +786,13 @@ protected:
 	}
 };
 
-class Basic : private Organic
-{
+/*
+	-AROMÁTICOS
+	-¿CICLOS?
+	-ETER, ESTER, AMINAS MULTIPLES
+*/
+
+class Basic : private Organic {
 private:
 	// PROCESSORS:
 	Basic(vector<Carbon> v)
@@ -866,9 +851,9 @@ private:
 								// Los sustituyentes de esos carbonos
 								if (carbons[k].getAllSubs()[j].getFunction() != Id::hydrogen &&
 									!(k == carbons.size() - 2 &&
-									carbons[k].getAllSubs()[j].equals(methyl) &&
-									carbons[k].getAllSubs().size() == 2 &&
-									carbons[k].thereIs(Id::hydrogen)))
+										carbons[k].getAllSubs()[j].equals(methyl) &&
+										carbons[k].getAllSubs().size() == 2 &&
+										carbons[k].thereIs(Id::hydrogen)))
 								{
 									// El sustituyente ni es hidrógeno, ni
 									// metil en el primero (iso)
@@ -897,9 +882,9 @@ private:
 									// Los sustituyentes de esos carbonos
 									if (carbons[k].getAllSubs()[j].getFunction() != Id::hydrogen &&
 										!(k == carbons.size() - 2 &&
-										carbons[k].getAllSubs()[j].equals(methyl) &&
-										carbons[k].getAllSubs().size() == 2 &&
-										carbons[k].thereIs(Id::hydrogen)))
+											carbons[k].getAllSubs()[j].equals(methyl) &&
+											carbons[k].getAllSubs().size() == 2 &&
+											carbons[k].thereIs(Id::hydrogen)))
 									{
 										// El sustituyente ni es hidrógeno, ni
 										// un solo metil en el penúltimo (iso)
@@ -926,19 +911,17 @@ private:
 						CH3.addSubstituent(hydrogen);
 						CH3.addSubstituent(hydrogen);
 						// Eslabón CH3, constante útil
-						for (unsigned short i = 0;
-							i < largest_radical.getCarbons() - 1; i++)
+						for (unsigned short i = 0; i < largest_radical.getCarbons() - 1; i++)
 							apendix.push_back(CH2);
 						if (largest_radical.getIso())
 						{
 							unsigned short index = apendix.size() - 2;
 							apendix[index].deleteSubstituentWithBonds(hydrogen);
 							apendix[index].addSubstituent(methyl);
-							apendix[--index].deleteBond();
+							apendix[++index].deleteBond();
 							apendix[index].addSubstituent(hydrogen);
 						}
-						else
-							apendix.push_back(CH3);
+						else apendix.push_back(CH3);
 						carbons[i].deleteSubstituent(largest_radical);
 						Substituent new_radical;
 						vector<Carbon>::iterator it;
@@ -947,8 +930,7 @@ private:
 						{
 							iso = carbons.size() > 2 &&
 								carbons[carbons.size() - 2].thereIs(methyl);
-							new_radical =
-								Substituent(carbons.size() - 1 - i + iso, iso);
+							new_radical = Substituent(carbons.size() - 1 - i + iso, iso);
 							// La cadena convertida en sustituyente
 							if (new_radical.getCarbons())
 							{
@@ -994,15 +976,15 @@ private:
 				carbons[0].addSubstituent(list.find(Id::acid)->second);
 				listUniqueFunctions();
 			}
-			if (carbons[carbons.size() - 1].thereIs(Id::ketone) && 
+			if (carbons[carbons.size() - 1].thereIs(Id::ketone) &&
 				carbons[carbons.size() - 1].thereIs(Id::alcohol))
 			{
-				carbons[carbons.size() - 1]
-					.deleteSubstituentWithBonds(list.find(Id::ketone)->second);
-				carbons[carbons.size() - 1]
-					.deleteSubstituentWithBonds(list.find(Id::alcohol)->second);
-				carbons[carbons.size() - 1]
-					.addSubstituent(list.find(Id::acid)->second);
+				carbons[carbons.size() - 1].deleteSubstituentWithBonds(
+					list.find(Id::ketone)->second);
+				carbons[carbons.size() - 1].deleteSubstituentWithBonds(
+					list.find(Id::alcohol)->second);
+				carbons[carbons.size() - 1].addSubstituent(
+					list.find(Id::acid)->second);
 				listUniqueFunctions();
 			}
 			// Amida no principal -> carbamoil del anterior
@@ -1111,7 +1093,7 @@ private:
 				for (unsigned short j = 0; j < subs.size(); j++)
 					if (subs[j].getIso())
 						normal_radicals.push_back("iso" + multiplier(subs[j].getCarbons()));
-					else 
+					else
 						normal_radicals.push_back(multiplier(subs[j].getCarbons()));
 
 				vector<string> reversed_radicals;
@@ -1119,7 +1101,7 @@ private:
 				for (unsigned short j = 0; j < subs.size(); j++)
 					if (subs[j].getIso())
 						reversed_radicals.push_back("iso" + multiplier(subs[j].getCarbons()));
-					else 
+					else
 						reversed_radicals.push_back(multiplier(subs[j].getCarbons()));
 
 				for (unsigned short j = 0; j < normal_radicals.size(); j++)
@@ -1175,7 +1157,7 @@ private:
 			if (function == Id::ketone && functions[0] >= Id::aldehyde)
 				// Propanona
 				return true;
-			if (functions.size() == 1 && 
+			if (functions.size() == 1 &&
 				(function == Id::alkene || function == Id::alkyne))
 				// Es propeno, propadieno o propino
 				return true;
@@ -1186,7 +1168,7 @@ private:
 	// WRITERS:
 	Locator prefixFor(Id function)
 	{
-		const static map<Id, string> prefixes {
+		const static map<Id, string> prefixes{
 			{Id::carbamoyl, "carbamoil"},{Id::cyanide, "ciano"},
 			{Id::ketone, "oxo"},{Id::alcohol, "hidroxi"},
 			{Id::amine, "amino"},{Id::nitro, "nitro"},
@@ -1206,7 +1188,7 @@ private:
 
 	string sufixFor(Id function)
 	{
-		const static map<Id, string> sufixes {
+		const static map<Id, string> sufixes{
 			{Id::acid, "oico"},{Id::amide, "amida"},{Id::nitrile, "nitrilo"},
 			{Id::aldehyde, "al"},{Id::ketone, "ona"},{Id::alcohol, "ol"},
 			{Id::amine, "amina"}
@@ -1250,8 +1232,8 @@ public:
 		Locator locator;
 		while (count < functions.size())
 		{
-			if (functions[count] != Id::alkene && 
-				functions[count] != Id::alkyne && 
+			if (functions[count] != Id::alkene &&
+				functions[count] != Id::alkyne &&
 				functions[count] != Id::radical)
 			{
 				locator = prefixFor(functions[count]);
@@ -1330,9 +1312,9 @@ public:
 			{
 				if (carbons[i - 1].getFreeBonds())
 				{
-					if (carbons[i - 1].getFreeBonds() == 1) 
+					if (carbons[i - 1].getFreeBonds() == 1)
 						s += "=";
-					else 
+					else
 						s += "=-"; // Actually "≡"
 				}
 				else s += "-";
@@ -1390,19 +1372,21 @@ public:
 	}
 };
 
-class Cyclic : protected Organic
-{
+class Cyclic : protected Organic {
 	// EXAMPLE:
 	/*
-     B
-      \
-       CH - CH2
-      /        \
-    CH2        CH2 ---> ~CH(A)-CH(B)-CH2-CH2-CH2-CH2~ | p-[A][B]benceno
-      \        /
-       CH2 - CH
-               \
-                A
+
+	 B
+	  \
+	   CH -CH2
+	  /       \
+	CH2   O    CH2
+	  \       /
+	   CH2- CH
+			  \
+			   A
+
+	---> ~CH(A)-CH(B)-CH2-CH2-CH2-CH2~ | p-[A][B]benceno
 	*/
 protected:
 	void listUniqueFunctions()
@@ -1500,8 +1484,7 @@ public:
 	*/
 };
 
-class Aromatic : private Cyclic
-{
+class Aromatic : private Cyclic {
 private:
 	bool used_principal_sub = false;
 
@@ -1560,12 +1543,13 @@ private:
 public:
 	Aromatic()
 	{
-		nextCarbon();
-		nextCarbon();
-		nextCarbon();
-		nextCarbon();
-		nextCarbon();
-		carbons.back().bondCarbon();
+		// Aromatic < Cyclic < Organic already starts with a Carbon
+		nextCarbon(); // 2nd
+		nextCarbon(); // 3th
+		nextCarbon(); // 4th
+		nextCarbon(); // 5th
+		nextCarbon(); // 6th
+		carbons.back().bondCarbon(); // Bonded to the first one
 	}
 
 	void addSubstituent(unsigned short index, Substituent sub)
@@ -1626,8 +1610,7 @@ public:
 		return locatorFor(positions, prefixName(function));
 	}
 
-	Locator doublePrefixFor(Substituent sub1, Substituent sub2, 
-		unsigned short distance)
+	Locator prefixFor(Substituent sub1, Substituent sub2, unsigned short distance)
 	{
 		Locator locator;
 		string text1 = (sub1.getFunction() == Id::radical)
@@ -1682,7 +1665,7 @@ public:
 				// has been ordered
 				if (subs[i].getFunction() != Id::hydrogen)
 				{
-					pre = doublePrefixFor(subs[0], subs[i], i).toString();
+					pre = prefixFor(subs[0], subs[i], i).toString();
 					break;
 				}
 		}
@@ -1755,15 +1738,15 @@ public:
 };
 
 //  _____  _   _  _______  ______  _____   ______          _____  ______
-// |_   _ | \ | ||__   __||  ____||  __ \ |  ____| /\     / ____||  ____|  _
+// |_   _|| \ | ||__   __||  ____||  __ \ |  ____| /\    /  ____||  ____|  _
 //   | |  |  \| |   | |   | |__   | |__) || |__   /  \   | |     | |__    |_|
 //   | |  |     |   | |   |  __|  |  _  / |  __| / /\ \  | |     |  __|    _
 //  _| |_ | |\  |   | |   | |____ | | \ \ | |   / ____ \ | |____ | |____  |_|
-// |_____ |_| \_|   |_|   |______||_|  \_\|_|  /_/    \_\ \_____||______|
+// |_____||_| \_|   |_|   |______||_|  \_\|_|  /_/    \_\\ _____||______|
 //
 
-#define RANDOM 0
-#define AROMATIC 1
+#define RANDOM 1
+#define AROMATIC 0
 #define BASIC 1
 
 // Random numbers generation:
@@ -1785,11 +1768,12 @@ void randomTest()
 	while (true)
 	{
 		Basic carbons2;
-		unsigned short amount = getRandomNumber(0, 8);
+		unsigned short amount = getRandomNumber(0, 1);
 		for (unsigned short i = 0; i < amount; i++)
 		{
 			carbons2.addSubstituent(sbts::hydrogen);
-			for (vector<Id> available = carbons2.availableSubstituents(); available.size() && carbons2.getFreeBonds() > 1; available = carbons2.availableSubstituents())
+			for (vector<Id> available = carbons2.availableSubstituents(); available.size() &&
+				carbons2.getFreeBonds() > 1; available = carbons2.availableSubstituents())
 			{
 				Substituent s;
 				unsigned short number;
@@ -1797,14 +1781,14 @@ void randomTest()
 				if (available[number] == Id::radical && 1 < carbons2.getFreeBonds())
 				{
 					if (getRandomNumber(0, 1))
-						carbons2.addSubstituent(Substituent(getRandomNumber(1, 8), false));
-					else if (carbons2.getFreeBonds() > 2 && getRandomNumber(0, 8))
+						carbons2.addSubstituent(Substituent(getRandomNumber(1, 1), false));
+					else if (carbons2.getFreeBonds() > 2 && getRandomNumber(0, 1))
 					{
 						carbons2.addSubstituent(sbts::methyl);
 						carbons2.addSubstituent(sbts::methyl);
 					}
 					else
-						carbons2.addSubstituent(Substituent(getRandomNumber(3, 8), true));
+						carbons2.addSubstituent(Substituent(getRandomNumber(3, 1), true));
 				}
 				else if (available[number] == Id::halogen && 1 < carbons2.getFreeBonds())
 				{
@@ -1825,7 +1809,8 @@ void randomTest()
 					}
 					carbons2.addSubstituent(s);
 				}
-				else if (sbts::list.find(available[number])->second.getBonds() < carbons2.getFreeBonds())
+				else if (sbts::list.find(available[number])->second.getBonds() <
+					carbons2.getFreeBonds())
 				{
 					s = sbts::list.find(available[number])->second;
 					carbons2.addSubstituent(s);
@@ -1835,7 +1820,8 @@ void randomTest()
 			}
 			carbons2.nextCarbon();
 		}
-		for (vector<Id> available = carbons2.availableSubstituents(); available.size(); available = carbons2.availableSubstituents())
+		for (vector<Id> available = carbons2.availableSubstituents(); available.size();
+			available = carbons2.availableSubstituents())
 		{
 			unsigned short number;
 			do
@@ -1861,6 +1847,8 @@ int main()
 
 	if (RANDOM) randomTest();
 
+	const string SEPARADOR = " ------------------------";
+
 	while (AROMATIC)
 	{
 		Aromatic aromatic;
@@ -1870,13 +1858,14 @@ int main()
 		{
 			available = aromatic.availableSubstituents();
 			cout << " ---> " << aromatic.getFormula() << endl;
-			if (!first)
-				cout << " -------------------------" << endl << " 0) " << "-C-" << endl;
+
+			if (!first) cout << SEPARADOR << endl << " 0) " << "-C-" << endl;
 			else first = false;
 
-			cout << " -------------------------" << endl;
+			cout << SEPARADOR << endl;
 			for (unsigned short i = 0; i < available.size(); i++)
-				cout << ' ' << i + 1 << ") " << texts.find(available[i])->second << endl << " -------------------------" << endl;
+				cout << ' ' << i + 1 << ") " << texts.find(available[i])->second <<
+				endl << SEPARADOR << endl;
 
 			cout << " Seleccionar: ";
 			unsigned short input;
@@ -1887,19 +1876,19 @@ int main()
 				{
 					if (available[i] == Id::radical)
 					{
-						cout << " -------------------------" << endl << " 1) -CH2-...-CH3" << endl <<
-							" -------------------------" << endl << "                  CH3" << endl <<
-							"                 /" << endl << " 2) -CH2-...-CH2" << endl <<
-							"                 \\" << endl << "                  CH3" <<
-							endl << " -------------------------" << endl << " Seleccionar: ";
+						cout << SEPARADOR << endl << " 1) -CH2-...-CH3" <<
+							endl << SEPARADOR << endl << "                  CH3" <<
+							endl << "                 /" << endl << " 2) -CH2-...-CH2" <<
+							endl << "                 \\" << endl << "                  CH3" <<
+							endl << SEPARADOR << endl << " Seleccionar: ";
 						cin >> input;
 						unsigned short carbons;
 						if (input == 1)
 						{
 							do
 							{
-								cout << endl << " -CH2-...-CH3" << endl <<
-									"  {---------}" << endl << endl << " Carbonos del radical: ";
+								cout << endl << " -CH2-...-CH3" << endl << "  {---------}" <<
+									endl << endl << " Carbonos del radical: ";
 								cin >> carbons;
 							} while (!carbons || carbons > 6);
 							aromatic.addSubstituent(c, Substituent(carbons, false));
@@ -1924,14 +1913,15 @@ int main()
 					{
 						do
 						{
-							cout << " -------------------------" << endl;
-							cout << " 1) " << "-Br" << endl << " -------------------------" << endl;
-							cout << " 2) " << "-Cl" << endl << " -------------------------" << endl;
-							cout << " 3) " << "-F" << endl << " -------------------------" << endl;
-							cout << " 4) " << "-I" << endl << " -------------------------" << endl;
+							cout << SEPARADOR << endl;
+							cout << " 1) " << "-Br" << endl << SEPARADOR << endl;
+							cout << " 2) " << "-Cl" << endl << SEPARADOR << endl;
+							cout << " 3) " << "-F" << endl << SEPARADOR << endl;
+							cout << " 4) " << "-I" << endl << SEPARADOR << endl;
 							cout << " Seleccionar: ";
 							cin >> input;
 						} while (input > 4);
+
 						switch (input)
 						{
 						case 1:
@@ -1998,16 +1988,18 @@ int main()
 		*/
 		// Cadenas con bucle
 		bool first = true;
-		for (vector<Id> available = basic_chain.availableSubstituents(); available.size(); available = basic_chain.availableSubstituents())
+		for (vector<Id> available = basic_chain.availableSubstituents(); available.size();
+			available = basic_chain.availableSubstituents())
 		{
 			cout << " ---> " << basic_chain.getFormula() << endl;
 			if (!first)
-				cout << " -------------------------" << endl << " 0) " << "-C-" << endl;
+				cout << SEPARADOR << endl << " 0) " << "-C-" << endl;
 			else first = false;
 
-			cout << " -------------------------" << endl;
+			cout << SEPARADOR << endl;
 			for (unsigned short i = 0; i < available.size(); i++)
-				cout << ' ' << i + 1 << ") " << texts.find(available[i])->second << endl << " -------------------------" << endl;
+				cout << ' ' << i + 1 << ") " << texts.find(available[i])->second <<
+				endl << SEPARADOR << endl;
 
 			cout << " Seleccionar: ";
 			unsigned short input;
@@ -2020,11 +2012,11 @@ int main()
 					{
 						if (available[i] == Id::radical)
 						{
-							cout << " -------------------------" << endl << " 1) -CH2-...-CH3" << endl <<
-								" -------------------------" << endl << "                  CH3" << endl <<
-								"                 /" << endl << " 2) -CH2-...-CH2" << endl <<
-								"                 \\" << endl << "                  CH3" <<
-								endl << " -------------------------" << endl << " Seleccionar: ";
+							cout << SEPARADOR << endl << " 1) -CH2-...-CH3" <<
+								endl << SEPARADOR << endl << "                  CH3" <<
+								endl << "                 /" << endl << " 2) -CH2-...-CH2" <<
+								endl << "                 \\" << endl << "                  CH3" <<
+								endl << SEPARADOR << endl << " Seleccionar: ";
 							cin >> input;
 							unsigned short carbons;
 							if (input == 1)
@@ -2032,7 +2024,8 @@ int main()
 								do
 								{
 									cout << endl << " -CH2-...-CH3" << endl <<
-										"  {---------}" << endl << endl << " Carbonos del radical: ";
+										"  {---------}" << endl << endl <<
+										" Carbonos del radical: ";
 									cin >> carbons;
 								} while (!carbons);
 								basic_chain.addSubstituent(Substituent(carbons, false));
@@ -2062,11 +2055,11 @@ int main()
 						{
 							do
 							{
-								cout << " -------------------------" << endl;
-								cout << " 1) " << "-Br" << endl << " -------------------------" << endl;
-								cout << " 2) " << "-Cl" << endl << " -------------------------" << endl;
-								cout << " 3) " << "-F" << endl << " -------------------------" << endl;
-								cout << " 4) " << "-I" << endl << " -------------------------" << endl;
+								cout << SEPARADOR << endl;
+								cout << " 1) " << "-Br" << endl << SEPARADOR << endl;
+								cout << " 2) " << "-Cl" << endl << SEPARADOR << endl;
+								cout << " 3) " << "-F" << endl << SEPARADOR << endl;
+								cout << " 4) " << "-I" << endl << SEPARADOR << endl;
 								cout << " Seleccionar: ";
 								cin >> input;
 							} while (input > 4);
