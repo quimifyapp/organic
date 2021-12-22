@@ -132,7 +132,9 @@ private:
 
 public:
 	Carbon(unsigned short previous_bonds) :
-		free_bonds(4 - previous_bonds) {}
+		free_bonds(4 - previous_bonds)
+	{
+	}
 
 	// INTERFACE:
 	void addSubstituent(Substituent sub)
@@ -296,13 +298,13 @@ public:
 				{
 					if (subs_temp[i].getBonds() > 1)
 						result += texts.find(subs_temp[i]
-							.getFunction()) -> second;
+							.getFunction())->second;
 					else
 					{
 						result += "(";
 						if (subs_temp[i].getFunction() != Id::radical)
 							result += texts.find(subs_temp[i]
-								.getFunction()) -> second;
+								.getFunction())->second;
 						else
 						{
 							unsigned short quantity = quantities[i];
@@ -311,12 +313,12 @@ public:
 								if (quantity == 1 && !thereIs(Id::hydrogen))
 								{
 									result += texts.find(subs_temp[i]
-										.getFunction()) -> second;
+										.getFunction())->second;
 								}
 								else
 								{
 									result += texts.find(subs_temp[0]
-										.getFunction()) -> second + ")" +
+										.getFunction())->second + ")" +
 										toDigit(quantity);
 								}
 							}
@@ -350,12 +352,12 @@ public:
 					if (quantity == 1 && !thereIs(Id::hydrogen))
 					{
 						result += texts.find(subs_temp[0]
-							.getFunction()) -> second;
+							.getFunction())->second;
 					}
 					else
 					{
 						string text = texts.find(subs_temp[0]
-							.getFunction()) -> second;
+							.getFunction())->second;
 						if (text.size() != 1 &&
 							!isHalogen(subs_temp[0].getFunction()))
 							result += "(" + text + ")" + toDigit(quantity);
@@ -970,20 +972,20 @@ private:
 			// Cetona y alcohol terminales -> ácido
 			if (carbons[0].thereIs(Id::ketone) && carbons[0].thereIs(Id::alcohol))
 			{
-				carbons[0].deleteSubstituentWithBonds(list.find(Id::ketone) -> second);
-				carbons[0].deleteSubstituentWithBonds(list.find(Id::alcohol) -> second);
-				carbons[0].addSubstituent(list.find(Id::acid) -> second);
+				carbons[0].deleteSubstituentWithBonds(list.find(Id::ketone)->second);
+				carbons[0].deleteSubstituentWithBonds(list.find(Id::alcohol)->second);
+				carbons[0].addSubstituent(list.find(Id::acid)->second);
 				listUniqueFunctions();
 			}
 			if (carbons[carbons.size() - 1].thereIs(Id::ketone) &&
 				carbons[carbons.size() - 1].thereIs(Id::alcohol))
 			{
 				carbons[carbons.size() - 1].deleteSubstituentWithBonds(
-					list.find(Id::ketone) -> second);
+					list.find(Id::ketone)->second);
 				carbons[carbons.size() - 1].deleteSubstituentWithBonds(
-					list.find(Id::alcohol) -> second);
+					list.find(Id::alcohol)->second);
 				carbons[carbons.size() - 1].addSubstituent(
-					list.find(Id::acid) -> second);
+					list.find(Id::acid)->second);
 				listUniqueFunctions();
 			}
 			// Amida no principal -> carbamoil del anterior
@@ -1138,8 +1140,8 @@ private:
 			{
 				// Hay dos funciones no alqueno o alquino
 				unsigned short sum = sbts::list.find(
-					functions_temp[0]) -> second.getBonds() +
-					sbts::list.find(functions_temp[1]) -> second.getBonds();
+					functions_temp[0])->second.getBonds() +
+					sbts::list.find(functions_temp[1])->second.getBonds();
 				if (sum > 3)
 					// No caben en un solo carbono
 					return true;
@@ -1178,11 +1180,11 @@ private:
 		vector<unsigned short> positions = listPositionsOf(function);
 
 		if (isRedundant(function, positions))
-			return Locator("", quantifier(positions.size()), prefixes.find(function) -> second);
+			return Locator("", quantifier(positions.size()), prefixes.find(function)->second);
 		if (isHalogen(function) && getUniqueSubstituents().size() == 1)
-			return Locator("", "per", prefixes.find(function) -> second);
+			return Locator("", "per", prefixes.find(function)->second);
 
-		return locatorFor(positions, prefixes.find(function) -> second);
+		return locatorFor(positions, prefixes.find(function)->second);
 	}
 
 	string sufixFor(Id function)
@@ -1195,12 +1197,12 @@ private:
 
 		vector<unsigned short> positions = listPositionsOf(function);
 
-		if (sbts::list.find(function) -> second.getBonds() == 3 ||
-			isRedundant(sbts::list.find(function) -> second.getFunction(), positions))
+		if (sbts::list.find(function)->second.getBonds() == 3 ||
+			isRedundant(sbts::list.find(function)->second.getFunction(), positions))
 		{
-			return quantifier(positions.size()) + sufixes.find(function) -> second;
+			return quantifier(positions.size()) + sufixes.find(function)->second;
 		}
-		return locatorFor(positions, sufixes.find(function) -> second).toString();
+		return locatorFor(positions, sufixes.find(function)->second).toString();
 	}
 
 public:
@@ -1214,7 +1216,7 @@ public:
 	{
 		listUniqueFunctions();
 
-		if (carbons.size() == 1 && functions.size() == 1 && 
+		if (carbons.size() == 1 && functions.size() == 1 &&
 			functions[0] == Id::ketone && !thereIs(Id::hydrogen))
 			return "dióxido de carbono";
 
@@ -1314,7 +1316,7 @@ public:
 		{
 			s += ((carbons[i - 1].getFreeBonds())
 				? ((carbons[i - 1].getFreeBonds() == 1)
-					? "=" 
+					? "="
 					: "=-") // Actually '≡'
 				: "-") + carbons[i].toString();
 		}
@@ -1595,7 +1597,7 @@ public:
 			{Id::chlorine, "cloro"},{Id::fluorine, "fluoro"},
 			{Id::iodine, "yodo"}
 		};
-		return texts.find(function) -> second;
+		return texts.find(function)->second;
 	}
 
 	Locator prefixFor(Id function)
@@ -1765,76 +1767,64 @@ unsigned short getRandomNumber(unsigned short min, unsigned short max)
 void randomTest()
 {
 	std::srand(static_cast<unsigned int>(std::time(nullptr)));
+
 	while (true)
 	{
-		Basic carbons2;
-		unsigned short amount = getRandomNumber(0, MAX_CARB);
-		for (unsigned short i = 0; i < amount; i++)
+		Basic compound;
+		unsigned short carbons = getRandomNumber(1, MAX_CARB);
+		for (unsigned short i = 0; i < carbons; i++)
 		{
-			carbons2.addSubstituent(sbts::hydrogen);
-			for (vector<Id> available = carbons2.availableSubstituents(); available.size() &&
-				carbons2.getFreeBonds() > 1; available = carbons2.availableSubstituents())
+			for (vector<Id> available = compound.availableSubstituents();
+				compound.getFreeBonds() > (i != (carbons - 1));
+				available = compound.availableSubstituents())
 			{
-				Substituent s;
-				unsigned short number;
-				number = getRandomNumber(0, available.size() - 1);
-				if (available[number] == Id::radical && 1 < carbons2.getFreeBonds())
+				unsigned short type = getRandomNumber(0, available.size() - 1);
+				if (available[type] == Id::radical)
 				{
 					if (getRandomNumber(0, 1))
-						carbons2.addSubstituent(Substituent(getRandomNumber(1, MAX_RAD), false));
-					else if (carbons2.getFreeBonds() > 2 && getRandomNumber(0, 1))
+						compound.addSubstituent(Substituent(getRandomNumber(1, MAX_RAD), false));
+					else if (compound.getFreeBonds() > (1 + (i != (carbons - 1))) && getRandomNumber(0, 1))
 					{
-						carbons2.addSubstituent(sbts::methyl);
-						carbons2.addSubstituent(sbts::methyl);
+						compound.addSubstituent(sbts::methyl);
+						compound.addSubstituent(sbts::methyl);
 					}
-					else 
-						carbons2.addSubstituent(Substituent(getRandomNumber(3, MAX_RAD), true));
+					else compound.addSubstituent(Substituent(getRandomNumber(3, MAX_RAD), true));
 				}
-				else if (available[number] == Id::halogen && 1 < carbons2.getFreeBonds())
+				else if (available[type] == Id::halogen)
 				{
 					switch (getRandomNumber(0, 3))
 					{
 					case 0:
-						s = sbts::bromine;
+						compound.addSubstituent(sbts::bromine);
 						break;
 					case 1:
-						s = sbts::chlorine;
+						compound.addSubstituent(sbts::chlorine);
 						break;
 					case 2:
-						s = sbts::fluorine;
+						compound.addSubstituent(sbts::fluorine);
 						break;
 					case 3:
-						s = sbts::iodine;
+						compound.addSubstituent(sbts::iodine);
 						break;
 					}
-					carbons2.addSubstituent(s);
 				}
-				else if (sbts::list.find(available[number]) -> second.getBonds() <
-					carbons2.getFreeBonds())
+
+				else if (compound.getFreeBonds() > sbts::list.find(available[type])->second.getBonds())
 				{
-					s = sbts::list.find(available[number]) -> second;
-					carbons2.addSubstituent(s);
+					compound.addSubstituent(sbts::list.find(available[type])->second);
 				}
-				if (!getRandomNumber(0, 2))
+
+				if (i < (carbons - 1) && !getRandomNumber(0, 2))
 					break;
 			}
-			carbons2.nextCarbon();
-		}
-		for (vector<Id> available = carbons2.availableSubstituents(); available.size();
-			available = carbons2.availableSubstituents())
-		{
-			unsigned short number;
-			do
-			{
-				number = getRandomNumber(0, available.size() - 1);
-			} while (available[number] == Id::radical || available[number] == Id::halogen);
-			carbons2.addSubstituent(sbts::list.find(available[number]) -> second);
+			if (i < (carbons - 1)) compound.nextCarbon();
 		}
 
 		cout << endl;
-		cout << carbons2.getFormula() << endl;
-		cout << " ---> " << carbons2.getName() << endl;
-		cout << " ---> " << carbons2.getFormula() << endl;
+		cout << compound.getFormula() << endl;
+		cout << " ---> " << compound.getName() << endl;
+		cout << " ---> " << compound.getFormula() << endl;
+
 	}
 }
 
@@ -1860,7 +1850,7 @@ int main()
 		for (unsigned short c = 0; c < 6; c++)
 		{
 			available = aromatic.availableSubstituents();
-			if(c) cout << endl;
+			if (c) cout << endl;
 			cout << " -- ->  " << aromatic.getFormula() << endl;
 
 			if (!first) cout << SEPARADOR << endl << " 0) " << "-C-" << endl;
@@ -1868,7 +1858,7 @@ int main()
 
 			cout << SEPARADOR << endl;
 			for (unsigned short i = 0; i < available.size(); i++)
-				cout << ' ' << i + 1 << ") " << texts.find(available[i]) -> second <<
+				cout << ' ' << i + 1 << ") " << texts.find(available[i])->second <<
 				endl << SEPARADOR << endl;
 
 			cout << " Seleccionar: ";
@@ -1942,7 +1932,7 @@ int main()
 							break;
 						}
 					}
-					else aromatic.addSubstituent(c, sbts::list.find(available[i]) -> second);
+					else aromatic.addSubstituent(c, sbts::list.find(available[i])->second);
 					break;
 				}
 		}
@@ -2005,7 +1995,7 @@ int main()
 
 			cout << SEPARADOR << endl;
 			for (unsigned short i = 0; i < available.size(); i++)
-				cout << ' ' << i + 1 << ") " << texts.find(available[i]) -> second <<
+				cout << ' ' << i + 1 << ") " << texts.find(available[i])->second <<
 				endl << SEPARADOR << endl;
 
 			cout << " Seleccionar: ";
@@ -2028,7 +2018,7 @@ int main()
 									endl << SEPARADOR << endl << " Seleccionar: ";
 								cin >> input;
 							} while (input != 1 && input != 2);
-							
+
 							unsigned short carbons;
 							if (input == 1)
 							{
@@ -2082,7 +2072,7 @@ int main()
 								break;
 							}
 						}
-						else basic_chain.addSubstituent(sbts::list.find(available[i]) -> second);
+						else basic_chain.addSubstituent(sbts::list.find(available[i])->second);
 						break;
 					}
 			}
