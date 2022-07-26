@@ -1,0 +1,22 @@
+public enum Id {
+    acid,
+    carboxyl,
+    amide,
+    carbamoyl,
+    nitrile,
+    cyanide,
+    aldehyde,
+    ketone,
+    alcohol,
+    amine,
+    alkene,
+    alkyne,
+    nitro,
+    halogen,
+    bromine,
+    chlorine,
+    fluorine,
+    iodine,
+    radical,
+    hydrogen
+}
