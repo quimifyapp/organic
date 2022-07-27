@@ -6,7 +6,15 @@ import java.util.Scanner;
 class Main {
 
     public static void main(String[] args) {
-        System.out.println("Hola mundo!");
+        Carbono carbono = new Carbono(0);
+
+        carbono.nuevoSustituyente(new Sustituyente(Id.cloro));
+        carbono.nuevoSustituyente(new Sustituyente(2, true));
+        carbono.nuevoSustituyente(new Sustituyente(Id.alcohol));
+        carbono.nuevoSustituyente(new Sustituyente(Id.hidrogeno));
+
+        System.out.println(carbono);
+
         NameToStructure nts = NameToStructure.getInstance();
 
         while(true) {
@@ -18,6 +26,8 @@ class Main {
         }
     }
 
+    // TODO: los errores del .py?
+    // TODO: cómo cambiar los resource de OPSIN usando Maven?
     // TODO: "but-1-eno" -> "but-1-ene" -> OPSIN -> "C=CCC" -> "CH2=CH3-CH3-CH3"
     // TODO: "CH2=CH3-CH3-CH3" -> ? -> "but-1-eno"
 
