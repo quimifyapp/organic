@@ -1,4 +1,4 @@
-public class Substituent {
+public class Sustituyente {
 
     private Id function;    // The substituent's kind
     private int bonds;    // Amount of e- it shares with the carbon
@@ -18,21 +18,21 @@ public class Substituent {
 				 CH3
 	*/
 
-    public Substituent(Id function, int bonds) {
+    public Sustituyente(Id function, int bonds) {
         this.function = function;
         this.bonds = bonds;
         carbons = 0;
         iso = false;
     }
 
-    public Substituent(int carbons, boolean iso) {
+    public Sustituyente(int carbons, boolean iso) {
         function = Id.radical;
         bonds = 1;
         this.carbons = carbons;
         this.iso = iso;
     }
 
-    public boolean equals(Substituent s) {
+    public boolean equals(Sustituyente s) {
         return function == s.function && bonds == s.bonds && carbons == s.carbons && iso == s.iso;
     }
 

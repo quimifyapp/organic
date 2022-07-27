@@ -3,25 +3,25 @@ import java.util.Map;
 class Main {
 
       // Constant substituents:
-    const Substituent acid = new Substituent(Id.acid, 3);
-    const Substituent carboxyl = new Substituent(Id.carboxyl, 1);
-    const Substituent amide = new Substituent(Id.amide, 3);
-    const Substituent carbamoyl = new Substituent(Id.carbamoyl, 1);
-    const Substituent nitrile = new Substituent(Id.nitrile, 3);
-    const Substituent cyanide = new Substituent(Id.cyanide, 1);
-    const Substituent aldehyde = new Substituent(Id.aldehyde, 3);
-    const Substituent ketone = new Substituent(Id.ketone, 2);
-    const Substituent alcohol = new Substituent(Id.alcohol, 1);
-    const Substituent amine = new Substituent(Id.amine, 1);
-    const Substituent nitro = new Substituent(Id.nitro, 1);
-    const Substituent bromine = new Substituent(Id.bromine, 1);
-    const Substituent chlorine = new Substituent(Id.chlorine, 1);
-    const Substituent fluorine = new Substituent(Id.fluorine, 1);
-    const Substituent iodine = new Substituent(Id.iodine, 1);
-    const Substituent hydrogen = new Substituent(Id.hydrogen, 1);
+      private static final Sustituyente acid = new Sustituyente(Id.acid, 3);
+    private static final Sustituyente carboxyl = new Sustituyente(Id.carboxyl, 1);
+    private static final Sustituyente amide = new Sustituyente(Id.amide, 3);
+    private static final Sustituyente carbamoyl = new Sustituyente(Id.carbamoyl, 1);
+    private static final Sustituyente nitrile = new Sustituyente(Id.nitrile, 3);
+    private static final Sustituyente cyanide = new Sustituyente(Id.cyanide, 1);
+    private static final Sustituyente aldehyde = new Sustituyente(Id.aldehyde, 3);
+    private static final Sustituyente ketone = new Sustituyente(Id.ketone, 2);
+    private static final Sustituyente alcohol = new Sustituyente(Id.alcohol, 1);
+    private static final Sustituyente amine = new Sustituyente(Id.amine, 1);
+    private static final Sustituyente nitro = new Sustituyente(Id.nitro, 1);
+    private static final Sustituyente bromine = new Sustituyente(Id.bromine, 1);
+    private static final Sustituyente chlorine = new Sustituyente(Id.chlorine, 1);
+    private static final Sustituyente fluorine = new Sustituyente(Id.fluorine, 1);
+    private static final Sustituyente iodine = new Sustituyente(Id.iodine, 1);
+    private static final Sustituyente hydrogen = new Sustituyente(Id.hydrogen, 1);
 
         // Map between substituents and their kinds:
-	 const Map<Id, Substituent> list = {
+        private static final Map<Id, Sustituyente> list = {
             {Id.acid, acid},
             {Id.carboxyl, carboxyl},
             {Id.amide, amide},
