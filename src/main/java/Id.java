@@ -1,4 +1,5 @@
-public enum Id {
+public enum Id { // En orden de prioridad:
+
     acido,      // =O, -OH
     carboxil,   // -COOH ácido no principal
     amida,      // =O, -NH2
@@ -9,8 +10,8 @@ public enum Id {
     cetona,     // =O
     alcohol,    // -OH
     amina,      // -NH2
-    alqueno,    // doble enlace
-    alquino,    // triple enlace
+    alqueno,    // Doble enlace
+    alquino,    // Triple enlace
     nitro,      // -NO2
     bromo,      // -Br
     cloro,      // -Cl
@@ -18,4 +19,5 @@ public enum Id {
     yodo,       // -I
     radical,    // -R
     hidrogeno   // -H
+
 }

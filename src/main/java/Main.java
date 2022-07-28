@@ -1,4 +1,3 @@
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -10,6 +9,12 @@ class Main {
     // TODO: comparar resultados de funciones de C++ con sus adaptaciones
     // TODO: los errores del .py?
     // TODO: cómo cambiar los resource de OPSIN usando Maven?
+
+    // TODO: Convertidor:
+        // 1. Quitar enlaces de hidrógenos a carbonos, y esos átomos
+        // 2. Hay más átomos que C, H?
+            // ? Ver si hay una sola cadena con funciones o si hay más
+            // : Empezar por alguno terminal
 
     public static void main(String[] args) {
 
@@ -40,11 +45,6 @@ class Main {
         */
     }
 
-    // Convertidor:
 
-    // 1. Quitar enlaces de hidrógenos a carbonos, y esos átomos
-    // 2. Hay más átomos que C, H?
-        // ? Ver si hay una sola cadena con funciones o si hay más
-        // : Empezar por alguno terminal
 
 }
