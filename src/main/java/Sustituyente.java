@@ -8,37 +8,39 @@ public class Sustituyente {
     private boolean iso;
 
 	/* EJEMPLOS:
-	R=O -> "cetona" {Id:cetona, enlaces = 2}
 
-	R-CH2-CH2-CH3 -> "propil" {Id::radical, enlaces = 1, carbonos = 3, iso = false}
+	cetona:     =O              ->  { Id:cetona,    enlaces: 2,  carbonos: 0,  iso: false }
 
-				 CH3
-				/
-	R-CH2-CH2-CH2    -> "isopentil" {Id::radical, e. = 1, c. = 5, iso = true}
-				\
-				 CH3
+	propil:     -CH2-CH2-CH3    ->  { Id::radical,  enlaces: 1,  carbonos: 3,  iso: false }
+
+                           CH3
+                          /
+	isopentil:  -CH2-CH2-CH2    ->  { Id::radical,  enlaces: 1,  carbonos: 5,  iso: true  }
+                          \
+                           CH3
 	*/
 
-    public Sustituyente(Id funcion, int enlaces) {
-        construirSimple(funcion, enlaces);
-    }
-
-    private void construirSimple(Id funcion, int enlaces) {
+    private void construir(Id funcion, int enlaces, int carbonos, boolean iso) {
         this.funcion = funcion;
         this.enlaces = enlaces;
-        carbonos = 0;
-        iso = false;
+        this.carbonos = carbonos;
+        this.iso = iso;
+    }
+
+    private void construir(Id funcion, int enlaces) {
+        construir(funcion, enlaces, 0, false);
+    }
+
+    private void construir(int carbonos, boolean iso) {
+        construir(Id.radical, 1, carbonos, iso);
+    }
+
+    public Sustituyente(Id funcion, int enlaces) {
+        construir(funcion, enlaces);
     }
 
     public Sustituyente(int carbonos, boolean iso) {
-        construirRadical(carbonos, iso);
-    }
-
-    private void construirRadical(int carbonos, boolean iso) {
-        funcion = Id.radical;
-        enlaces = 1;
-        this.carbonos = carbonos;
-        this.iso = iso;
+        construir(carbonos, iso);
     }
 
     public Sustituyente(Id funcion) {
@@ -47,10 +49,10 @@ public class Sustituyente {
             case amida:
             case nitrilo:
             case aldehido:
-                construirSimple(funcion, 3);
+                construir(funcion, 3);
                 break;
             case cetona:
-                construirSimple(funcion, 2);
+                construir(funcion, 2);
                 break;
             case carboxil:
             case carbamoil:
@@ -63,7 +65,7 @@ public class Sustituyente {
             case fluor:
             case yodo:
             case hidrogeno:
-                construirSimple(funcion, 1);
+                construir(funcion, 1);
                 break;
             default: // Id.alqueno, Id.alquino, Id.radical (error)
                 break;

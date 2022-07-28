@@ -1,11 +1,22 @@
-import uk.ac.cam.ch.wwmm.opsin.NameToStructure;
-import uk.ac.cam.ch.wwmm.opsin.OpsinResult;
-
-import java.util.Scanner;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 class Main {
 
+    // TODO: "but-1-eno" -> "but-1-ene" -> OPSIN -> "C=CCC" -> "CH2=CH3-CH3-CH3"
+    // TODO: "CH2=CH3-CH3-CH3" -> ? -> "but-1-eno"
+
+    // TODO: comparar resultados de funciones de C++ con sus adaptaciones
+    // TODO: los errores del .py?
+    // TODO: cómo cambiar los resource de OPSIN usando Maven?
+
     public static void main(String[] args) {
+
+        List<Integer> indices = Arrays.asList(0, 1, 1, 2, 4, 5);
+        System.out.println(new Organico.Localizador(indices, "propil"));
+
+        /*
         Carbono carbono = new Carbono(0);
 
         carbono.nuevoSustituyente(new Sustituyente(Id.hidrogeno));
@@ -14,6 +25,7 @@ class Main {
         carbono.nuevoSustituyente(new Sustituyente(Id.cloro));
 
         System.out.println(carbono);
+        */
 
         /*
         NameToStructure nts = NameToStructure.getInstance();
@@ -27,11 +39,6 @@ class Main {
         }
         */
     }
-
-    // TODO: los errores del .py?
-    // TODO: cómo cambiar los resource de OPSIN usando Maven?
-    // TODO: "but-1-eno" -> "but-1-ene" -> OPSIN -> "C=CCC" -> "CH2=CH3-CH3-CH3"
-    // TODO: "CH2=CH3-CH3-CH3" -> ? -> "but-1-eno"
 
     // Convertidor:
 

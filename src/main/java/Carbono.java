@@ -7,8 +7,6 @@ public class Carbono {
     private final List<Sustituyente> sustituyentes = new ArrayList<>();
     private int enlaces_libres;
 
-    private static final List<Id> halogenos = Arrays.asList(Id.bromo, Id.cloro, Id.fluor, Id.yodo);
-
     public Carbono(int enlaces_previos) {
         enlaces_libres = 4 - enlaces_previos;
     }
@@ -79,14 +77,6 @@ public class Carbono {
         return false;
     }
 
-    public boolean esHalogeno(Id funcion) {
-        return halogenos.contains(funcion);
-    }
-
-    public boolean esHalogeno(Sustituyente sustituyente) {
-        return esHalogeno(sustituyente.getFuncion());
-    }
-
     // Texto:
 
     private String cuantificadorMolecular(int cantidad) {
@@ -122,7 +112,7 @@ public class Carbono {
         if(unicos.size() == 1) { // Solo hay un tipo además del hidrógeno
             String sustituyente = unicos.get(0).toString();
 
-            if(!estaEnlazadoA(Id.hidrogeno) || sustituyente.length() == 1 || esHalogeno(unicos.get(0)))
+            if(!estaEnlazadoA(Id.hidrogeno) || sustituyente.length() == 1 || Organico.esHalogeno(unicos.get(0)))
                 resultado.append(sustituyente); // Como en "CN", "COH", "CH3Br"...
             else resultado.append("(").append(sustituyente).append(")"); // Como en "CH(OH)3", "CH3(CH2CH3)"...
 
@@ -130,7 +120,7 @@ public class Carbono {
         }
         else if(unicos.size() > 1) // Hay más de un tipo además del hidrógeno
             for(Sustituyente sustituyente : unicos)
-                resultado.append("(").append(sustituyente).append(")")
+                resultado.append("(").append(sustituyente).append(")") // Como en "C(OH)3(Cl)", "CH2(NO2)(CH3)"...
                         .append(cuantificadorMolecular(cantidadDe(sustituyente)));
 
         return resultado.toString();
