@@ -6,8 +6,8 @@ public class Sustituyente {
     // Solo para radicales:
     private int carbonos;
     private boolean iso;
-    // EXAMPLES:
-	/*
+
+	/* EJEMPLOS:
 	R=O -> "cetona" {Id:cetona, enlaces = 2}
 
 	R-CH2-CH2-CH3 -> "propil" {Id::radical, enlaces = 1, carbonos = 3, iso = false}
@@ -70,8 +70,82 @@ public class Sustituyente {
         }
     }
 
-    public boolean equals(Sustituyente s) {
-        return funcion == s.funcion && enlaces == s.enlaces && carbonos == s.carbonos && iso == s.iso;
+    @Override
+    public boolean equals(Object sustituyente) {
+        boolean resultado;
+
+        if(sustituyente != null && sustituyente.getClass() == this.getClass()) {
+            Sustituyente s = (Sustituyente) sustituyente;
+            resultado = funcion == Id.radical
+                    ? carbonos == s.carbonos && iso == s.iso
+                    : funcion == s.funcion && enlaces == s.enlaces;
+        }
+        else resultado = false;
+
+        return resultado;
+    }
+
+    // Texto:
+
+    @Override
+    public String toString() {
+        StringBuilder resultado = new StringBuilder();
+
+        switch(funcion) {
+            case carboxil:
+                resultado.append("C");
+            case acido:
+                resultado.append("OOH");
+                break;
+            case carbamoil:
+                resultado.append("C");
+            case amida:
+                resultado.append("OHN2");
+                break;
+            case cianuro:
+                resultado.append("C");
+            case nitrilo:
+                resultado.append("N");
+                break;
+            case aldehido:
+                resultado.append("HO");
+                break;
+            case cetona:
+                resultado.append("O");
+                break;
+            case alcohol:
+                resultado.append("OH");
+                break;
+            case amina:
+                resultado.append("NH2");
+                break;
+            case nitro:
+                resultado.append("NO2");
+                break;
+            case bromo:
+                resultado.append("Br");
+                break;
+            case cloro:
+                resultado.append("Cl");
+                break;
+            case fluor:
+                resultado.append("F");
+                break;
+            case yodo:
+                resultado.append("I");
+                break;
+            case radical:
+                resultado.append("CH2".repeat(Math.max(0, carbonos - 2)));
+                resultado.append(iso ? "(CH3)2" : "CH2CH3");
+                break;
+            case hidrogeno:
+                resultado.append("H");
+                break;
+            default: // Id.alqueno, Id.alquino (error)
+                break;
+        }
+
+        return resultado.toString();
     }
 
     // Getters y setters:

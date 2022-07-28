@@ -1,4 +1,3 @@
-import java.lang.reflect.Array;
 import java.util.*;
 
 import static java.util.Collections.swap;
@@ -6,17 +5,9 @@ import static java.util.Collections.swap;
 public class Carbono {
 
     private final List<Sustituyente> sustituyentes = new ArrayList<>();
-    int enlaces_libres;
+    private int enlaces_libres;
 
-    static final Map<Id, String> formulas = Map.ofEntries(
-            Map.entry(Id.acido,"OOH"), Map.entry(Id.carboxil, "COOH"), Map.entry(Id.amida, "ONH2"),
-            Map.entry(Id.carbamoil, "CONH2"), Map.entry(Id.nitrilo, "N"), Map.entry(Id.cianuro, "CN"),
-            Map.entry(Id.aldehido, "HO"), Map.entry(Id.cetona, "O"), Map.entry(Id.alcohol, "OH"),
-            Map.entry(Id.amina, "NH2"), Map.entry(Id.nitro, "NO2"), Map.entry(Id.bromo, "Br"),
-            Map.entry(Id.cloro, "Cl"), Map.entry(Id.fluor, "F"), Map.entry(Id.yodo, "I")
-    );
-
-    static final List<Id> halogenos = Arrays.asList(Id.bromo, Id.cloro, Id.fluor, Id.yodo);
+    private static final List<Id> halogenos = Arrays.asList(Id.bromo, Id.cloro, Id.fluor, Id.yodo);
 
     public Carbono(int enlaces_previos) {
         enlaces_libres = 4 - enlaces_previos;
@@ -24,7 +15,7 @@ public class Carbono {
 
     // Modificadores:
 
-    public void nuevoSustituyente(Sustituyente sustituyente){
+    public void nuevoSustituyente(Sustituyente sustituyente) {
         sustituyentes.add(sustituyente);
         enlaces_libres -= sustituyente.getEnlaces();
     }
@@ -38,17 +29,39 @@ public class Carbono {
         enlaces_libres += sustituyente.getEnlaces();
     }
 
-    public void enlazarCarbono()
-    {
+    public void enlazarCarbono() {
         enlaces_libres--;
     }
 
-    public void eliminarEnlace()
-    {
+    public void eliminarEnlace() {
         enlaces_libres++;
     }
 
     // Consultas:
+
+    public List<Sustituyente> getSustituyentesCon(Id funcion) {
+        List<Sustituyente> resultado = new ArrayList<>();
+
+        for(Sustituyente sustituyente : sustituyentes)
+            if(sustituyente.getFuncion().equals(funcion))
+                resultado.add(sustituyente);
+
+        return resultado;
+    }
+
+    public List<Sustituyente> getUnicosSustituyentes() {
+        List<Sustituyente> unicos = new ArrayList<>();
+
+        for(Sustituyente sustituyente : sustituyentes)
+            if(!unicos.contains(sustituyente))
+                unicos.add(sustituyente);
+
+        return unicos;
+    }
+
+    public int cantidadDe(Sustituyente sustituyente) {
+        return Collections.frequency(sustituyentes, sustituyente);
+    }
 
     public boolean estaEnlazadoA(Id funcion) {
         for(Sustituyente sustituyente : sustituyentes)
@@ -58,32 +71,23 @@ public class Carbono {
         return false;
     }
 
-    public boolean estaEnlazadoA(Sustituyente sustituyente)
-    {
-        return sustituyentes.contains(sustituyente);
+    public boolean estaEnlazadoA(Sustituyente sustituyente) {
+        for(Sustituyente otro_sustituyente : sustituyentes)
+            if(otro_sustituyente.equals(sustituyente))
+                return true;
+
+        return false;
     }
 
-    public boolean esHalogeno(Id funcion)
-    {
+    public boolean esHalogeno(Id funcion) {
         return halogenos.contains(funcion);
     }
 
-    public int getEnlacesLibres()
-    {
-        return enlaces_libres;
+    public boolean esHalogeno(Sustituyente sustituyente) {
+        return esHalogeno(sustituyente.getFuncion());
     }
 
-    public List<Sustituyente> getSustituyentes()
-    {
-        return sustituyentes;
-    }
-
-    public List<Sustituyente> getUnicosSustituyentes()
-    {
-        return new ArrayList<>(new HashSet<>(sustituyentes));
-    }
-
-    // String:
+    // Texto:
 
     private String cuantificadorMolecular(int cantidad) {
         return (cantidad != 1)
@@ -92,112 +96,58 @@ public class Carbono {
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         StringBuilder resultado = new StringBuilder("C");
 
-        List<Sustituyente> copia = sustituyentes; // Se modificará
+        // Se recogen los tipos de sustituyente:
+        List<Sustituyente> unicos = getUnicosSustituyentes(); // Sin repetirse
 
-        if (estaEnlazadoA(Id.hidrogeno)) { // Hay hidrógenos
-            resultado.append("H");
+        // Se ordenan según la prioridad de su función:
+        for(int i = 0; i < unicos.size() - 1;) // Sin incremento
+            if(unicos.get(i).getFuncion().compareTo(unicos.get(i + 1).getFuncion()) > 0) { // get(i) > get(i + 1)
+                swap(unicos, i, i + 1);
+                i = 0;
+            }
+            else i++; // get(i) <= get(i + 1)
 
-            // Se cuenta cuántos hay:
-            int hidrogenos = 0;
-
-            for(Sustituyente sustituyente : copia)
-                if(sustituyente.getFuncion() == Id.hidrogeno)
-                    hidrogenos++;
-
-            // Se eliminan:
-            copia.removeIf(sustituyente -> sustituyente.getFuncion().equals(Id.hidrogeno));
-
-            // Se escriben los hidrógenos (tras el carbono y no entre paréntesis):
-            if (hidrogenos > 1)
-                resultado.append(hidrogenos);
+        // Se escribe los hidrógenos:
+        Sustituyente hidrogeno = new Sustituyente(Id.hidrogeno);
+        int cantidad = cantidadDe(hidrogeno);
+        if(cantidad > 0) {
+            resultado.append(hidrogeno).append(cuantificadorMolecular(cantidad));
+            unicos.remove(unicos.size() - 1); // Se borra el hidrógeno de la lista
         }
 
-        if (copia.size() > 0) { // Hay más sustituyentes que solo hidrógenos
-            // Se ordenan en base a la prioridad de su función:
-            for(int i = 0; i < copia.size() - 1;) { // Sin incremento
-                if(copia.get(i).getFuncion().compareTo(copia.get(i + 1).getFuncion()) > 0) { // .get(i) > .get(i + 1)
-                    swap(copia, i, i + 1);
-                    i = 0;
-                }
-                else i++; // .get(i) <= .get(i + 1)
-            }
+        // Se escribe el resto de sustituyentes:
+        if(unicos.size() == 1) { // Solo hay un tipo además del hidrógeno
+            String sustituyente = unicos.get(0).toString();
 
-            // Cuenta las cantidades de cada sustituyente, a la vez que elimina los duplicados:
-            List<Integer> cantidades = new ArrayList<>();
-            for(int i = 0, cantidad; i < copia.size(); i++) {
-                cantidad = 1;
+            if(!estaEnlazadoA(Id.hidrogeno) || sustituyente.length() == 1 || esHalogeno(unicos.get(0)))
+                resultado.append(sustituyente); // Como en "CN", "COH", "CH3Br"...
+            else resultado.append("(").append(sustituyente).append(")"); // Como en "CH(OH)3", "CH3(CH2CH3)"...
 
-                if(i != copia.size() - 1)
-                    for (int k = i + 1; k < copia.size(); k++)
-                        if (copia.get(i).equals(copia.get(k)))
-                        {
-                            cantidad++;
-                            copia.remove(k);
-                            k = i; // El bucle for lo incrementará después
-                        }
-
-                cantidades.add(cantidad);
-            }
-
-            // Se escriben el resto de sustituyentes (tras los hidrógenos y entre paréntesis):
-            if (copia.size() > 1) { // Hay más de un tipo de sustituyente
-                for (int i = 0; i < copia.size(); i++) {
-                    if (copia.get(i).getEnlaces() == 1) {
-                        resultado.append("(");
-
-                        if (copia.get(i).getFuncion() == Id.radical) {
-                            int cantidad = cantidades.get(i);
-
-                            if (copia.get(i).getFuncion() != Id.radical) {
-                                if (cantidad != 1 || estaEnlazadoA(Id.hidrogeno)) {
-                                    resultado.append(formulas.get(copia.get(i).getFuncion()))
-                                            .append(")").append(cuantificadorMolecular(cantidad));
-                                }
-                                else resultado.append(formulas.get(copia.get(i).getFuncion()));
-                            }
-                            else {
-                                if (!copia.get(i).getIso())
-                                    resultado.append("CH2".repeat(Math.max(0, copia.get(i).getCarbonos() - 1)))
-                                            .append("CH3");
-                                else resultado.append("CH2".repeat(Math.max(0, copia.get(i).getCarbonos() - 2)))
-                                        .append("(CH3)2");
-                            }
-                        }
-                        else resultado.append(formulas.get(copia.get(i).getFuncion()));
-
-                        resultado.append(")").append(cuantificadorMolecular(cantidades.get(i)));
-                    }
-					else resultado.append(formulas.get(copia.get(i).getFuncion()));
-                }
-            }
-            else { // Hay un único tipo de sustituyente
-                int cantidad = cantidades.get(0);
-
-                if (copia.get(0).getFuncion() != Id.radical) {
-                    if (cantidad != 1 || estaEnlazadoA(Id.hidrogeno)) {
-                        String text = formulas.get(copia.get(0).getFuncion());
-
-                        if (text.length() != 1 && esHalogeno(copia.get(0).getFuncion()))
-                            resultado.append("(").append(text).append(")").append(cuantificadorMolecular(cantidad));
-                        else resultado.append(text).append(cuantificadorMolecular(cantidad));
-                    }
-                    else resultado.append(formulas.get(copia.get(0).getFuncion()));
-                }
-                else {
-                    if (!copia.get(0).getIso())
-                        resultado.append("(").append("CH2".repeat(Math.max(0, copia.get(0).getCarbonos() - 1)))
-                                .append("CH3)").append(cuantificadorMolecular(cantidades.get(0)));
-                    else resultado.append("(").append("CH2".repeat(Math.max(0, copia.get(0).getCarbonos() - 2)))
-                            .append("(CH3)2)").append(cuantificadorMolecular(cantidades.get(0)));
-                }
-            }
+            resultado.append((cuantificadorMolecular(cantidadDe(unicos.get(0)))));
         }
+        else if(unicos.size() > 1) // Hay más de un tipo además del hidrógeno
+            for(Sustituyente sustituyente : unicos)
+                resultado.append("(").append(sustituyente).append(")")
+                        .append(cuantificadorMolecular(cantidadDe(sustituyente)));
 
         return resultado.toString();
+    }
+
+    // Getters y setters:
+
+    public List<Sustituyente> getSustituyentes() {
+        return sustituyentes;
+    }
+
+    public int getEnlacesLibres() {
+        return enlaces_libres;
+    }
+
+    public void setEnlacesLibres(int enlaces_libres) {
+        this.enlaces_libres = enlaces_libres;
     }
 
 }

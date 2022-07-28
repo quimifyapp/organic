@@ -8,13 +8,14 @@ class Main {
     public static void main(String[] args) {
         Carbono carbono = new Carbono(0);
 
-        carbono.nuevoSustituyente(new Sustituyente(Id.cloro));
-        carbono.nuevoSustituyente(new Sustituyente(2, true));
-        carbono.nuevoSustituyente(new Sustituyente(Id.alcohol));
         carbono.nuevoSustituyente(new Sustituyente(Id.hidrogeno));
+
+        carbono.nuevoSustituyente(new Sustituyente(Id.cetona));
+        carbono.nuevoSustituyente(new Sustituyente(Id.cloro));
 
         System.out.println(carbono);
 
+        /*
         NameToStructure nts = NameToStructure.getInstance();
 
         while(true) {
@@ -24,6 +25,7 @@ class Main {
             System.out.println(result.getPrettyPrintedCml());
             System.out.println(result.getSmiles());
         }
+        */
     }
 
     // TODO: los errores del .py?
