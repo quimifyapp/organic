@@ -87,6 +87,10 @@ public class Sustituyente {
         return resultado;
     }
 
+    public boolean esTipo(Id funcion) {
+        return this.funcion.equals(funcion);
+    }
+
     // Texto:
 
     @Override

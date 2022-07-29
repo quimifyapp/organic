@@ -37,11 +37,11 @@ public class Carbono {
 
     // Consultas:
 
-    public List<Sustituyente> getSustituyentesCon(Id funcion) {
+    public List<Sustituyente> getSustituyentesTipo(Id funcion) {
         List<Sustituyente> resultado = new ArrayList<>();
 
         for(Sustituyente sustituyente : sustituyentes)
-            if(sustituyente.getFuncion().equals(funcion))
+            if(sustituyente.esTipo(funcion))
                 resultado.add(sustituyente);
 
         return resultado;
@@ -61,12 +61,19 @@ public class Carbono {
         return Collections.frequency(sustituyentes, sustituyente);
     }
 
-    public boolean estaEnlazadoA(Id funcion) {
-        for(Sustituyente sustituyente : sustituyentes)
-            if(sustituyente.getFuncion().equals(funcion))
-                return true;
+    public boolean contiene(Id funcion) {
+        switch(funcion) {
+            case alqueno:
+                return enlaces_libres == 1; // Como en -CO=
+            case alquino:
+                return enlaces_libres == 2; // Como en -CH#
+            default:
+                for(Sustituyente sustituyente : sustituyentes)
+                    if(sustituyente.esTipo(funcion))
+                        return true;
 
-        return false;
+                return false;
+        }
     }
 
     public boolean estaEnlazadoA(Sustituyente sustituyente) {
@@ -112,7 +119,7 @@ public class Carbono {
         if(unicos.size() == 1) { // Solo hay un tipo además del hidrógeno
             String sustituyente = unicos.get(0).toString();
 
-            if(!estaEnlazadoA(Id.hidrogeno) || sustituyente.length() == 1 || Organico.esHalogeno(unicos.get(0)))
+            if(!contiene(Id.hidrogeno) || sustituyente.length() == 1 || Organico.esHalogeno(unicos.get(0)))
                 resultado.append(sustituyente); // Como en "CN", "COH", "CH3Br"...
             else resultado.append("(").append(sustituyente).append(")"); // Como en "CH(OH)3", "CH3(CH2CH3)"...
 
