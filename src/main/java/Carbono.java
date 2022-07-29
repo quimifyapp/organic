@@ -100,12 +100,7 @@ public class Carbono {
         List<Sustituyente> unicos = getUnicosSustituyentes(); // Sin repetirse
 
         // Se ordenan según la prioridad de su función:
-        for(int i = 0; i < unicos.size() - 1;) // Sin incremento
-            if(unicos.get(i).getFuncion().compareTo(unicos.get(i + 1).getFuncion()) > 0) { // get(i) > get(i + 1)
-                swap(unicos, i, i + 1);
-                i = 0;
-            }
-            else i++; // get(i) <= get(i + 1)
+        Organico.ordenarPorFunciones(unicos);
 
         // Se escribe los hidrógenos:
         Sustituyente hidrogeno = new Sustituyente(Id.hidrogeno);

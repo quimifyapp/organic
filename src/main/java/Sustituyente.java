@@ -72,6 +72,10 @@ public class Sustituyente {
         }
     }
 
+    public boolean esTipo(Id funcion) {
+        return this.funcion.equals(funcion);
+    }
+
     @Override
     public boolean equals(Object sustituyente) {
         boolean resultado;
@@ -85,10 +89,6 @@ public class Sustituyente {
         else resultado = false;
 
         return resultado;
-    }
-
-    public boolean esTipo(Id funcion) {
-        return this.funcion.equals(funcion);
     }
 
     // Texto:

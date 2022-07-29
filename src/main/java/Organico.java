@@ -1,13 +1,14 @@
 import java.util.*;
 
+import static java.util.Collections.swap;
+
 public class Organico {
 
     private final List<Carbono> carbonos = new ArrayList<>();
-    private final Set<Id> funciones = new HashSet<>();
 
     private static final List<Id> halogenos = Arrays.asList(Id.bromo, Id.cloro, Id.fluor, Id.yodo);
 
-    // Consultas:
+    // Consultas generales:
 
     protected static boolean esHalogeno(Id funcion) {
         return halogenos.contains(funcion);
@@ -16,6 +17,26 @@ public class Organico {
     protected static boolean esHalogeno(Sustituyente sustituyente) {
         return esHalogeno(sustituyente.getFuncion());
     }
+
+    protected static void ordenarFunciones(List<Id> funciones) {
+        for(int i = 0; i < funciones.size() - 1;) // Sin incremento
+            if(funciones.get(i).compareTo(funciones.get(i + 1)) > 0) {
+                swap(funciones, i, i + 1); // get(i) > get(i + 1)
+                i = 0;
+            }
+            else i++; // get(i) <= get(i + 1)
+    }
+
+    protected static void ordenarPorFunciones(List<Sustituyente> sustituyentes) {
+        for(int i = 0; i < sustituyentes.size() - 1;) // Sin incremento
+            if(sustituyentes.get(i).getFuncion().compareTo(sustituyentes.get(i + 1).getFuncion()) > 0) {
+                swap(sustituyentes, i, i + 1); // get(i) > get(i + 1)
+                i = 0;
+            }
+            else i++; // get(i) <= get(i + 1)
+    }
+
+    // Consultas particulares:
 
     protected boolean contiene(Id funcion) {
         for(Carbono carbono : carbonos)
@@ -26,7 +47,7 @@ public class Organico {
     }
 
     protected List<Integer> getPosicionesDe(Id funcion) {
-        List<Integer> posiciones = new ArrayList<>(); // Posiciones de los carbonos con esa función
+        List<Integer> posiciones = new ArrayList<>(); // Posiciones de los carbonos con la función
 
         for(int i = 0; i < carbonos.size(); i++)
             if(carbonos.get(i).contiene(funcion))
@@ -35,118 +56,81 @@ public class Organico {
         return posiciones;
     }
 
-    /*
-    protected vector<unsigned short> listPositionsOf(Substituent sub) {
-        vector<unsigned short> positions;
-        for (unsigned short i = 0; i < carbons.size(); i++)
-        for (unsigned short j = 0;
-        j < carbons[i].getAllSubs().size(); j++)
-        if (carbons[i].getAllSubs()[j].equals(sub))
-            positions.push_back(i);
-        return positions;
+    protected List<Integer> listPositionsOf(Sustituyente sustituyente) {
+        List<Integer> posiciones = new ArrayList<>(); // Posiciones de los carbonos enlazados al sustituyente
+
+        for(int i = 0; i < carbonos.size(); i++)
+            if(carbonos.get(i).estaEnlazadoA(sustituyente))
+                posiciones.add(i);
+
+        return posiciones;
     }
 
-    protected void listUniqueFunctions() {
-        functions.clear();
-        for (unsigned short i = 0; i < carbons.size(); i++)
-        {
-            if (carbons[i].getFreeBonds() == 1)
-            {
-                if (find(functions.begin(), functions.end(), Id::alkene) == functions.end())
-                    functions.push_back(Id::alkene);
-            }
-            else if (carbons[i].getFreeBonds() == 2)
-            {
-                if (find(functions.begin(), functions.end(), Id::alkyne) == functions.end())
-                    functions.push_back(Id::alkyne);
-            }
-            for (unsigned short j = 0;
-            j < carbons[i].getAllSubs().size(); j++)
-            if (find(functions.begin(), functions.end(),
-                    carbons[i].getAllSubs()[j].getFunction()) == functions.end() &&
-                    carbons[i].getAllSubs()[j].getFunction() != Id::hydrogen)
-            {
-                functions.push_back(carbons[i].getAllSubs()[j].getFunction());
-            }
-        }
-        sort(functions.begin(), functions.end());
+    // Devuelve las funciones presentes sin repetición y por orden de prioridad (hidrógeno no incluido)
+    protected List<Id> getFunciones() {
+        List<Id> funciones = new ArrayList<>();
+
+        for(Id funcion : Id.values()) // Todas las funciones recogidas en Id
+            if(!funcion.equals(Id.hidrogeno))
+                for(Carbono carbono : carbonos)
+                    if(carbono.contiene(funcion)) {
+                        funciones.add(funcion);
+                        break;
+                    }
+
+        return funciones;
     }
 
-    protected vector<Substituent> getUniqueSubstituents(Id function) {
-        vector<Substituent> result;
-        for (unsigned short i = 0; i < carbons.size(); i++)
-        {
-            for (unsigned short j = 0;
-            j < carbons[i].getAllSubs().size(); j++)
-            if (carbons[i].getAllSubs()[j].getFunction() == function)
-            {
-                bool add = true;
-                for (unsigned short k = 0; k < result.size(); k++)
-                if (carbons[i].getAllSubs()[j].equals(result[k]))
-                {
-                    add = false;
-                    break;
-                }
-                if (add) result.push_back(carbons[i].getAllSubs()[j]);
-            }
-        }
-        return result;
+    protected List<Sustituyente> getSustituyentesUnicosTipo(Id funcion) {
+        List<Sustituyente> unicos = new ArrayList<>();
+
+        for(Carbono carbono : carbonos)
+            for(Sustituyente sustituyente : carbono.getSustituyentesTipo(funcion))
+                if(!unicos.contains(sustituyente))
+                    unicos.add(sustituyente);
+
+        return unicos;
     }
 
-    protected vector<Substituent> getUniqueSubstituents() {
-        vector<Substituent> result;
-        for (unsigned short i = 0; i < carbons.size(); i++)
-        {
-            for (unsigned short j = 0;
-            j < carbons[i].getAllSubs().size(); j++)
-            {
-                bool add = true;
-                for (unsigned short k = 0; k < result.size(); k++)
-                if (carbons[i].getAllSubs()[j].equals(result[k]))
-                {
-                    add = false;
-                    break;
-                }
-                if (add) result.push_back(carbons[i].getAllSubs()[j]);
-            }
-        }
-        return result;
+    protected List<Sustituyente> getSustituyentesUnicos() {
+        List<Sustituyente> unicos = new ArrayList<>();
+
+        for(Carbono carbono : carbonos)
+            for(Sustituyente sustituyente : carbono.getSustituyentes())
+                if(!unicos.contains(sustituyente))
+                    unicos.add(sustituyente);
+
+        return unicos;
     }
 
-    protected vector<Substituent> getAllSubstituents(Id function) {
-        vector<Substituent> result, subs;
-        for (unsigned short i = 0; i < carbons.size(); i++)
-        {
-            subs = carbons[i].getAllSubs();
-            for (unsigned short j = 0; j < subs.size(); j++)
-            if (subs[j].getFunction() == function)
-                result.push_back(subs[j]);
-        }
-        return result;
+    protected List<Sustituyente> getSustituyentesTipo(Id funcion) {
+        List<Sustituyente> sustituyentes = new ArrayList<>();
+
+        for(Carbono carbono : carbonos)
+            sustituyentes.addAll(carbono.getSustituyentesTipo(funcion));
+
+        return sustituyentes;
     }
 
-    protected vector<Substituent> getAllSubs() {
-        vector<Substituent> result, subs;
-        for (unsigned short i = 0; i < carbons.size(); i++)
-        {
-            subs = carbons[i].getAllSubs();
-            result.insert(result.end(), subs.begin(), subs.end());
-        }
-        return result;
+    protected List<Sustituyente> getSustituyentes() {
+        List<Sustituyente> sustituyentes = new ArrayList<>();
+
+        for(Carbono carbono : carbonos)
+            sustituyentes.addAll(carbono.getSustituyentes());
+
+        return sustituyentes;
     }
 
-    protected vector<Substituent> getAllSubstituentsNoHydrogen() {
-        vector<Substituent> result, subs;
-        for (unsigned short i = 0; i < carbons.size(); i++)
-        {
-            subs = carbons[i].getAllSubs();
-            for (unsigned short j = 0; j < subs.size(); j++)
-            if (subs[j].getFunction() != Id::hydrogen)
-                result.push_back(subs[j]);
-        }
-        return result;
+    protected List<Sustituyente> getSustituyentesSinHidrogeno() {
+        List<Sustituyente> sustituyentes = new ArrayList<>();
+
+        for(Carbono carbono : carbonos)
+            for(Sustituyente sustituyente : carbono.getSustituyentes())
+                if(!sustituyente.esTipo(Id.hidrogeno))
+                    sustituyentes.add(sustituyente);
+
+        return sustituyentes;
     }
-    */
 
     // Texto:
 
@@ -300,51 +284,7 @@ public class Organico {
         return resultado;
     }
 
-    protected static class Localizador {
-        public String posiciones, multiplicador, nombre;
-
-		/* EJEMPLOS:
-            "2,3-diol"  =   { posiciones: "2,3",   multiplicador: "di",       nombre: "ol"      }
-            "tetrain"   =   { posiciones: "",      multiplicador: "tetra",    nombre: "in"      }
-            "fluoro"    =   { posiciones: "",      multiplicador: "",         nombre: "fluoro"  }
-		*/
-
-        private void construir(String posiciones, String multiplicador, String nombre) {
-            this.posiciones = posiciones;
-            this.multiplicador = multiplicador;
-            this.nombre = nombre;
-        }
-
-        public Localizador(String posiciones, String multiplicador, String nombre) {
-            construir(posiciones, multiplicador, nombre);
-        }
-
-        public Localizador(List<Integer> indices, String nombre) {
-            StringBuilder auxiliar = new StringBuilder();
-
-            if(indices.size() > 0) {
-                for(int i = 0; i < indices.size() - 1; i++)
-                    auxiliar.append(indices.get(i) + 1).append(",");
-                auxiliar.append(indices.get(indices.size() - 1) + 1);
-            }
-
-            construir(auxiliar.toString(), cuantificador(indices.size()), nombre);
-        }
-
-        @Override
-        public String toString() {
-            String resultado = "";
-
-            if(!posiciones.equals(""))
-                resultado = posiciones + "-";
-            resultado += multiplicador + nombre;
-
-            return resultado;
-        }
-    }
-
-    protected static String nombreDelRadical(Sustituyente radical)
-    {
+    protected static String nombreDelRadical(Sustituyente radical) {
         String resultado = "";
 
         if(radical.getIso())
