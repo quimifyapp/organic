@@ -1167,8 +1167,7 @@ private:
 	}
 
 	// WRITERS:
-	Locator prefixFor(Id function)
-	{
+	Locator prefixFor(Id function) {
 		const static map<Id, string> prefixes{
 			{Id::carbamoyl, "carbamoil"},{Id::cyanide, "ciano"},
 			{Id::ketone, "oxo"},{Id::alcohol, "hidroxi"},
