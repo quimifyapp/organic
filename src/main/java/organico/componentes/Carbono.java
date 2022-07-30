@@ -15,7 +15,7 @@ public class Carbono {
 
     // Modificadores:
 
-    public void nuevoSustituyente(Sustituyente sustituyente) {
+    public void enlazarSustituyente(Sustituyente sustituyente) {
         sustituyentes.add(sustituyente);
         enlaces_libres -= sustituyente.getEnlaces();
     }
@@ -116,7 +116,7 @@ public class Carbono {
         if(unicos.size() == 1) { // Solo hay un tipo además del hidrógeno
             String sustituyente = unicos.get(0).toString();
 
-            if(!contiene(Id.hidrogeno) || sustituyente.length() == 1 || Organico.esHalogeno(unicos.get(0)))
+            if(sustituyente.length() == 1 || Organico.esHalogeno(unicos.get(0)))
                 resultado.append(sustituyente); // Como en "CN", "COH", "CH3Br"...
             else resultado.append("(").append(sustituyente).append(")"); // Como en "CH(OH)3", "CH3(CH2CH3)"...
 

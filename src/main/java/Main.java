@@ -1,6 +1,8 @@
-
+import organico.componentes.Id;
+import organico.componentes.Sustituyente;
 import organico.opsin.Opsin;
 import organico.opsin.OpsinResultado;
+import organico.tipos.CadenaSimple;
 
 import java.util.Scanner;
 
@@ -16,6 +18,7 @@ class Main {
         // 2. Hay más átomos que C, H?
             // ? Ver si hay una sola cadena con funciones o si hay más
             // : Empezar por alguno terminal
+        // 3. ...
 
     // TODO: [Organico -> "but-1-eno"]
 
@@ -34,6 +37,29 @@ class Main {
 
         System.out.println(localizadores);
         */
+
+        // pent-3-en-1-in-1-ol :
+
+        CadenaSimple cadena_simple = new CadenaSimple();
+        cadena_simple.enlazarSustituyente(new Sustituyente(Id.alcohol));
+
+        cadena_simple.enlazarCarbono();
+
+        cadena_simple.enlazarCarbono();
+        cadena_simple.enlazarSustituyente(new Sustituyente(Id.hidrogeno));
+
+        cadena_simple.enlazarCarbono();
+        cadena_simple.enlazarSustituyente(new Sustituyente(Id.hidrogeno));
+
+        cadena_simple.enlazarCarbono();
+        cadena_simple.enlazarSustituyente(new Sustituyente(Id.hidrogeno));
+        cadena_simple.enlazarSustituyente(new Sustituyente(Id.hidrogeno));
+        cadena_simple.enlazarSustituyente(new Sustituyente(Id.hidrogeno));
+
+        System.out.print("Fórmula: ");
+        System.out.println(cadena_simple.getFormula());
+
+        // ////////////////////////
 
         while(true) {
             String input = new Scanner(System.in).nextLine();

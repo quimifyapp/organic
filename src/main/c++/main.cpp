@@ -1376,11 +1376,11 @@ class Cyclic : protected Organic {
 
 	 B
 	  \
-	   CH -CH2
+	   CH--CH2
 	  /       \
 	CH2   O    CH2
 	  \       /
-	   CH2- CH
+	   CH2--CH
 			  \
 			   A
 
