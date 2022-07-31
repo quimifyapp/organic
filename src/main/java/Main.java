@@ -22,6 +22,8 @@ class Main {
 
     // TODO: [Organico -> "but-1-eno"]
 
+    // TODO: Debug Carbon.toString(), CadenaSimple.corregir(), CadenaSimple.esRedundante()
+    // TODO: reordenar métodos en las clases (cortar y pegar)
 
     public static void main(String[] args) {
         /*
@@ -31,36 +33,34 @@ class Main {
         localizadores.add(new organico.componentes.organico.Localizador(indices, "propil"));
         localizadores.add(new organico.componentes.organico.Localizador(indices, "hidroxi"));
         localizadores.add(new organico.componentes.organico.Localizador(indices, "amino"));
-        localizadores.add(new organico.componentes.organico.Localizador(indices, "carmaboil"));
+        localizadores.add(new organico.componentes.organico.Localizador(indices, "carbamoil"));
 
         organico.componentes.organico.Localizador.ordenarAlfabeticamente(localizadores);
 
         System.out.println(localizadores);
         */
 
-        // pent-3-en-1-in-1-ol :
+        // Debug corregir() :
 
         CadenaSimple cadena_simple = new CadenaSimple();
-        cadena_simple.enlazarSustituyente(new Sustituyente(Id.alcohol));
+        cadena_simple.enlazarSustituyente(new Sustituyente(1), 2);
+        cadena_simple.enlazarSustituyente(Id.hidrogeno, 1);
 
         cadena_simple.enlazarCarbono();
+        cadena_simple.enlazarSustituyente(new Sustituyente(3));
+        cadena_simple.enlazarSustituyente(Id.hidrogeno, 1);
 
         cadena_simple.enlazarCarbono();
-        cadena_simple.enlazarSustituyente(new Sustituyente(Id.hidrogeno));
+        cadena_simple.enlazarSustituyente(Id.hidrogeno, 2);
 
         cadena_simple.enlazarCarbono();
-        cadena_simple.enlazarSustituyente(new Sustituyente(Id.hidrogeno));
+        cadena_simple.enlazarSustituyente(Id.hidrogeno, 3);
 
-        cadena_simple.enlazarCarbono();
-        cadena_simple.enlazarSustituyente(new Sustituyente(Id.hidrogeno));
-        cadena_simple.enlazarSustituyente(new Sustituyente(Id.hidrogeno));
-        cadena_simple.enlazarSustituyente(new Sustituyente(Id.hidrogeno));
+        System.out.println(cadena_simple);
+        cadena_simple.corregir();
+        System.out.println(cadena_simple);
 
-        System.out.print("Fórmula: ");
-        System.out.println(cadena_simple.getFormula());
-
-        // ////////////////////////
-
+        /*
         while(true) {
             String input = new Scanner(System.in).nextLine();
 
@@ -82,6 +82,7 @@ class Main {
                 else System.out.println("No se ha encontrado ni en español ni en inglés");
             }
         }
+        */
 
         /*
         List<organico.componentes.Sustituyente> sustituyentes = new ArrayList<>();

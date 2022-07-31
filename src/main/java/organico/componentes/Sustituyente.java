@@ -1,5 +1,10 @@
 package organico.componentes;
 
+import organico.tipos.CadenaSimple;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class Sustituyente {
 
     private Id funcion; // El tipo de sustituyente
@@ -17,7 +22,7 @@ public class Sustituyente {
 
                            CH3
                           /
-	isopentil:  -CH2-CH2-CH2    ->  { organico.componentes.Id::radical,  enlaces: 1,  carbonos: 5,  iso: true  }
+	isopentil:  -CH2-CH2-CH     ->  { organico.componentes.Id::radical,  enlaces: 1,  carbonos: 5,  iso: true  }
                           \
                            CH3
 	*/
@@ -34,7 +39,9 @@ public class Sustituyente {
     }
 
     private void construir(int carbonos, boolean iso) {
-        construir(Id.radical, 1, carbonos, iso);
+        if((!iso && carbonos > 0) // Como mínimo es metil
+                || (iso && carbonos > 2)) // No existen ni el "isoetil" ni el "isometil"
+            construir(Id.radical, 1, carbonos, iso);
     }
 
     public Sustituyente(Id funcion, int enlaces) {
@@ -45,6 +52,10 @@ public class Sustituyente {
         construir(carbonos, iso);
     }
 
+    public Sustituyente(int carbonos) {
+        construir(carbonos, false);
+    }
+
     public Sustituyente(Id funcion) {
         switch(funcion) {
             case acido:
@@ -52,6 +63,7 @@ public class Sustituyente {
             case nitrilo:
             case aldehido:
                 construir(funcion, 3);
+                // Hasta aquí
                 break;
             case cetona:
                 construir(funcion, 2);
@@ -68,6 +80,7 @@ public class Sustituyente {
             case yodo:
             case hidrogeno:
                 construir(funcion, 1);
+                // Hasta aquí
                 break;
             default: // organico.componentes.Id.alqueno, organico.componentes.Id.alquino, organico.componentes.Id.radical (error)
                 break;
@@ -93,6 +106,41 @@ public class Sustituyente {
         return resultado;
     }
 
+    // Para radicales:
+
+    public int getCarbonosRectos() {
+        return carbonos - (iso ? 1 : 0);
+    }
+
+    public List<Carbono> getCadenaRadical() {
+        List<Carbono> radical = new ArrayList<>();
+
+        if(carbonos > 0) {
+            radical.add(new Carbono(0));
+            radical.get(0).enlazarSustituyente(Id.hidrogeno, 3); // CH3-
+            radical.get(0).enlazarCarbono();
+
+            int anteriores = 1;
+
+            if(iso) {
+                radical.add(new Carbono(1)); // CH3-C≡
+                radical.get(1).enlazarSustituyente(Id.hidrogeno); // CH3-CH=
+                radical.get(1).enlazarSustituyente(new Sustituyente(1)); // CH3-CH(CH3)-
+                radical.get(1).enlazarCarbono();
+
+                anteriores += 2;
+            }
+
+            for (int i = anteriores; i < carbonos; i++) {
+                radical.add(new Carbono(1)); // CH3-CH(CH3)-C≡
+                radical.get(i).enlazarSustituyente(Id.hidrogeno, 2); // CH3-CH(CH3)-CH2-
+                radical.get(i).enlazarCarbono(); // CH3-CH(CH3)-CH2-C≡
+            }
+        }
+
+        return radical;
+    }
+
     // Texto:
 
     @Override
@@ -104,16 +152,19 @@ public class Sustituyente {
                 resultado.append("C");
             case acido:
                 resultado.append("OOH");
+                // Hasta aquí
                 break;
             case carbamoil:
                 resultado.append("C");
             case amida:
                 resultado.append("OHN2");
+                // Hasta aquí
                 break;
             case cianuro:
                 resultado.append("C");
             case nitrilo:
                 resultado.append("N");
+                // Hasta aquí
                 break;
             case aldehido:
                 resultado.append("HO");
@@ -143,8 +194,9 @@ public class Sustituyente {
                 resultado.append("I");
                 break;
             case radical:
-                resultado.append("CH2".repeat(Math.max(0, carbonos - 2)));
-                resultado.append(iso ? "(CH3)2" : "CH2CH3");
+                if(iso)
+                    resultado.append("CH2".repeat(Math.max(0, carbonos -  3))).append("CH(CH3)2");
+                else resultado.append("CH2".repeat(Math.max(0, carbonos -  1))).append("CH3");
                 break;
             case hidrogeno:
                 resultado.append("H");

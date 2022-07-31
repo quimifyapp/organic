@@ -74,9 +74,8 @@ public class Organico {
         return posiciones;
     }
 
-    // Devuelve las funciones presentes sin repetición y por orden de prioridad (hidrógeno no incluido)
     protected List<Id> getFunciones() {
-        List<Id> funciones = new ArrayList<>();
+        List<Id> funciones = new ArrayList<>(); // Funciones presentes sin repetición, en orden y sin hidrógeno
 
         for(Id funcion : Id.values()) // Todas las funciones recogidas en organico.componentes.Id
             if(!funcion.equals(Id.hidrogeno))
@@ -130,14 +129,12 @@ public class Organico {
     }
 
     protected List<Sustituyente> getSustituyentesSinHidrogeno() {
-        List<Sustituyente> sustituyentes = new ArrayList<>();
+        List<Sustituyente> sin_hidrogeno = new ArrayList<>();
 
         for(Carbono carbono : carbonos)
-            for(Sustituyente sustituyente : carbono.getSustituyentes())
-                if(!sustituyente.esTipo(Id.hidrogeno))
-                    sustituyentes.add(sustituyente);
+            sin_hidrogeno.addAll(carbono.getSustituyentesSinHidrogeno());
 
-        return sustituyentes;
+        return sin_hidrogeno;
     }
 
     // Texto:
@@ -372,14 +369,109 @@ public class Organico {
         return resultado;
     }
 
-    protected static String nombreDelRadical(Sustituyente radical) {
-        String resultado = "";
+    protected static String nombreRadical(Sustituyente radical) {
+        String resultado;
 
         if(radical.getIso())
-            resultado += "iso";
+            resultado = "iso";
+        else resultado = "";
+
         resultado += multiplicador(radical.getCarbonos()) + "il";
 
         return resultado;
+    }
+
+    protected static String nombrePrefijo(Id funcion) {
+        String prefijo;
+
+        switch(funcion) {
+            case carbamoil:
+                prefijo = "carbamoil";
+                break;
+            case cianuro:
+                prefijo = "ciano";
+                break;
+            case cetona:
+                prefijo = "oxo";
+                break;
+            case alcohol:
+                prefijo = "hidroxi";
+                break;
+            case amina:
+                prefijo = "amino";
+                break;
+            case nitro:
+                prefijo = "nitro";
+                break;
+            case bromo:
+                prefijo = "bromo";
+                break;
+            case cloro:
+                prefijo = "cloro";
+                break;
+            case fluor:
+                prefijo = "fluoro";
+                break;
+            case yodo:
+                prefijo = "yodo";
+                break;
+            default:
+                // Error...
+                prefijo = "";
+                break;
+        }
+
+        return prefijo;
+    }
+
+    protected static String nombreSufijo(Id funcion) {
+        String sufijo;
+
+        switch(funcion) {
+            case acido:
+                sufijo = "oico"; // TODO: "ico"?
+                break;
+            case amida:
+                sufijo = "amida";
+                break;
+            case nitrilo:
+                sufijo = "nitrilo";
+                break;
+            case aldehido:
+                sufijo = "al";
+                break;
+            case cetona:
+                sufijo = "ona";
+                break;
+            case alcohol:
+                sufijo = "ol";
+                break;
+            case amina:
+                sufijo = "amina";
+                break;
+            default:
+                // Error...
+                sufijo = "";
+                break;
+        }
+
+        return sufijo;
+    }
+
+    protected String enlaceDeOrden(int orden) {
+        switch(orden) {
+            case 0:
+                return ""; // Fin de la molécula
+            case 1:
+                return "-";
+            case 2:
+                return "=";
+            case 3:
+                return "≡";
+            default:
+                // Error...
+                return "";
+        }
     }
 
 }

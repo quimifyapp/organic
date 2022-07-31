@@ -4,7 +4,7 @@ import pubchempy as pcp
 # b = pcp.get_compounds('C=C-C=C-C=C-C=C-C=C-C=C-C=C-C=C-C=C-C=C-C=C-C=C-C=C-C=C-C=C-C=C-C=C-C=C-C=C-C', 'smiles')
 # b = pcp.get_compounds('phenyl propyl ether', 'name')
 
-b = pcp.get_compounds('C(#CC=CC)O |$_AV:1;2;3;4;5;O$|', 'smiles')
+b = pcp.get_compounds("C(C1=CC=CC=C1)(=O)O |$_AV:alpha;1;2;3;4;5;6;O';O$|", 'smiles')
 
-# print(a.iupac_name)
+# print(a.iupac_name) C(C1=CC=CC=C1)(=O)O |$_AV:alpha;1;2;3;4;5;6;O';O$|
 print(b[0].cid, b[0].iupac_name, b[0].molecular_formula)
