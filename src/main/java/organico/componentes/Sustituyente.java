@@ -27,6 +27,8 @@ public class Sustituyente {
                            CH3
 	*/
 
+    // Constructores:
+
     private void construir(Id funcion, int enlaces, int carbonos, boolean iso) {
         this.funcion = funcion;
         this.enlaces = enlaces;
@@ -39,21 +41,34 @@ public class Sustituyente {
     }
 
     private void construir(int carbonos, boolean iso) {
-        if((!iso && carbonos > 0) // Como mínimo es metil
-                || (iso && carbonos > 2)) // No existen ni el "isoetil" ni el "isometil"
-            construir(Id.radical, 1, carbonos, iso);
+        construir(Id.radical, 1, carbonos, iso);
     }
 
-    public Sustituyente(Id funcion, int enlaces) {
-        construir(funcion, enlaces);
+    private void construir(int carbonos) {
+        if(carbonos > 0)
+            construir(carbonos, false);
+        else throw new IllegalArgumentException("No existen radicales con 0 carbonos");
     }
 
     public Sustituyente(int carbonos, boolean iso) {
-        construir(carbonos, iso);
+        if(iso) {
+            switch(carbonos) {
+                case 0:
+                    throw new IllegalArgumentException("No existen radicales con 0 carbonos");
+                case 1:
+                    throw new IllegalArgumentException("No existe el \"isometil\"");
+                case 2:
+                    throw new IllegalArgumentException("No existe el \"isoetil\"");
+                default:
+                    construir(carbonos, true);
+                    break;
+            }
+        }
+        else construir(carbonos);
     }
 
     public Sustituyente(int carbonos) {
-        construir(carbonos, false);
+        construir(carbonos);
     }
 
     public Sustituyente(Id funcion) {
@@ -82,8 +97,10 @@ public class Sustituyente {
                 construir(funcion, 1);
                 // Hasta aquí
                 break;
-            default: // organico.componentes.Id.alqueno, organico.componentes.Id.alquino, organico.componentes.Id.radical (error)
-                break;
+            case radical:
+                throw new IllegalArgumentException("No existe un único sustituyente con función de radical");
+            default: // Id.alqueno, Id.alquino
+                throw new IllegalArgumentException("No existen sustituyentes con función de " + funcion);
         }
     }
 
@@ -200,8 +217,6 @@ public class Sustituyente {
                 break;
             case hidrogeno:
                 resultado.append("H");
-                break;
-            default: // organico.componentes.Id.alqueno, organico.componentes.Id.alquino (error)
                 break;
         }
 

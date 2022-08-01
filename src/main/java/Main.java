@@ -4,6 +4,7 @@ import organico.opsin.Opsin;
 import organico.opsin.OpsinResultado;
 import organico.tipos.CadenaSimple;
 
+import java.util.List;
 import java.util.Scanner;
 
 class Main {
@@ -25,7 +26,63 @@ class Main {
     // TODO: Debug Carbon.toString(), CadenaSimple.corregir(), CadenaSimple.esRedundante()
     // TODO: reordenar métodos en las clases (cortar y pegar)
 
+    private static final Scanner scanner = new Scanner(System.in);
+
+    private static void cadenaSimple() {
+        CadenaSimple cadena_simple = new CadenaSimple();
+
+        boolean primero = true;
+        while(!cadena_simple.estaCompleta()) {
+            System.out.println("Fórmula: " + cadena_simple);
+
+            if(!primero)
+                System.out.println("0: C");
+
+            List<Id> disponibles = cadena_simple.sustituyentesDisponibles();
+            for(int i = 0; i < disponibles.size(); i++) {
+                if(disponibles.get(i) != Id.radical)
+                    System.out.println((i + 1) + ": " + new Sustituyente(disponibles.get(i)));
+                else System.out.println((i + 1) + ": " + "-CH2(...)CH3");
+            }
+
+            System.out.print("Elección: ");
+            int eleccion = scanner.nextInt();
+
+            if(eleccion == 0 && !primero)
+                cadena_simple.enlazarCarbono();
+            else if(disponibles.get(eleccion - 1) != Id.radical)
+                cadena_simple.enlazarSustituyente(disponibles.get(eleccion - 1));
+            else {
+                System.out.println();
+                System.out.println("0: -CH2(...)CH3");
+                System.out.println("1: -CH2(...)CH(CH3)2");
+
+                System.out.print("Elección: ");
+                eleccion = scanner.nextInt();
+
+                System.out.print("Carbonos en el radical: ");
+                int carbonos = scanner.nextInt();
+
+                cadena_simple.enlazarSustituyente(new Sustituyente(carbonos, eleccion == 1));
+            }
+            System.out.println();
+
+            if(primero)
+                primero = false;
+        }
+
+        System.out.println("Fórmula: " + cadena_simple);
+        cadena_simple.corregir();
+        System.out.println("Corregida: " + cadena_simple);
+
+        System.out.println();
+    }
+
     public static void main(String[] args) {
+
+        while(true)
+            cadenaSimple();
+
         /*
         List<Integer> indices = Arrays.asList(0, 1, 1, 2);
 
@@ -39,26 +96,6 @@ class Main {
 
         System.out.println(localizadores);
         */
-
-        // Debug corregir() :
-
-        CadenaSimple cadena_simple = new CadenaSimple();
-        cadena_simple.enlazarSustituyente(new Sustituyente(1), 2);
-        cadena_simple.enlazarSustituyente(Id.hidrogeno, 1);
-
-        cadena_simple.enlazarCarbono();
-        cadena_simple.enlazarSustituyente(new Sustituyente(3));
-        cadena_simple.enlazarSustituyente(Id.hidrogeno, 1);
-
-        cadena_simple.enlazarCarbono();
-        cadena_simple.enlazarSustituyente(Id.hidrogeno, 2);
-
-        cadena_simple.enlazarCarbono();
-        cadena_simple.enlazarSustituyente(Id.hidrogeno, 3);
-
-        System.out.println(cadena_simple);
-        cadena_simple.corregir();
-        System.out.println(cadena_simple);
 
         /*
         while(true) {

@@ -113,16 +113,19 @@ public class Carbono {
     }
 
     public Sustituyente getMayorRadical() {
-        Sustituyente mayor_radical = new Sustituyente(Id.radical);
+        Sustituyente mayor_radical;
 
-        for(Sustituyente radical : getSustituyentesTipo(Id.radical)) {
-            switch(Integer.compare(radical.getCarbonosRectos(), mayor_radical.getCarbonosRectos())) {
+        List<Sustituyente> radicales = getSustituyentesTipo(Id.radical);
+        mayor_radical = radicales.get(0); // Se asume que tiene radicales
+
+        for(int i = 1; i < radicales.size(); i++) {
+            switch(Integer.compare(radicales.get(i).getCarbonosRectos(), mayor_radical.getCarbonosRectos())) {
                 case 1:
-                    mayor_radical = radical; // Lo supera
+                    mayor_radical = radicales.get(i); // Lo supera
                     break;
                 case 0:
-                    if(radical.getIso() && !mayor_radical.getIso())
-                        mayor_radical = radical; // Lo iguala, pero sí es 'iso'
+                    if(radicales.get(i).getIso() && !mayor_radical.getIso())
+                        mayor_radical = radicales.get(i); // Lo iguala, pero sí es 'iso'
                 default:
                     break;
             }

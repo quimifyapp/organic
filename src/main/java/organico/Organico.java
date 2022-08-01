@@ -64,7 +64,7 @@ public class Organico {
         return posiciones;
     }
 
-    protected List<Integer> listPositionsOf(Sustituyente sustituyente) {
+    protected List<Integer> getPosicionesDe(Sustituyente sustituyente) {
         List<Integer> posiciones = new ArrayList<>(); // Posiciones de los carbonos enlazados al sustituyente
 
         for(int i = 0; i < carbonos.size(); i++)
@@ -77,7 +77,7 @@ public class Organico {
     protected List<Id> getFunciones() {
         List<Id> funciones = new ArrayList<>(); // Funciones presentes sin repetición, en orden y sin hidrógeno
 
-        for(Id funcion : Id.values()) // Todas las funciones recogidas en organico.componentes.Id
+        for(Id funcion : Id.values()) // Todas las funciones recogidas en Id
             if(!funcion.equals(Id.hidrogeno))
                 for(Carbono carbono : carbonos)
                     if(carbono.contiene(funcion)) {
@@ -416,9 +416,7 @@ public class Organico {
                 prefijo = "yodo";
                 break;
             default:
-                // Error...
-                prefijo = "";
-                break;
+                throw new IllegalArgumentException("No existen prefijos para la función " + funcion);
         }
 
         return prefijo;
@@ -450,9 +448,7 @@ public class Organico {
                 sufijo = "amina";
                 break;
             default:
-                // Error...
-                sufijo = "";
-                break;
+                throw new IllegalArgumentException("No existen sufijos para la función " + funcion);
         }
 
         return sufijo;
@@ -469,8 +465,7 @@ public class Organico {
             case 3:
                 return "≡";
             default:
-                // Error...
-                return "";
+                throw new IllegalArgumentException("No existen enlaces de orden " + orden);
         }
     }
 

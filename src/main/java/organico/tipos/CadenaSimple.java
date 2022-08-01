@@ -32,9 +32,6 @@ public class CadenaSimple extends Organico {
     private int getEnlacesLibres() {
         return getUltimo().getEnlacesLibres();
     }
-    private boolean estaCompleta() {
-        return getEnlacesLibres() == 0;
-    }
 
     // La cadena debe haber sido previamente corregida
     private boolean esRedundante(Id funcion) {
@@ -102,17 +99,17 @@ public class CadenaSimple extends Organico {
     }
 
     private void corregirOrden() {
-
+        invertirOrden(); // Test
     }
 
     private void corregirRadicalesPorLaIzquierda() {
-        for(int i = 0; i < carbonos.size();) { // Sin incremento
-            // Se obtiene el mayor radical de este carbono:
-            Sustituyente mayor_radical = carbonos.get(i).getMayorRadical();
+        boolean hubo_correcion; // Para actualizar el iterador posteriormente
 
-            boolean hubo_correcion; // Para actualizar el contador posteriormente
+        for(int i = 0; i < carbonos.size(); i = hubo_correcion ? 0 : i + 1) { // Sin incremento
+            if(carbonos.get(i).getSustituyentesTipo(Id.radical).size() > 0) { // Este carbono tiene radicales
+                // Se obtiene el mayor radical de este carbono:
+                Sustituyente mayor_radical = carbonos.get(i).getMayorRadical();
 
-            if(mayor_radical.getCarbonos() > 0) { // Se ha encontrado el mayor radical de este carbono
                 // Se calcula si el "camino" por este radical es preferible a la cadena principal:
                 int comparacion = Integer.compare(mayor_radical.getCarbonosRectos(), i);
 
@@ -151,18 +148,22 @@ public class CadenaSimple extends Organico {
             else hubo_correcion = false;
 
             // Se comprueba si este carbono no podría estar en un radical, ergo debe pertenecer a la cadena principal:
+            // (Se puede asumir que los carbonos anteriores sí podían estar en un radical, debido a los 'break')
             List<Sustituyente> sustituyentes = carbonos.get(i).getSustituyentesSinHidrogeno();
-            if((sustituyentes.size() != 0 // Hay sustituyentes
-                    && (i != 1 || sustituyentes.get(0).getCarbonos() != 1)) // No son metil en el segundo carbono (iso)
-                    || (carbonos.get(i).getEnlacesLibres() > 0)) // O le sigue un alqueno o alquino
-                break; // Ya no se puede extender por la izquierda
 
-            // Se incrementa el iterador o se empieza de nuevo:
-            i = hubo_correcion ? 0 : i + 1;
+            if(sustituyentes.size() > 0) // Hay sustituyentes distintos del hidrógeno
+                if(!(i == 1 && sustituyentes.size() == 1 && sustituyentes.get(0).getCarbonos() != 1))
+                    break; // Y estos no son un solo metil en el segundo carbono (no podría formar un radical 'iso')
+            else if(carbonos.get(i).getEnlacesLibres() > 0)
+                break; // Le sigue un alqueno o alquino
         }
     }
 
     // Interfaz:
+
+    public boolean estaCompleta() {
+        return getEnlacesLibres() == 0;
+    }
 
     public void corregir() {
         if(estaCompleta()) {
@@ -178,7 +179,7 @@ public class CadenaSimple extends Organico {
         }
     }
 
-    public List<Id> tiposDeSustituyentesDisponibles() {
+    public List<Id> sustituyentesDisponibles() {
         List<Id> disponibles = new ArrayList<>();
 
         switch(getEnlacesLibres()) {
