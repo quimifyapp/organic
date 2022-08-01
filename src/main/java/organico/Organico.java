@@ -464,6 +464,8 @@ public class Organico {
                 return "=";
             case 3:
                 return "≡";
+            case 4:
+                return ""; // Un solo carbono (C)
             default:
                 throw new IllegalArgumentException("No existen enlaces de orden " + orden);
         }
