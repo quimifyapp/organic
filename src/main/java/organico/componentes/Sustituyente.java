@@ -16,13 +16,13 @@ public class Sustituyente {
 
 	// EJEMPLOS:
     /*
-	cetona:     =O              ->  { organico.componentes.Id:cetona,    enlaces: 2,  carbonos: 0,  iso: false }
+	cetona:     =O              →  { organico.componentes.Id:cetona,    enlaces: 2,  carbonos: 0,  iso: false }
 
-	propil:     -CH2-CH2-CH3    ->  { organico.componentes.Id::radical,  enlaces: 1,  carbonos: 3,  iso: false }
+	propil:     -CH2-CH2-CH3    →  { organico.componentes.Id::radical,  enlaces: 1,  carbonos: 3,  iso: false }
 
                            CH3
                           /
-	isopentil:  -CH2-CH2-CH     ->  { organico.componentes.Id::radical,  enlaces: 1,  carbonos: 5,  iso: true  }
+	isopentil:  -CH2-CH2-CH     →  { organico.componentes.Id::radical,  enlaces: 1,  carbonos: 5,  iso: true  }
                           \
                            CH3
 	*/
@@ -137,7 +137,7 @@ public class Sustituyente {
             radical.get(0).enlazarSustituyente(Id.hidrogeno, 3); // CH3-
             radical.get(0).enlazarCarbono();
 
-            int anteriores = 1;
+            int anteriores = 1; // CH3-
 
             if(iso) {
                 radical.add(new Carbono(1)); // CH3-C≡
@@ -145,14 +145,15 @@ public class Sustituyente {
                 radical.get(1).enlazarSustituyente(new Sustituyente(1)); // CH3-CH(CH3)-
                 radical.get(1).enlazarCarbono();
 
-                anteriores += 2;
+                anteriores += 2; // CH3-CH(CH3)-
             }
 
-            for (int i = anteriores; i < carbonos; i++) {
-                radical.add(new Carbono(1)); // CH3-CH(CH3)-C≡
-                radical.get(i).enlazarSustituyente(Id.hidrogeno, 2); // CH3-CH(CH3)-CH2-
-                radical.get(i).enlazarCarbono(); // CH3-CH(CH3)-CH2-C≡
-            }
+            Carbono CH2 = new Carbono(1); // -C≡
+            CH2.enlazarSustituyente(Id.hidrogeno, 2); // -CH2=
+            CH2.enlazarCarbono(); // -CH2-
+
+            for(int i = anteriores; i < carbonos; i++)
+                radical.add(CH2);
         }
 
         return radical;
@@ -174,7 +175,7 @@ public class Sustituyente {
             case carbamoil:
                 resultado.append("C");
             case amida:
-                resultado.append("OHN2");
+                resultado.append("ONH2");
                 // Hasta aquí
                 break;
             case cianuro:

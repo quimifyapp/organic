@@ -21,9 +21,7 @@ public class Carbono {
     }
 
     public void enlazarSustituyente(Id funcion) {
-        Sustituyente sustituyente = new Sustituyente(funcion);
-        sustituyentes.add(sustituyente);
-        enlaces_libres -= sustituyente.getEnlaces();
+        enlazarSustituyente(new Sustituyente(funcion));
     }
 
     public void enlazarSustituyente(Sustituyente sustituyente, int veces) {
@@ -40,9 +38,17 @@ public class Carbono {
         sustituyentes.remove(sustituyente); // No se ha eliminado su enlace
     }
 
+    public void eliminarSustituyente(Id funcion) {
+        eliminarSustituyente(new Sustituyente(funcion)); // No se ha eliminado su enlace
+    }
+
     public void eliminarSustituyenteConEnlaces(Sustituyente sustituyente) {
         eliminarSustituyente(sustituyente);
         enlaces_libres += sustituyente.getEnlaces();
+    }
+
+    public void eliminarSustituyenteConEnlaces(Id funcion) {
+        eliminarSustituyenteConEnlaces(new Sustituyente(funcion));
     }
 
     public void enlazarCarbono() {
@@ -162,13 +168,14 @@ public class Carbono {
 
         // Se escribe el resto de sustituyentes:
         if(unicos.size() == 1) { // Solo hay un tipo además del hidrógeno
-            String sustituyente = unicos.get(0).toString();
+            Sustituyente unico = unicos.get(0);
+            String sustituyente = unico.toString();
 
-            if(sustituyente.length() == 1 || Organico.esHalogeno(unicos.get(0)))
-                resultado.append(sustituyente); // Como en "CN", "COH", "CH3Br"...
+            if(sustituyente.length() == 1 || Organico.esHalogeno(unico) || unico.getEnlaces() == 3)
+                resultado.append(sustituyente); // Como en "CN", "CCl", "COOH", "C(O)(NH2)", "CHO"...
             else resultado.append("(").append(sustituyente).append(")"); // Como en "CH(OH)3", "CH3(CH2CH3)"...
 
-            resultado.append((cuantificadorMolecular(getCantidadDe(unicos.get(0)))));
+            resultado.append((cuantificadorMolecular(getCantidadDe(unico))));
         }
         else if(unicos.size() > 1) // Hay más de un tipo además del hidrógeno
             for(Sustituyente sustituyente : unicos)

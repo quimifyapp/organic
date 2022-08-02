@@ -175,7 +175,7 @@ public class Organico {
         }
 
         // No se tienen en cuenta los multiplicadores ni las posiciones, como propone la IUPAC.
-        // Ej.: "2,3-diol" -> "ol"
+        // Ej.: "2,3-diol" → "ol"
         public static void ordenarAlfabeticamente(List<Localizador> localizadores) {
             localizadores.sort(Comparator.comparing(Localizador::getNombre));
         }
@@ -464,8 +464,6 @@ public class Organico {
                 return "=";
             case 3:
                 return "≡";
-            case 4:
-                return ""; // Un solo carbono (C)
             default:
                 throw new IllegalArgumentException("No existen enlaces de orden " + orden);
         }

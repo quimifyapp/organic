@@ -6,7 +6,7 @@ public enum Id { // En orden de prioridad:
     carboxil,   // -COOH ácido no principal
     amida,      // =O, -NH2
     carbamoil,  // -CONH2 amida no principal
-    nitrilo,    // #N
+    nitrilo,    // ≡N
     cianuro,    // -CN nitrilo no principal
     aldehido,   // =O, -H
     cetona,     // =O

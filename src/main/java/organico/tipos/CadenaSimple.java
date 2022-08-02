@@ -16,7 +16,7 @@ public class CadenaSimple extends Organico {
     // Constructor:
 
     private void construir() {
-        carbonos.add(new Carbono(0));
+        carbonos.add(new Carbono(0)); // =C=
     }
 
     public CadenaSimple() {
@@ -99,13 +99,58 @@ public class CadenaSimple extends Organico {
     }
 
     private void corregirOrden() {
-        invertirOrden(); // Test
+        // ...
     }
 
-    private void corregirRadicalesPorLaIzquierda() {
-        boolean hubo_correcion; // Para actualizar el iterador posteriormente
+    private void descomponerAldehidoNoPrincipalEn(Carbono carbono) { // COOH-CHO → COOH-CH(O)
+        if(carbono.contiene(Id.aldehido)) {
+            carbono.eliminarSustituyenteConEnlaces(Id.aldehido);
+            carbono.enlazarSustituyente(Id.cetona);
+            carbono.enlazarSustituyente(Id.hidrogeno);
+        }
+    }
 
-        for(int i = 0; i < carbonos.size(); i = hubo_correcion ? 0 : i + 1) { // Sin incremento
+    private void descomponerAldehidoNoPrincipal() { // COOH-CHO → COOH-CH(O)
+        if(getFunciones().get(0) != Id.aldehido) { // Hay otra función de mayor prioridad
+            descomponerAldehidoNoPrincipalEn(carbonos.get(0));
+            descomponerAldehidoNoPrincipalEn(getUltimo());
+        }
+    }
+
+    private void sustituirTerminalDePorEn(Id terminal, Carbono carbono, Id funcion, Carbono otro) { // CX-C≡ → C(CX)≡
+        if(carbono.contiene(terminal)) {
+            carbonos.remove(carbono);
+            otro.eliminarEnlace();
+            otro.enlazarSustituyente(funcion);
+        }
+    }
+
+    private void sustituirTerminalPor(Id terminal, Id funcion) { // CH2-C(A)- → CH2(CA)-
+        if(contiene(terminal) && getFunciones().get(0) != terminal) { // Hay otra función de mayor prioridad
+            sustituirTerminalDePorEn(terminal, carbonos.get(0), funcion, carbonos.get(1));
+            sustituirTerminalDePorEn(terminal, getUltimo(), funcion, carbonos.get(carbonos.size() - 1));
+        }
+    }
+
+    private void sustituirCetonaConPorEn(Id complementaria, Id sustituta, Carbono terminal) { // C(O)(A)- → C(B)-
+        if(terminal.contiene(Id.cetona) && terminal.contiene(complementaria)) {
+            terminal.eliminarSustituyenteConEnlaces(Id.cetona);
+            terminal.eliminarSustituyenteConEnlaces(complementaria);
+            terminal.enlazarSustituyente(sustituta);
+        }
+    }
+
+    private void sustituirCetonaConPor(Id complementaria, Id sustituta) { // C(O)(A)- → C(B)-
+        if(getFunciones().get(0).compareTo(sustituta) >= 0) { // La función sustituta no se ve opacada
+            sustituirCetonaConPorEn(complementaria, sustituta, carbonos.get(0));
+            sustituirCetonaConPorEn(complementaria, sustituta, getUltimo());
+        }
+    }
+
+    private void corregirRadicalesPorLaIzquierda() { // CH2(CH3)-C≡ → CH3-CH2-C≡
+        boolean hubo_correcion; // Para actualizar el iterador tras iteración
+
+        for (int i = 0; i < carbonos.size(); i = hubo_correcion ? 0 : i + 1) { // Sin incremento
             if(carbonos.get(i).getSustituyentesTipo(Id.radical).size() > 0) { // Este carbono tiene radicales
                 // Se obtiene el mayor radical de este carbono:
                 Sustituyente mayor_radical = carbonos.get(i).getMayorRadical();
@@ -148,14 +193,22 @@ public class CadenaSimple extends Organico {
             else hubo_correcion = false;
 
             // Se comprueba si este carbono no podría estar en un radical, ergo debe pertenecer a la cadena principal:
-            // (Se puede asumir que los carbonos anteriores sí podían estar en un radical, debido a los 'break')
-            List<Sustituyente> sustituyentes = carbonos.get(i).getSustituyentesSinHidrogeno();
+            List<Sustituyente> sustituyentes = carbonos.get(i).getSustituyentesSinHidrogeno(); // (Se puede asumir que
+            // los carbonos anteriores sí podían estar en un radical, debido a los 'break')
 
             if(sustituyentes.size() > 0) // Hay sustituyentes distintos del hidrógeno
-                if(!(i == 1 && sustituyentes.size() == 1 && sustituyentes.get(0).getCarbonos() != 1))
+                if(!(i == 1 && sustituyentes.size() == 1 && sustituyentes.get(0).getCarbonos() == 1))
                     break; // Y estos no son un solo metil en el segundo carbono (no podría formar un radical 'iso')
-            else if(carbonos.get(i).getEnlacesLibres() > 0)
-                break; // Le sigue un alqueno o alquino
+                else if(carbonos.get(i).getEnlacesLibres() > 0)
+                    break; // Le sigue un alqueno o alquino
+        }
+    }
+
+    private void corregirRadicales() { // CHF(CH3)(CH2CH3) → CH3-CH2-CHF-CH3
+        corregirRadicalesPorLaIzquierda(); // Comprobará internamente si hay radicales
+        if(contiene(Id.radical)) { // Para ahorrar la inversión de la cadena
+            invertirOrden(); // En lugar de corregirlos por la derecha
+            corregirRadicalesPorLaIzquierda();
         }
     }
 
@@ -166,16 +219,30 @@ public class CadenaSimple extends Organico {
     }
 
     public void corregir() {
-        if(estaCompleta()) {
-            if(contiene(Id.radical)) {
-                corregirRadicalesPorLaIzquierda();
+        if(estaCompleta() && getFunciones().size() > 0) {
+            // Se corrigen los radicales que podrían formar parte de la cadena principal:
+            corregirRadicales(); // CHF(CH3)(CH2CH3) → CH3-CH2-CHF-CH3
 
-                // En lugar de corregirlos por la derecha:
-                invertirOrden();
-                corregirRadicalesPorLaIzquierda();
-            }
+            // Cetona con alcohol → ácido (siempre puede ser principal):
+            sustituirCetonaConPor(Id.alcohol, Id.acido); // C(O)(OH)- → COOH-
 
-            corregirOrden();
+            // Cetona con amina → amida de poder ser principal:
+            sustituirCetonaConPor(Id.amina, Id.amida); // C(O)(NH2)- → CONH2-
+
+            // Cetona con hidrógeno → aldehído de poder ser principal:
+            sustituirCetonaConPor(Id.hidrogeno, Id.aldehido); // CH(O)- → CHO-
+
+            // Amida no principal → carbamoil del anterior:
+            sustituirTerminalPor(Id.amida, Id.carbamoil); // CONH2-COOH → C(OOH)(CONH2)
+
+            // Nitrilos no principal → cianuro del anterior:
+            sustituirTerminalPor(Id.nitrilo, Id.cianuro); // CN-COOH → C(OOH)(CN)
+
+            // Descompone los aldehídos no principales en cetonas con hidrógeno:
+            descomponerAldehidoNoPrincipal(); // COOH-CHO → COOH-CH(O)
+
+            // Corrige el orden de la molécula según la prioridad y los localizadores:
+            corregirOrden(); // butan-3-ol → butan-2-ol
         }
     }
 
@@ -210,7 +277,6 @@ public class CadenaSimple extends Organico {
 
     public void enlazarCarbono() {
         Carbono ultimo = getUltimo();
-
         ultimo.enlazarCarbono();
         carbonos.add(new Carbono(ultimo.getEnlacesLibres() + 1));
     }
@@ -236,9 +302,8 @@ public class CadenaSimple extends Organico {
     public String getNombre() {
         String nombre;
 
-        if(estaCompleta()) {
+        if(estaCompleta())
             nombre = "prueba";
-        }
         else nombre = "";
 
         return nombre;
@@ -256,7 +321,9 @@ public class CadenaSimple extends Organico {
             anterior = carbonos.get(i);
         }
 
-        formula.append(enlaceDeOrden(carbonos.get(carbonos.size() - 1).getEnlacesLibres())); // Como CH=CH-
+        int enlaces_ultimo = getUltimo().getEnlacesLibres();
+        if(enlaces_ultimo != 4)
+            formula.append(enlaceDeOrden(enlaces_ultimo)); // Como CH=CH-
 
         return formula.toString();
     }
