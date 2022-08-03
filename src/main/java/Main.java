@@ -30,11 +30,7 @@ class Main {
 
     // TODO: PubChem API → Java
 
-    // TODO: Debug
-    //      CadenaSimple.corregir()
-    //      CadenaSimple.esRedundante()
-
-    // TODO: reordenar métodos en las clases (cortar y pegar)
+    // TODO: Debug CadenaSimple:
 
     // TODO: -CHO es carbaldehído (añadirlo para ciclos?)
 
@@ -87,15 +83,18 @@ class Main {
                 primer_carbono = false;
         }
 
-        System.out.println("Fórmula: " + cadena_simple);
+        System.out.println();
 
         System.out.print("Secuencia:");
         for(int eleccion : elecciones)
             System.out.print(" " + eleccion);
+
         System.out.println();
 
+        System.out.println("Fórmula: " + cadena_simple);
         cadena_simple.corregir();
         System.out.println("Corregida: " + cadena_simple);
+        System.out.println("Nombre: \"" + cadena_simple.getNombre() + "\"");
 
         System.out.println();
     }

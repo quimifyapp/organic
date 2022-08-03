@@ -74,15 +74,17 @@ public class CadenaSimple extends Organico {
 
                     if(suma_enlaces > 3 || (suma_enlaces > 1 && contiene(Id.alqueno))) // No caben en un solo carbono
                         es_redundante = true;
-                        // Ya solo queda que la función sea la de mayor prioridad:
-                    else es_redundante = funcion.compareTo(sustituyentes.get(0).getFuncion()) > 0
-                            || funcion.compareTo(sustituyentes.get(1).getFuncion()) > 0;
+                    else es_redundante = funcion.equals(sustituyentes.get(0).getFuncion()); // Es la prioritaria (orden)
                 }
                 else es_redundante = false;
             }
         }
         // Derivados del metano:
-        else es_redundante = carbonos.size() == 1; // Si tiene más de 3 carbonos, no hay redundancias
+        else if(carbonos.size() == 1)
+            es_redundante = true;
+        else if(funcion != Id.radical && funcion != Id.alqueno && funcion != Id.alquino)
+            es_redundante = new Sustituyente(funcion).getEnlaces() == 3; // Solo puede ser terminal
+        else es_redundante = false;
 
         return es_redundante;
     }
@@ -177,10 +179,10 @@ public class CadenaSimple extends Organico {
         }
     }
 
-    private void sustituirTerminalPor(Id terminal, Id funcion) { // CH2-C(A)- → CH2(CA)-
+    private void sustituirTerminalPor(Id terminal, Id funcion) { // COOH-C(A)- → COOH(CA)-
         if(contiene(terminal) && getFuncionesOrdenadas().get(0) != terminal) { // Hay otra función de mayor prioridad
             sustituirTerminalDePorEn(terminal, carbonos.get(0), funcion, carbonos.get(1));
-            sustituirTerminalDePorEn(terminal, getUltimo(), funcion, carbonos.get(carbonos.size() - 1));
+            sustituirTerminalDePorEn(terminal, getUltimo(), funcion, carbonos.get(carbonos.size() - 2));
         }
     }
 
@@ -264,42 +266,6 @@ public class CadenaSimple extends Organico {
             invertirOrden(); // En lugar de corregirlos por la derecha
             corregirRadicalesPorLaIzquierda();
         }
-    }
-
-    // Texto:
-
-    public String getNombre() {
-        String nombre;
-
-        if(estaCompleta())
-            nombre = "prueba";
-        else nombre = "";
-
-        return nombre;
-    }
-
-    public String getFormula() {
-        StringBuilder formula = new StringBuilder();
-
-        Carbono anterior = carbonos.get(0);
-        formula.append(anterior); // Como CH
-
-        for(int i = 1; i < carbonos.size(); i++) {
-            formula.append(enlaceDeOrden(anterior.getEnlacesLibres() + 1)); // Como CH=
-            formula.append(carbonos.get(i)); // Como CH=CH
-            anterior = carbonos.get(i);
-        }
-
-        int enlaces_ultimo = getUltimo().getEnlacesLibres();
-        if(enlaces_ultimo != 4)
-            formula.append(enlaceDeOrden(enlaces_ultimo)); // Como CH=CH-
-
-        return formula.toString();
-    }
-
-    @Override
-    public String toString() {
-        return getFormula();
     }
 
     // Interfaz:
@@ -393,6 +359,157 @@ public class CadenaSimple extends Organico {
 
     public void enlazarSustituyente(Id funcion, int veces) {
         getUltimo().enlazarSustituyente(funcion, veces);
+    }
+
+    // Texto:
+
+    private Localizador getPrefijoPara(Id funcion) {
+        Localizador prefijo;
+
+        List<Integer> posiciones = getPosicionesDe(funcion);
+        String nombre = nombrePrefijo(funcion);
+
+        if(esRedundante(funcion)) // Sobran los localizadores porque son evidentes
+            prefijo = new Localizador(multiplicador(posiciones.size()), nombre); // Como "difluoro"
+        else if(esHalogeno(funcion) && getSustituyentesUnicos().size() == 1) // Solo hay carbonos y el halógeno
+            prefijo = new Localizador("per", nombre); // Como "perfluoro"
+        else prefijo = new Localizador(posiciones, nombre); // Como "1,2-difluoro"
+
+        return prefijo;
+    }
+
+    private String getEnlacePara(Id tipo) {
+        String enlace = "";
+
+        List<Integer> posiciones = getPosicionesDe(tipo);
+        String nombre = nombreEnlace(tipo);
+
+        if(posiciones.size() > 0) {
+            Localizador localizador;
+
+            if(esRedundante(tipo)) // Sobran los localizadores porque son evidentes
+                localizador = new Localizador(multiplicador(posiciones.size()), nombre); // Como "dien"
+            else localizador = new Localizador(posiciones, nombre); // Como "1,2-dien"
+
+            String localizador_to_string = localizador.toString();
+
+            if(empiezaPorDigito(localizador_to_string))
+                enlace += "-"; // Guión antes de los localizadores
+
+            enlace += localizador_to_string;
+        }
+
+        return enlace;
+    }
+
+    private String getSufijoPara(Id funcion) {
+        String sufijo;
+
+        List<Integer> posiciones = getPosicionesDe(funcion);
+        String nombre = nombreSufijo(funcion);
+
+        if(esRedundante(funcion)) // Sobran los localizadores porque son evidentes
+            sufijo = multiplicador(posiciones.size()) + nombre; // Como "dioico"
+        else sufijo = new Localizador(posiciones, nombre).toString(); // Como "2-3-diona"
+
+        return sufijo;
+    }
+
+    public String getNombre() { // Se asume que ya la CadenaSimple está corregida con corregir()
+        if(carbonos.size() == 1 && carbonos.get(0).getCantidadDe(Id.cetona) == 2) // Caso excepcional
+            return "dióxido de carbono"; // CO2
+
+        List<Id> funciones = getFuncionesOrdenadas();
+        int funcion = 0;
+
+        // Se procesa el sufijo:
+        String sufijo;
+        if(funciones.size() > 0 && !esHalogeno(funciones.get(0)) // Nunca son sufijos
+                && funciones.get(0) != Id.alqueno && funciones.get(0) != Id.alquino
+                && funciones.get(0) != Id.nitro && funciones.get(0) != Id.radical)
+            sufijo = getSufijoPara(funciones.get(funcion++));
+        else sufijo = "";
+
+        // Se procesan los prefijos:
+        List<Localizador> prefijos = new ArrayList<>();
+        Localizador localizador;
+
+        while(funcion < funciones.size()) {
+            if(funciones.get(funcion) != Id.alqueno
+                    && funciones.get(funcion) != Id.alquino
+                    && funciones.get(funcion) != Id.radical) {
+                localizador = getPrefijoPara(funciones.get(funcion));
+
+                if(!localizador.getNombre().equals("")) // TODO: else?
+                    prefijos.add(localizador);
+            }
+
+            funcion++;
+        }
+
+        List<Sustituyente> radicales = getRadicalesUnicos();
+        for(Sustituyente radical : radicales) {
+            localizador = new Localizador(getPosicionesDe(radical), nombreRadical(radical));
+
+            if(!localizador.getNombre().equals("")) // TODO: else?
+                prefijos.add(localizador);
+        }
+
+        StringBuilder prefijo = new StringBuilder(contiene(Id.acido) ? "ácido " : "");
+        if(prefijos.size() > 0) {
+            Localizador.ordenarAlfabeticamente(prefijos);
+
+            for(int i = 0; i < prefijos.size() - 1; i++) {
+                prefijo.append(prefijos.get(i).toString());
+
+                if(noEmpiezaPorLetra(prefijos.get(i + 1).toString()))
+                    prefijo.append("-");
+            }
+
+            prefijo.append(prefijos.get(prefijos.size() - 1));
+        }
+
+        // Se procesan los enlaces:
+        String enlaces = getEnlacePara(Id.alqueno) + getEnlacePara(Id.alquino);
+
+        if(enlaces.equals(""))
+            enlaces = "an";
+        if(sufijo.equals("") || Organico.noEmpiezaPorVocal(sufijo))
+            enlaces += "o";
+        if(!sufijo.equals("") && Organico.empiezaPorDigito(sufijo))
+            enlaces += "-";
+
+        // Se procesa el cuantificador:
+        String cuantificador = cuantificador(carbonos.size());
+
+        if(Organico.noEmpiezaPorVocal(enlaces))
+            cuantificador += "a";
+
+        return prefijo + cuantificador + enlaces + sufijo;
+    }
+
+    public String getFormula() {
+        StringBuilder formula = new StringBuilder();
+
+        Carbono anterior = carbonos.get(0);
+        formula.append(anterior); // Como CH
+
+        for(int i = 1; i < carbonos.size(); i++) {
+            formula.append(enlaceDeOrden(anterior.getEnlacesLibres() + 1)); // Como CH=
+            formula.append(carbonos.get(i)); // Como CH=CH
+            anterior = carbonos.get(i);
+        }
+
+        int enlaces_ultimo = getUltimo().getEnlacesLibres();
+        if(enlaces_ultimo != 4)
+            formula.append(enlaceDeOrden(enlaces_ultimo)); // Como CH=CH-
+
+        return formula.toString();
+    }
+
+    @Override
+    public String toString() {
+        return getFormula();
     }
 
 }

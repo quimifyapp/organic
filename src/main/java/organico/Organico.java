@@ -81,17 +81,6 @@ public class Organico {
         return posiciones;
     }
 
-    protected List<Sustituyente> getSustituyentesUnicos(Id funcion) {
-        List<Sustituyente> unicos = new ArrayList<>();
-
-        for(Carbono carbono : carbonos)
-            for(Sustituyente sustituyente : carbono.getSustituyentesTipo(funcion))
-                if(!unicos.contains(sustituyente))
-                    unicos.add(sustituyente);
-
-        return unicos;
-    }
-
     protected List<Sustituyente> getSustituyentesUnicos() {
         List<Sustituyente> unicos = new ArrayList<>();
 
@@ -103,15 +92,6 @@ public class Organico {
         return unicos;
     }
 
-    protected List<Sustituyente> getSustituyentes(Id funcion) {
-        List<Sustituyente> sustituyentes = new ArrayList<>();
-
-        for(Carbono carbono : carbonos)
-            sustituyentes.addAll(carbono.getSustituyentesTipo(funcion));
-
-        return sustituyentes;
-    }
-
     protected List<Sustituyente> getSustituyentesSinHidrogeno() {
         List<Sustituyente> sin_hidrogeno = new ArrayList<>();
 
@@ -121,13 +101,15 @@ public class Organico {
         return sin_hidrogeno;
     }
 
-    protected List<Sustituyente> getSustituyentes() {
-        List<Sustituyente> sustituyentes = new ArrayList<>();
+    protected List<Sustituyente> getRadicalesUnicos() {
+        List<Sustituyente> unicos = new ArrayList<>();
 
         for(Carbono carbono : carbonos)
-            sustituyentes.addAll(carbono.getSustituyentes());
+            for(Sustituyente sustituyente : carbono.getSustituyentesTipo(Id.radical))
+                if(!unicos.contains(sustituyente))
+                    unicos.add(sustituyente);
 
-        return sustituyentes;
+        return unicos;
     }
 
     protected List<Sustituyente> getRadicales() {
@@ -141,7 +123,7 @@ public class Organico {
 
     // Texto:
 
-    static class Localizador {
+    protected static class Localizador {
 
         // Esta clase representa un localizador de un nombre IUPAC, como "2,3-diol".
 
@@ -164,16 +146,20 @@ public class Organico {
             construir(posiciones, multiplicador, nombre);
         }
 
-        public Localizador(List<Integer> indices, String nombre) {
+        public Localizador(String multiplicador, String nombre) {
+            construir("", multiplicador, nombre);
+        }
+
+        public Localizador(List<Integer> posiciones, String nombre) {
             StringBuilder auxiliar = new StringBuilder();
 
-            if(indices.size() > 0) {
-                for(int i = 0; i < indices.size() - 1; i++)
-                    auxiliar.append(indices.get(i) + 1).append(",");
-                auxiliar.append(indices.get(indices.size() - 1) + 1);
+            if(posiciones.size() > 0) {
+                for(int i = 0; i < posiciones.size() - 1; i++)
+                    auxiliar.append(posiciones.get(i) + 1).append(",");
+                auxiliar.append(posiciones.get(posiciones.size() - 1) + 1);
             }
 
-            construir(auxiliar.toString(), Organico.cuantificador(indices.size()), nombre);
+            construir(auxiliar.toString(), Organico.multiplicador(posiciones.size()), nombre);
         }
 
         // No se tienen en cuenta los multiplicadores ni las posiciones, como propone la IUPAC.
@@ -263,7 +249,7 @@ public class Organico {
         return resultado;
     }
 
-    protected static String multiplicador(int numero) {
+    protected static String cuantificador(int numero) {
         String resultado;
 
         if(numero < 10) { // [1, 9]
@@ -321,7 +307,7 @@ public class Organico {
                 int centenas = numero / 100;
                 decenas = decenas - (centenas * 10);
 
-                resultado = multiplicador(10 * decenas + unidades); // Recursivo
+                resultado = cuantificador(10 * decenas + unidades); // Recursivo
 
                 switch(centenas) {
                     case 1: // [101, 199]
@@ -347,7 +333,7 @@ public class Organico {
         return resultado;
     }
 
-    protected static String cuantificador(int numero) {
+    protected static String multiplicador(int numero) {
         String resultado;
 
         switch(numero) {
@@ -364,7 +350,7 @@ public class Organico {
                 resultado = "tetra";
                 break;
             default:
-                resultado = multiplicador(numero) + "a";
+                resultado = cuantificador(numero) + "a";
                 break;
         }
 
@@ -378,82 +364,99 @@ public class Organico {
             resultado = "iso";
         else resultado = "";
 
-        resultado += multiplicador(radical.getCarbonos()) + "il";
+        resultado += cuantificador(radical.getCarbonos()) + "il";
 
         return resultado;
     }
 
     protected static String nombrePrefijo(Id funcion) {
-        String prefijo;
+        String nombre_prefijo;
 
         switch(funcion) {
             case carbamoil:
-                prefijo = "carbamoil";
+                nombre_prefijo = "carbamoil";
                 break;
             case cianuro:
-                prefijo = "ciano";
+                nombre_prefijo = "ciano";
                 break;
             case cetona:
-                prefijo = "oxo";
+                nombre_prefijo = "oxo";
                 break;
             case alcohol:
-                prefijo = "hidroxi";
+                nombre_prefijo = "hidroxi";
                 break;
             case amina:
-                prefijo = "amino";
+                nombre_prefijo = "amino";
                 break;
             case nitro:
-                prefijo = "nitro";
+                nombre_prefijo = "nitro";
                 break;
             case bromo:
-                prefijo = "bromo";
+                nombre_prefijo = "bromo";
                 break;
             case cloro:
-                prefijo = "cloro";
+                nombre_prefijo = "cloro";
                 break;
             case fluor:
-                prefijo = "fluoro";
+                nombre_prefijo = "fluoro";
                 break;
             case yodo:
-                prefijo = "yodo";
+                nombre_prefijo = "yodo";
                 break;
             default:
                 throw new IllegalArgumentException("No existen prefijos para la función " + funcion);
         }
 
-        return prefijo;
+        return nombre_prefijo;
+    }
+
+    protected static String nombreEnlace(Id enlace) {
+        String nombre_enlace;
+
+        switch(enlace) {
+            case alqueno:
+                nombre_enlace = "en";
+                break;
+            case alquino:
+                nombre_enlace = "in";
+                break;
+            default:
+                throw new IllegalArgumentException("La función " + enlace + " no es un tipo de enlace.");
+        }
+
+        return nombre_enlace;
     }
 
     protected static String nombreSufijo(Id funcion) {
-        String sufijo;
+        String nombre_sufijo;
 
         switch(funcion) {
             case acido:
-                sufijo = "oico"; // TODO: "ico"?
+                nombre_sufijo = "oico";
                 break;
             case amida:
-                sufijo = "amida";
+                nombre_sufijo = "amida";
                 break;
             case nitrilo:
-                sufijo = "nitrilo";
+                nombre_sufijo = "nitrilo";
                 break;
             case aldehido:
-                sufijo = "al";
+                nombre_sufijo = "al";
                 break;
             case cetona:
-                sufijo = "ona";
+                nombre_sufijo = "ona";
                 break;
             case alcohol:
-                sufijo = "ol";
+                nombre_sufijo = "ol";
                 break;
             case amina:
-                sufijo = "amina";
+                nombre_sufijo = "amina";
                 break;
             default:
                 throw new IllegalArgumentException("No existen sufijos para la función " + funcion);
         }
 
-        return sufijo;
+        return nombre_sufijo;
     }
 
     protected static String enlaceDeOrden(int orden) {
@@ -469,6 +472,28 @@ public class Organico {
             default:
                 throw new IllegalArgumentException("No existen enlaces de orden " + orden);
         }
+    }
+
+    protected static char primeraLetraDe(String texto) {
+        for(char c : texto.toCharArray())
+            if(c >= 'a' && c <= 'z')
+                return c;
+
+        return 0;
+    }
+
+    protected static boolean noEmpiezaPorVocal(String texto) {
+        char primera = primeraLetraDe(texto);
+        return primera != 'a' && primera != 'e' && primera != 'i' && primera != 'o' && primera != 'u';
+    }
+
+    protected static boolean noEmpiezaPorLetra(String texto) {
+        return texto.charAt(0) != primeraLetraDe(texto);
+    }
+
+    protected static boolean empiezaPorDigito(String texto) {
+        char primera = texto.charAt(0);
+        return primera >= '0' && primera <= '9';
     }
 
 }

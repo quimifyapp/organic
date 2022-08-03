@@ -44,6 +44,16 @@ public class Carbono {
         return Collections.frequency(sustituyentes, sustituyente);
     }
 
+    public int getCantidadDe(Id funcion) {
+        int cantidad = 0;
+
+        for(Sustituyente sustituyente : sustituyentes)
+            if(sustituyente.esTipo(funcion))
+                cantidad += 1;
+
+        return cantidad;
+    }
+
     // Métodos get:
 
     public List<Sustituyente> getSustituyentesTipo(Id funcion) {
