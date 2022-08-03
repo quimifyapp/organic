@@ -10,6 +10,9 @@ public class Opsin {
     public static OpsinResultado procesarNombreES(String nombre) {
         OpsinResultado resultado = new OpsinResultado();
 
+        // Nuestra adaptación al español de OPSIN rechaza el prefijo "ácido", por eso se elimina:
+        nombre = nombre.replaceFirst("ácido ", "");
+
         es.opsin.OpsinResult opsin_result = opsin_es.parseChemicalName(nombre);
         resultado.setSmiles(opsin_result.getExtendedSmiles());
 

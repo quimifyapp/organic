@@ -36,7 +36,7 @@ class Main {
 
     private static final Scanner scanner = new Scanner(System.in);
 
-    private static void cadenaSimple() {
+    private static String probarCadenaSimple() {
         CadenaSimple cadena_simple = new CadenaSimple();
 
         List<Integer> elecciones = new ArrayList<>();
@@ -94,9 +94,10 @@ class Main {
         System.out.println("Fórmula: " + cadena_simple);
         cadena_simple.corregir();
         System.out.println("Corregida: " + cadena_simple);
-        System.out.println("Nombre: \"" + cadena_simple.getNombre() + "\"");
+        String nombre = cadena_simple.getNombre();
+        System.out.println("Nombre: \"" + nombre + "\"");
 
-        System.out.println();
+        return nombre;
     }
 
     private static void probarOPSIN() {
@@ -121,11 +122,13 @@ class Main {
     }
 
     public static void main(String[] args) {
-
-        // System.out.println(new Sustituyente(3, true).getCadenaRadical());
-
         while(true) {
-            cadenaSimple();
+            String nombre = probarCadenaSimple();
+
+            OpsinResultado resultado = Opsin.procesarNombreES(nombre);
+            System.out.println("OPSIN smiles: " + resultado.getSmiles());
+            System.out.println();
+
             //probarOPSIN();
         }
 
