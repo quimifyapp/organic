@@ -1,7 +1,5 @@
 package organico.componentes;
 
-import organico.tipos.CadenaSimple;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -104,6 +102,8 @@ public class Sustituyente {
         }
     }
 
+    // Consultas particulares:
+
     public boolean esTipo(Id funcion) {
         return this.funcion.equals(funcion);
     }
@@ -125,11 +125,45 @@ public class Sustituyente {
 
     // Para radicales:
 
+    public boolean esMayorRadicalQue(Sustituyente radical) {
+        switch(Integer.compare(getCarbonosRectos(), radical.getCarbonosRectos())) {
+            case 1: // Lo supera
+                return true;
+            case 0: // Lo iguala
+                return iso && !radical.iso; // Pero es 'iso'
+            default:
+                return false;
+        }
+    }
+
+    // Métodos get:
+
+    public Id getFuncion() {
+        return funcion;
+    }
+
+
+    public int getEnlaces() {
+        return enlaces;
+    }
+
+
+    public int getCarbonos() {
+        return carbonos;
+    }
+
+
+    public boolean getIso() {
+        return iso;
+    }
+
+    // Para radicales:
+
     public int getCarbonosRectos() {
         return carbonos - (iso ? 1 : 0);
     }
 
-    public List<Carbono> getCadenaRadical() {
+    public List<Carbono> getRadical() {
         List<Carbono> radical = new ArrayList<>();
 
         if(carbonos > 0) {
@@ -222,40 +256,6 @@ public class Sustituyente {
         }
 
         return resultado.toString();
-    }
-
-    // Getters y setters:
-
-    public Id getFuncion() {
-        return funcion;
-    }
-
-    public void setFuncion(Id funcion) {
-        this.funcion = funcion;
-    }
-
-    public int getEnlaces() {
-        return enlaces;
-    }
-
-    public void setEnlaces(int enlaces) {
-        this.enlaces = enlaces;
-    }
-
-    public int getCarbonos() {
-        return carbonos;
-    }
-
-    public void setCarbonos(int carbonos) {
-        this.carbonos = carbonos;
-    }
-
-    public boolean getIso() {
-        return iso;
-    }
-
-    public void setIso(boolean iso) {
-        this.iso = iso;
     }
 
 }

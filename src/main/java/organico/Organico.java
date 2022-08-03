@@ -14,9 +14,9 @@ public class Organico {
 
     protected final List<Carbono> carbonos = new ArrayList<>();
 
-    private static final List<Id> halogenos = Arrays.asList(Id.bromo, Id.cloro, Id.fluor, Id.yodo);
-
     // Consultas generales:
+
+    private static final List<Id> halogenos = Arrays.asList(Id.bromo, Id.cloro, Id.fluor, Id.yodo);
 
     protected static boolean esHalogeno(Id funcion) {
         return halogenos.contains(funcion);
@@ -24,15 +24,6 @@ public class Organico {
 
     public static boolean esHalogeno(Sustituyente sustituyente) {
         return esHalogeno(sustituyente.getFuncion());
-    }
-
-    protected static void ordenarFunciones(List<Id> funciones) {
-        for(int i = 0; i < funciones.size() - 1;) // Sin incremento
-            if(funciones.get(i).compareTo(funciones.get(i + 1)) > 0) {
-                swap(funciones, i, i + 1); // get(i) > get(i + 1)
-                i = 0;
-            }
-            else i++; // get(i) <= get(i + 1)
     }
 
     public static void ordenarPorFunciones(List<Sustituyente> sustituyentes) {
@@ -52,6 +43,22 @@ public class Organico {
                 return true;
 
         return false;
+    }
+
+    // Métodos get:
+
+    protected List<Id> getFuncionesOrdenadas() {
+        List<Id> funciones = new ArrayList<>(); // Funciones presentes sin repetición, en orden y sin hidrógeno
+
+        for(Id funcion : Id.values()) // Todas las funciones recogidas en Id
+            if(!funcion.equals(Id.hidrogeno))
+                for(Carbono carbono : carbonos)
+                    if(carbono.contiene(funcion)) {
+                        funciones.add(funcion);
+                        break;
+                    }
+
+        return funciones;
     }
 
     protected List<Integer> getPosicionesDe(Id funcion) {
@@ -74,21 +81,7 @@ public class Organico {
         return posiciones;
     }
 
-    protected List<Id> getFunciones() {
-        List<Id> funciones = new ArrayList<>(); // Funciones presentes sin repetición, en orden y sin hidrógeno
-
-        for(Id funcion : Id.values()) // Todas las funciones recogidas en Id
-            if(!funcion.equals(Id.hidrogeno))
-                for(Carbono carbono : carbonos)
-                    if(carbono.contiene(funcion)) {
-                        funciones.add(funcion);
-                        break;
-                    }
-
-        return funciones;
-    }
-
-    protected List<Sustituyente> getSustituyentesUnicosTipo(Id funcion) {
+    protected List<Sustituyente> getSustituyentesUnicos(Id funcion) {
         List<Sustituyente> unicos = new ArrayList<>();
 
         for(Carbono carbono : carbonos)
@@ -110,20 +103,11 @@ public class Organico {
         return unicos;
     }
 
-    protected List<Sustituyente> getSustituyentesTipo(Id funcion) {
+    protected List<Sustituyente> getSustituyentes(Id funcion) {
         List<Sustituyente> sustituyentes = new ArrayList<>();
 
         for(Carbono carbono : carbonos)
             sustituyentes.addAll(carbono.getSustituyentesTipo(funcion));
-
-        return sustituyentes;
-    }
-
-    protected List<Sustituyente> getSustituyentes() {
-        List<Sustituyente> sustituyentes = new ArrayList<>();
-
-        for(Carbono carbono : carbonos)
-            sustituyentes.addAll(carbono.getSustituyentes());
 
         return sustituyentes;
     }
@@ -135,6 +119,24 @@ public class Organico {
             sin_hidrogeno.addAll(carbono.getSustituyentesSinHidrogeno());
 
         return sin_hidrogeno;
+    }
+
+    protected List<Sustituyente> getSustituyentes() {
+        List<Sustituyente> sustituyentes = new ArrayList<>();
+
+        for(Carbono carbono : carbonos)
+            sustituyentes.addAll(carbono.getSustituyentes());
+
+        return sustituyentes;
+    }
+
+    protected List<Sustituyente> getRadicales() {
+        List<Sustituyente> sustituyentes = new ArrayList<>();
+
+        for(Carbono carbono : carbonos)
+            sustituyentes.addAll(carbono.getSustituyentesTipo(Id.radical));
+
+        return sustituyentes;
     }
 
     // Texto:
@@ -298,9 +300,9 @@ public class Organico {
             else if(numero == 21) // 21
                 resultado = "heneicos";
             else if(numero < 25) // [22, 25]
-                    resultado = prefijoGriego(unidades) + "cos";
+                resultado = prefijoGriego(unidades) + "cos";
             else if(numero < 30) // [26, 29]
-                    resultado = prefijoGriego(unidades) + "acos";
+                resultado = prefijoGriego(unidades) + "acos";
             else if(numero < 100) { // [30, 99]
                 resultado = prefijoGriego(unidades);
 
@@ -454,7 +456,7 @@ public class Organico {
         return sufijo;
     }
 
-    protected String enlaceDeOrden(int orden) {
+    protected static String enlaceDeOrden(int orden) {
         switch(orden) {
             case 0:
                 return ""; // Fin de la molécula

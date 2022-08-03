@@ -1,7 +1,6 @@
 package organico.componentes;
 
 public enum Id { // En orden de prioridad:
-
     acido,      // =O, -OH
     carboxil,   // -COOH ácido no principal
     amida,      // =O, -NH2
@@ -12,8 +11,8 @@ public enum Id { // En orden de prioridad:
     cetona,     // =O
     alcohol,    // -OH
     amina,      // -NH2
-    alqueno,    // Doble enlace
-    alquino,    // Triple enlace
+    alqueno,    // = doble enlace
+    alquino,    // ≡ triple enlace
     nitro,      // -NO2
     bromo,      // -Br
     cloro,      // -Cl
@@ -21,5 +20,4 @@ public enum Id { // En orden de prioridad:
     yodo,       // -I
     radical,    // -R
     hidrogeno   // -H
-
 }
