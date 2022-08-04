@@ -14,7 +14,8 @@ public class Opsin {
         nombre = nombre.replaceFirst("ácido ", "");
 
         es.opsin.OpsinResult opsin_result = opsin_es.parseChemicalName(nombre);
-        resultado.setSmiles(opsin_result.getExtendedSmiles());
+
+        resultado.setSmiles(opsin_result.getSmiles());
 
         return resultado;
     }
@@ -23,6 +24,7 @@ public class Opsin {
         OpsinResultado resultado = new OpsinResultado();
 
         OpsinResult opsin_result = opsin_en.parseChemicalName(nombre);
+
         resultado.setSmiles(opsin_result.getExtendedSmiles());
 
         return resultado;

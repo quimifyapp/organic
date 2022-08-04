@@ -7,9 +7,9 @@ public class OrganicoResultado {
     private String nombre;
     private String formula;
 
+    private String masa;
     private Optional<String> imagen_url;
 
-    private String masa;
-
     // ...
+
 }

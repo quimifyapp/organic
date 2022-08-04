@@ -181,28 +181,8 @@ public class Organico {
 
         // Getters y setters:
 
-        public String getPosiciones() {
-            return posiciones;
-        }
-
-        public void setPosiciones(String posiciones) {
-            this.posiciones = posiciones;
-        }
-
-        public String getMultiplicador() {
-            return multiplicador;
-        }
-
-        public void setMultiplicador(String multiplicador) {
-            this.multiplicador = multiplicador;
-        }
-
         public String getNombre() {
             return nombre;
-        }
-
-        public void setNombre(String nombre) {
-            this.nombre = nombre;
         }
 
     }

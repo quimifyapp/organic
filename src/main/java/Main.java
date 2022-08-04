@@ -2,8 +2,12 @@ import organico.componentes.Id;
 import organico.componentes.Sustituyente;
 import organico.opsin.Opsin;
 import organico.opsin.OpsinResultado;
+import organico.pubchem.PubChem;
+import organico.pubchem.PubChemResultado;
 import organico.tipos.CadenaSimple;
 
+import java.awt.*;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -27,8 +31,6 @@ class Main {
     // TODO: Aprender: alertas sobre el proceso con cada solución (Ej.: se ha escogido otra cadena principal más larga)
 
     // ////////////////////////////////////////////////////////
-
-    // TODO: PubChem API → Java
 
     // TODO: Debug CadenaSimple:
 
@@ -88,14 +90,15 @@ class Main {
         System.out.print("Secuencia:");
         for(int eleccion : elecciones)
             System.out.print(" " + eleccion);
-
         System.out.println();
 
+        System.out.println();
         System.out.println("Fórmula: " + cadena_simple);
         cadena_simple.corregir();
         System.out.println("Corregida: " + cadena_simple);
         String nombre = cadena_simple.getNombre();
-        System.out.println("Nombre: \"" + nombre + "\"");
+        System.out.println("Nombre: " + nombre);
+        System.out.println();
 
         return nombre;
     }
@@ -122,12 +125,40 @@ class Main {
     }
 
     public static void main(String[] args) {
+        new Opsin(); // Para cargar sus recursos ya y no esperar después
+
         while(true) {
             String nombre = probarCadenaSimple();
 
-            OpsinResultado resultado = Opsin.procesarNombreES(nombre);
-            System.out.println("OPSIN smiles: " + resultado.getSmiles());
-            System.out.println();
+            OpsinResultado opsin_resultado = Opsin.procesarNombreES(nombre);
+            String smiles = opsin_resultado.getSmiles();
+
+            System.out.println("OPSIN smiles: " + opsin_resultado.getSmiles());
+
+            if(smiles != null) {
+                PubChemResultado pub_chem_resultado = PubChem.procesarSmiles(smiles);
+
+                System.out.print("PubChem masa: ");
+                if(pub_chem_resultado.getMasa().isPresent())
+                    System.out.println(pub_chem_resultado.getMasa().get());
+                else System.out.println("no encontrada");
+
+                String url_2d = pub_chem_resultado.getUrl_2d();
+                System.out.println("PubChem 2D: " + url_2d);
+                System.out.println();
+
+                try {
+                    if(Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE))
+                        Desktop.getDesktop().browse(new URI(url_2d));
+                }
+                catch(Exception ignore) {}
+            }
+
+            try {
+                System.out.println("Enter para continuar...");
+                System.in.read();
+            }
+            catch(Exception ignore) {}
 
             //probarOPSIN();
         }
