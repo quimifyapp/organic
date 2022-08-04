@@ -15,6 +15,8 @@ public class PubChem {
 	public static PubChemResultado procesarSmiles(String smiles) {
 		PubChemResultado resultado = new PubChemResultado();
 
+		smiles = Conexion.formatearHTTP(smiles);
+
 		try {
 			String cid = new Conexion(REST + SMILES + smiles + "/cids/TXT").getTexto();
 
@@ -29,10 +31,10 @@ public class PubChem {
 					// Error...
 				}
 			}
-			else resultado.setUrl_2d(REST + SMILES + smiles + "/PNG"); // Este es de mala calidad (300 x 300 px) :(
+			else resultado.setUrl_2d(REST + SMILES + smiles + "/PNG"); // Este es de mala calidad (300 x 300) px :(
 		}
 		catch(IOException exception) {
-			resultado.setUrl_2d(REST + SMILES + smiles + "/PNG"); // Este es de mala calidad (300 x 300 px) :(
+			resultado.setUrl_2d(REST + SMILES + smiles + "/PNG"); // Este es de mala calidad (300 x 300) px :(
 			// Error...
 		}
 

@@ -46,10 +46,7 @@ public class Conexion {
 
 		return texto.toString();
 	}
-
-	// Privados:
-
-	private String formatearHTTP(String input) {
+	public static String formatearHTTP(String input) {
 		return URLEncoder.encode(input, StandardCharsets.UTF_8);
 	}
 

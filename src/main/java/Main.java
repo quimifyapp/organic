@@ -32,7 +32,6 @@ class Main {
 
     // ////////////////////////////////////////////////////////
 
-    // TODO: https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/smiles/BrC(C(C(=O)O)Cl)CC#N/PNG
     // TODO: OPSIN amidas (aminas, nitrilos, carbamoil?)
 
     // TODO: -CHO es carbaldehído (añadirlo para ciclos?)
