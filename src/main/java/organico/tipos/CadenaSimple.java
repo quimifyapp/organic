@@ -51,12 +51,10 @@ public class CadenaSimple extends Organico {
 
         // Derivados del propano:
         if(carbonos.size() == 3) {
-            List<Id> funciones = getFuncionesOrdenadas();
-
-            if(funcion == Id.cetona && funciones.get(0).compareTo(Id.aldehido) > 0) // Es propanona
+            if(funcion == Id.cetona && getFuncionPrioritaria().compareTo(Id.aldehido) > 0) // Es propanona
                 es_redundante = true;
                 // Es propeno | propadieno | propino:
-            else es_redundante = funciones.size() == 1 && (funcion == Id.alqueno || funcion == Id.alquino);
+            else es_redundante = hayFunciones() && (funcion == Id.alqueno || funcion == Id.alquino);
         }
         // Derivados del etano:
         else if(carbonos.size() == 2) {

@@ -4,7 +4,7 @@ import uk.ac.cam.ch.wwmm.opsin.*;
 
 public class OpsinResultado {
 
-    private boolean correcto;
+    private final boolean correcto;
     private String smiles;
 
     // Constructores:

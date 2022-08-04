@@ -45,9 +45,19 @@ public class Organico {
         return false;
     }
 
+    protected boolean hayFunciones() { // Sin hidrógeno
+        for(Id funcion : Id.values()) // Todas las funciones recogidas en Id
+            if(!funcion.equals(Id.hidrogeno))
+                for(Carbono carbono : carbonos)
+                    if(carbono.contiene(funcion))
+                        return true;
+
+        return false;
+    }
+
     // Métodos get:
 
-    protected Id getFuncionPrioritaria() {
+    protected Id getFuncionPrioritaria() { // Con hidrógeno
         for(Id funcion : Id.values()) // Todas las funciones recogidas en Id
             for(Carbono carbono : carbonos)
                 if(carbono.contiene(funcion))
@@ -56,16 +66,13 @@ public class Organico {
         return null;
     }
 
-    protected List<Id> getFuncionesOrdenadas() {
-        List<Id> funciones = new ArrayList<>(); // Funciones presentes sin repetición, en orden y sin hidrógeno
+    protected List<Id> getFuncionesOrdenadas() { // Sin hidrógeno
+        List<Id> funciones = new ArrayList<>(); // Funciones presentes sin repetición y en orden
 
         for(Id funcion : Id.values()) // Todas las funciones recogidas en Id
             if(!funcion.equals(Id.hidrogeno))
-                for(Carbono carbono : carbonos)
-                    if(carbono.contiene(funcion)) {
-                        funciones.add(funcion);
-                        break;
-                    }
+                if(contiene(funcion))
+                    funciones.add(funcion);
 
         return funciones;
     }
