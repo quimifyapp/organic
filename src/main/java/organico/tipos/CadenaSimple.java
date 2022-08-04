@@ -154,7 +154,7 @@ public class CadenaSimple extends Organico {
         }
     }
 
-    private void descomponerAldehidoNoPrincipalEn(Carbono carbono) { // COOH-CHO → COOH-CH(O)
+    private void descomponerAldehidoEn(Carbono carbono) { // COOH-CHO → COOH-CH(O)
         if(carbono.contiene(Id.aldehido)) {
             carbono.eliminarSustituyenteConEnlaces(Id.aldehido);
             carbono.enlazarSustituyente(Id.cetona);
@@ -162,10 +162,10 @@ public class CadenaSimple extends Organico {
         }
     }
 
-    private void descomponerAldehidoNoPrincipal() { // COOH-CHO → COOH-CH(O)
+    private void descomponerAldehido() { // COOH-CHO → COOH-CH(O)
         if(getFuncionPrioritaria() != Id.aldehido) { // Hay otra de mayor prioridad, se debe descomponer el aldehído
-            descomponerAldehidoNoPrincipalEn(carbonos.get(0));
-            descomponerAldehidoNoPrincipalEn(getUltimo());
+            descomponerAldehidoEn(carbonos.get(0));
+            descomponerAldehidoEn(getUltimo());
         }
     }
 
@@ -179,8 +179,10 @@ public class CadenaSimple extends Organico {
 
     private void sustituirTerminalPor(Id terminal, Id funcion) { // COOH-C(A)- → COOH(CA)-
         if(getFuncionPrioritaria() != terminal) { // Hay una función de mayor prioridad, se debe descomponer el terminal
-            sustituirTerminalDePorEn(terminal, carbonos.get(0), funcion, carbonos.get(1));
-            sustituirTerminalDePorEn(terminal, getUltimo(), funcion, carbonos.get(carbonos.size() - 2));
+            if(carbonos.size() >= 2) // Para poder acceder a carbonos.get(1)
+                sustituirTerminalDePorEn(terminal, carbonos.get(0), funcion, carbonos.get(1));
+            if(carbonos.size() >= 2) // Para poder acceder a carbonos.get(carbonos.size() - 2)
+                sustituirTerminalDePorEn(terminal, getUltimo(), funcion, carbonos.get(carbonos.size() - 2));
         }
     }
 
@@ -305,7 +307,7 @@ public class CadenaSimple extends Organico {
     }
 
     public void corregir() {
-        if(estaCompleta() && getFuncionesOrdenadas().size() > 0) {
+        if(estaCompleta() && hayFunciones()) {
             // Radicales:
 
             // Se corrigen los radicales que podrían formar parte de la cadena principal:
@@ -316,16 +318,16 @@ public class CadenaSimple extends Organico {
             // Cetona con hidrógeno → aldehído de poder ser principal:
             componerAldehido();
 
-            // Cetona con alcohol → ácido (siempre puede ser principal):
+            // Cetona con alcohol → ácido:
             sustituirCetonaConPor(Id.alcohol, Id.acido); // C(O)(OH)- → COOH-
 
-            // Cetona con amina → amida de poder ser principal:
+            // Cetona con amina → amida:
             sustituirCetonaConPor(Id.amina, Id.amida); // C(O)(NH2)- → CONH2-
 
             // Descomposición:
 
             // Aldehído no principal → cetona con hidrógeno:
-            descomponerAldehidoNoPrincipal(); // COOH-CHO → COOH-CH(O)
+            descomponerAldehido(); // COOH-CHO → COOH-CH(O)
 
             // Amida no principal → carbamoil del anterior:
             sustituirTerminalPor(Id.amida, Id.carbamoil); // CONH2-COOH → C(OOH)(CONH2)

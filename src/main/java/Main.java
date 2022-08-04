@@ -32,7 +32,8 @@ class Main {
 
     // ////////////////////////////////////////////////////////
 
-    // TODO: Debug CadenaSimple:
+    // TODO: https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/smiles/BrC(C(C(=O)O)Cl)CC#N/PNG
+    // TODO: OPSIN amidas (aminas, nitrilos, carbamoil?)
 
     // TODO: -CHO es carbaldehído (añadirlo para ciclos?)
 
@@ -148,8 +149,7 @@ class Main {
                 System.out.println();
 
                 try {
-                    if(Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE))
-                        Desktop.getDesktop().browse(new URI(url_2d));
+                    Desktop.getDesktop().browse(new URI(url_2d));
                 }
                 catch(Exception ignore) {}
             }
