@@ -8,26 +8,18 @@ public class Opsin {
     protected static final NameToStructure opsin_en = NameToStructure.getInstance();
 
     public static OpsinResultado procesarNombreES(String nombre) {
-        OpsinResultado resultado = new OpsinResultado();
-
         // Nuestra adaptación al español de OPSIN rechaza el prefijo "ácido", por eso se elimina:
         nombre = nombre.replaceFirst("ácido ", "");
 
         es.opsin.OpsinResult opsin_result = opsin_es.parseChemicalName(nombre);
 
-        resultado.setSmiles(opsin_result.getSmiles());
-
-        return resultado;
+        return new OpsinResultado(opsin_result);
     }
 
     public static OpsinResultado procesarNombreEN(String nombre) {
-        OpsinResultado resultado = new OpsinResultado();
-
         OpsinResult opsin_result = opsin_en.parseChemicalName(nombre);
 
-        resultado.setSmiles(opsin_result.getExtendedSmiles());
-
-        return resultado;
+        return new OpsinResultado(opsin_result);
     }
 
 }

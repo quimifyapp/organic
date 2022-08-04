@@ -47,6 +47,15 @@ public class Organico {
 
     // Métodos get:
 
+    protected Id getFuncionPrioritaria() {
+        for(Id funcion : Id.values()) // Todas las funciones recogidas en Id
+            for(Carbono carbono : carbonos)
+                if(carbono.contiene(funcion))
+                    return funcion;
+
+        return null;
+    }
+
     protected List<Id> getFuncionesOrdenadas() {
         List<Id> funciones = new ArrayList<>(); // Funciones presentes sin repetición, en orden y sin hidrógeno
 

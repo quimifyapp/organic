@@ -165,7 +165,7 @@ public class CadenaSimple extends Organico {
     }
 
     private void descomponerAldehidoNoPrincipal() { // COOH-CHO → COOH-CH(O)
-        if(getFuncionesOrdenadas().get(0) != Id.aldehido) { // Hay otra función de mayor prioridad
+        if(getFuncionPrioritaria() != Id.aldehido) { // Hay otra de mayor prioridad, se debe descomponer el aldehído
             descomponerAldehidoNoPrincipalEn(carbonos.get(0));
             descomponerAldehidoNoPrincipalEn(getUltimo());
         }
@@ -180,7 +180,7 @@ public class CadenaSimple extends Organico {
     }
 
     private void sustituirTerminalPor(Id terminal, Id funcion) { // COOH-C(A)- → COOH(CA)-
-        if(contiene(terminal) && getFuncionesOrdenadas().get(0) != terminal) { // Hay otra función de mayor prioridad
+        if(getFuncionPrioritaria() != terminal) { // Hay una función de mayor prioridad, se debe descomponer el terminal
             sustituirTerminalDePorEn(terminal, carbonos.get(0), funcion, carbonos.get(1));
             sustituirTerminalDePorEn(terminal, getUltimo(), funcion, carbonos.get(carbonos.size() - 2));
         }
@@ -195,10 +195,13 @@ public class CadenaSimple extends Organico {
     }
 
     private void sustituirCetonaConPor(Id complementaria, Id sustituta) { // C(O)(A)- → C(B)-
-        if(getFuncionesOrdenadas().get(0).compareTo(sustituta) >= 0) { // La función sustituta no se ve opacada
-            sustituirCetonaConPorEn(complementaria, sustituta, carbonos.get(0));
-            sustituirCetonaConPorEn(complementaria, sustituta, getUltimo());
-        }
+        sustituirCetonaConPorEn(complementaria, sustituta, carbonos.get(0));
+        sustituirCetonaConPorEn(complementaria, sustituta, getUltimo());
+    }
+
+    private void componerAldehido() {
+        if(getFuncionPrioritaria().compareTo(Id.aldehido) >= 0) // No hay otra de mayor prioridad, puede haber aldehídos
+            sustituirCetonaConPor(Id.hidrogeno, Id.aldehido);
     }
 
     private void corregirRadicalesPorLaIzquierda() { // CH2(CH3)-C≡ → CH3-CH2-C≡
