@@ -8,7 +8,7 @@ import java.util.*;
 
 import static java.util.Collections.swap;
 
-// Esta clase generaliza distintos organico.tipos de compuestos orgánicos: cadenas simples, cíclicos, ésteres...
+// Esta clase generaliza distintos tipos de compuestos orgánicos: cadenas simples, cíclicos, ésteres...
 
 public class Organico {
 

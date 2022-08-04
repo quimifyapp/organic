@@ -313,14 +313,14 @@ public class CadenaSimple extends Organico {
 
             // Composición:
 
+            // Cetona con hidrógeno → aldehído de poder ser principal:
+            componerAldehido();
+
             // Cetona con alcohol → ácido (siempre puede ser principal):
             sustituirCetonaConPor(Id.alcohol, Id.acido); // C(O)(OH)- → COOH-
 
             // Cetona con amina → amida de poder ser principal:
             sustituirCetonaConPor(Id.amina, Id.amida); // C(O)(NH2)- → CONH2-
-
-            // Cetona con hidrógeno → aldehído de poder ser principal:
-            sustituirCetonaConPor(Id.hidrogeno, Id.aldehido); // CH(O)- → CHO-
 
             // Descomposición:
 
