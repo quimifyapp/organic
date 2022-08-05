@@ -6,58 +6,65 @@ import organico.componentes.Id;
 import organico.componentes.Sustituyente;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 // Esta clase representa compuestos formados por una sola cadena carbonada finita con sustituyentes.
 
-public class CadenaSimple extends Organico {
+public final class CadenaSimple extends Organico {
+
+    private final List<Carbono> cadena;
 
     // Constructores:
 
     private void construir() {
-        carbonos.add(new Carbono(0)); // (C)
+        this.cadena.add(new Carbono(0)); // (C)
     }
 
-    private void copiar(List<Carbono> nuevos) {
-        carbonos.clear();
-        carbonos.addAll(nuevos);
+    private void copiar(List<Carbono> nueva_cadena) {
+        this.cadena.addAll(nueva_cadena);
     }
 
-    private void copiar(CadenaSimple nueva) {
-        copiar(nueva.carbonos);
+    private void convertirseEn(List<Carbono> nueva_cadena) {
+        this.cadena.clear();
+        copiar(nueva_cadena);
     }
 
     public CadenaSimple() {
+        this.cadena = getCarbonos();
         construir();
     }
 
-    public CadenaSimple(CadenaSimple nueva) {
-        copiar(nueva);
+    private CadenaSimple(List<Carbono> nueva_cadena) {
+        this.cadena = getCarbonos();
+        copiar(nueva_cadena);
     }
 
     // Internos:
 
-    private Carbono getUltimo() {
-        return carbonos.get(carbonos.size() - 1);
+    private List<Id> getFuncionesOrdenadas() { // Sin hidrógeno ni éter
+        return getFuncionesOrdenadasEn(cadena);
     }
 
-    private int getEnlacesLibres() {
-        return getUltimo().getEnlacesLibres();
+    private List<Integer> getPosicionesDeEn(Id funcion) {
+        return getPosicionesDeEn(funcion, cadena);
+    }
+
+    private List<Integer> getPosicionesDeEn(Sustituyente sustituyente) {
+        return getPosicionesDeEn(sustituyente, cadena);
     }
 
     private boolean esRedundante(Id funcion) {
         boolean es_redundante;
 
         // Derivados del propano:
-        if(carbonos.size() == 3) {
+        if(cadena.size() == 3) {
             if(funcion == Id.cetona && getFuncionPrioritaria().compareTo(Id.aldehido) > 0) // Es propanona
                 es_redundante = true;
                 // Es propeno | propadieno | propino:
             else es_redundante = hayFunciones() && (funcion == Id.alqueno || funcion == Id.alquino);
         }
         // Derivados del etano:
-        else if(carbonos.size() == 2) {
+        else if(cadena.size() == 2) {
             if(funcion == Id.alqueno || funcion == Id.alquino) // Solo hay una posición para el enlace
                 es_redundante = true;
             else if(getSustituyentesSinHidrogeno().size() == 1) // Solo hay un sustituyente (como cloroetano, etenol...)
@@ -72,13 +79,13 @@ public class CadenaSimple extends Organico {
 
                     if(suma_enlaces > 3 || (suma_enlaces > 1 && contiene(Id.alqueno))) // No caben en un solo carbono
                         es_redundante = true;
-                    else es_redundante = funcion.equals(sustituyentes.get(0).getFuncion()); // Es la prioritaria (orden)
+                    else es_redundante = funcion == sustituyentes.get(0).getFuncion(); // Es la prioritaria (orden)
                 }
                 else es_redundante = false;
             }
         }
         // Derivados del metano:
-        else if(carbonos.size() == 1)
+        else if(cadena.size() == 1)
             es_redundante = true;
         else if(funcion != Id.radical && funcion != Id.alqueno && funcion != Id.alquino)
             es_redundante = new Sustituyente(funcion).getEnlaces() == 3; // Solo puede ser terminal
@@ -90,23 +97,7 @@ public class CadenaSimple extends Organico {
     // Modificadores:
 
     private void invertirOrden() {
-        List<Carbono> inversos = new ArrayList<>(carbonos);
-        Collections.reverse(inversos);
-
-        carbonos.clear();
-        construir();
-
-        // Se vuelve a formar la cadena en el orden natural para preservar los enlaces (si no, estarían al revés):
-        if(inversos.size() > 0) {
-            for(Sustituyente sustituyente : inversos.get(0).getSustituyentes())
-                enlazarSustituyente(sustituyente);
-
-            for(int i = 1; i < inversos.size(); i++) { // A partir del primero
-                enlazarCarbono();
-                for(Sustituyente sustituyente : inversos.get(i).getSustituyentes())
-                    enlazarSustituyente(sustituyente);
-            }
-        }
+        convertirseEn(inversaDe(cadena));
     }
 
     private boolean corregirPorSegun(CadenaSimple inversa, int comparacion) {
@@ -114,7 +105,7 @@ public class CadenaSimple extends Organico {
 
         if(comparacion != 0) { // No son iguales
             if(comparacion > 0) // El inverso va antes alfabéticamente
-                copiar(inversa);
+                convertirseEn(inversa.cadena);
 
             corregido = true; // Ya se ha corregido el orden según los radicales alfabéticamente
         }
@@ -126,14 +117,14 @@ public class CadenaSimple extends Organico {
     private void corregirOrden() {
         boolean corregido = false;
 
-        CadenaSimple inversa = new CadenaSimple(this);
+        CadenaSimple inversa = new CadenaSimple(cadena);
         inversa.invertirOrden();
 
         List<Id> funciones = getFuncionesOrdenadas();
         for(int i = 0; i < funciones.size() && !corregido; i++) {
             // Se calculan las sumas de sus posiciones:
-            int suma_normal = getPosicionesDe(funciones.get(i)).stream().mapToInt(Integer::intValue).sum();
-            int suma_inversa = inversa.getPosicionesDe(funciones.get(i)).stream().mapToInt(Integer::intValue).sum();
+            int suma_normal = getPosicionesDeEn(funciones.get(i)).stream().mapToInt(Integer::intValue).sum();
+            int suma_inversa = inversa.getPosicionesDeEn(funciones.get(i)).stream().mapToInt(Integer::intValue).sum();
 
             // Se comparan las sumas de sus posiciones:
             corregido = corregirPorSegun(inversa, suma_normal - suma_inversa);
@@ -143,10 +134,10 @@ public class CadenaSimple extends Organico {
         if(!corregido && contiene(Id.radical)) {
             // Se obtienen los radicales de ambas versiones, ordenados por sus carbonos:
             List<String> normales = new ArrayList<>();
-            getRadicales().forEach(radical -> normales.add(Organico.nombreRadical(radical)));
+            getRadicales().forEach(radical -> normales.add(Organico.nombreDeRadical(radical)));
 
             List<String> inversos = new ArrayList<>();
-            inversa.getRadicales().forEach(radical -> inversos.add(Organico.nombreRadical(radical)));
+            inversa.getRadicales().forEach(radical -> inversos.add(Organico.nombreDeRadical(radical)));
 
             // Se comparan los radicales dos a dos desde ambos extremos alfabéticamente:
             for(int i = 0; i < normales.size() && !corregido; i++)
@@ -164,14 +155,14 @@ public class CadenaSimple extends Organico {
 
     private void descomponerAldehido() { // COOH-CHO → COOH-CH(O)
         if(getFuncionPrioritaria() != Id.aldehido) { // Hay otra de mayor prioridad, se debe descomponer el aldehído
-            descomponerAldehidoEn(carbonos.get(0));
+            descomponerAldehidoEn(cadena.get(0));
             descomponerAldehidoEn(getUltimo());
         }
     }
 
     private void sustituirTerminalDePorEn(Id terminal, Carbono carbono, Id funcion, Carbono otro) { // CX-C≡ → C(CX)≡
         if(carbono.contiene(terminal)) {
-            carbonos.remove(carbono);
+            cadena.remove(carbono);
             otro.eliminarEnlace();
             otro.enlazarSustituyente(funcion);
         }
@@ -179,10 +170,10 @@ public class CadenaSimple extends Organico {
 
     private void sustituirTerminalPor(Id terminal, Id funcion) { // COOH-C(A)- → COOH(CA)-
         if(getFuncionPrioritaria() != terminal) { // Hay una función de mayor prioridad, se debe descomponer el terminal
-            if(carbonos.size() >= 2) // Para poder acceder a carbonos.get(1)
-                sustituirTerminalDePorEn(terminal, carbonos.get(0), funcion, carbonos.get(1));
-            if(carbonos.size() >= 2) // Para poder acceder a carbonos.get(carbonos.size() - 2)
-                sustituirTerminalDePorEn(terminal, getUltimo(), funcion, carbonos.get(carbonos.size() - 2));
+            if(cadena.size() >= 2) // Para poder acceder a cadena.get(1)
+                sustituirTerminalDePorEn(terminal, cadena.get(0), funcion, cadena.get(1));
+            if(cadena.size() >= 2) // Para poder acceder a cadena.get(cadena.size() - 2)
+                sustituirTerminalDePorEn(terminal, getUltimo(), funcion, cadena.get(cadena.size() - 2));
         }
     }
 
@@ -195,7 +186,7 @@ public class CadenaSimple extends Organico {
     }
 
     private void sustituirCetonaConPor(Id complementaria, Id sustituta) { // C(O)(A)- → C(B)-
-        sustituirCetonaConPorEn(complementaria, sustituta, carbonos.get(0));
+        sustituirCetonaConPorEn(complementaria, sustituta, cadena.get(0));
         sustituirCetonaConPorEn(complementaria, sustituta, getUltimo());
     }
 
@@ -207,10 +198,10 @@ public class CadenaSimple extends Organico {
     private void corregirRadicalesPorLaIzquierda() { // CH2(CH3)-C≡ → CH3-CH2-C≡
         boolean hubo_correcion; // Para actualizar el iterador tras iteración
 
-        for (int i = 0; i < carbonos.size(); i = hubo_correcion ? 0 : i + 1) { // Sin incremento
-            if(carbonos.get(i).getSustituyentesTipo(Id.radical).size() > 0) { // Este carbono tiene radicales
+        for (int i = 0; i < cadena.size(); i = hubo_correcion ? 0 : i + 1) { // Sin incremento
+            if(cadena.get(i).getSustituyentesTipo(Id.radical).size() > 0) { // Este carbono tiene radicales
                 // Se obtiene el mayor radical de este carbono:
-                Sustituyente mayor_radical = carbonos.get(i).getMayorRadical();
+                Sustituyente mayor_radical = cadena.get(i).getMayorRadical();
 
                 // Se calcula si el "camino" por este radical es preferible a la cadena principal:
                 int comparacion = Integer.compare(mayor_radical.getCarbonosRectos(), i);
@@ -222,28 +213,28 @@ public class CadenaSimple extends Organico {
                         Sustituyente antiguo;
 
                         Sustituyente metil = new Sustituyente(1); // Para hacer el código más legible
-                        if(i > 1 && carbonos.get(1).contiene(Id.radical) // Hay un radical en el segundo carbono
-                                && carbonos.get(1).getSustituyentesSinHidrogeno().get(0).equals(metil)) // Y es metil
+                        if(i > 1 && cadena.get(1).contiene(Id.radical) // Hay un radical en el segundo carbono
+                                && cadena.get(1).getSustituyentesSinHidrogeno().get(0).equals(metil)) // Y es metil
                             antiguo = new Sustituyente(i + 1, true);
                         else antiguo = new Sustituyente(i);
 
                         // Se enlaza tal radical:
-                        carbonos.get(i).enlazarSustituyente(antiguo);
+                        cadena.get(i).enlazarSustituyente(antiguo);
 
                         // Se elimina el radical que será el camino de la cadena principal:
-                        carbonos.get(i).eliminarSustituyenteConEnlaces(mayor_radical);
+                        cadena.get(i).eliminarSustituyenteConEnlaces(mayor_radical);
 
                         // Se elimina el camino antiguo de la cadena principal:
-                        carbonos.subList(0, i).clear();
+                        cadena.subList(0, i).clear();
                     }
-                    else carbonos.get(0).eliminarSustituyente(mayor_radical); // Será el camino de la cadena principal
+                    else cadena.get(0).eliminarSustituyente(mayor_radical); // Será el camino de la cadena principal
 
                     // Se convierte el radical en el nuevo camino de la cadena principal:
                     List<Carbono> parte_izquierda = mayor_radical.getRadical();
-                    parte_izquierda.addAll(carbonos);
+                    parte_izquierda.addAll(cadena);
 
                     // Se efectúa el cambio:
-                    copiar(parte_izquierda);
+                    convertirseEn(parte_izquierda);
                     hubo_correcion = true;
                 }
                 else hubo_correcion = false;
@@ -251,13 +242,13 @@ public class CadenaSimple extends Organico {
             else hubo_correcion = false;
 
             // Se comprueba si este carbono no podría estar en un radical, ergo debe pertenecer a la cadena principal:
-            List<Sustituyente> sustituyentes = carbonos.get(i).getSustituyentesSinHidrogeno(); // (Se puede asumir que
+            List<Sustituyente> sustituyentes = cadena.get(i).getSustituyentesSinHidrogeno(); // (Se puede asumir que
             // los carbonos anteriores sí podían estar en un radical, debido a los 'break')
 
             if(sustituyentes.size() > 0) { // Hay sustituyentes distintos del hidrógeno
                 if(!(i == 1 && sustituyentes.size() == 1 && sustituyentes.get(0).getCarbonos() == 1))
                     break; // Y estos no son un solo metil en el segundo carbono (no podría formar un radical 'iso')
-                else if(carbonos.get(i).getEnlacesLibres() > 0)
+                else if(cadena.get(i).getEnlacesLibres() > 0)
                     break; // Le sigue un alqueno o alquino
             }
         }
@@ -273,15 +264,11 @@ public class CadenaSimple extends Organico {
 
     // Interfaz:
 
-    public boolean estaCompleta() {
-        return getEnlacesLibres() == 0;
-    }
-
-    public List<Id> sustituyentesDisponibles() {
+    public List<Id> getSustituyentesDisponibles() {
         List<Id> disponibles = new ArrayList<>();
 
         switch(getEnlacesLibres()) {
-            case 4:
+            case 4: // El primer carbono
             case 3:
                 disponibles.add(Id.acido);
                 disponibles.add(Id.amida);
@@ -342,38 +329,16 @@ public class CadenaSimple extends Organico {
         }
     }
 
-    public void enlazarCarbono() {
-        Carbono ultimo = getUltimo();
-        ultimo.enlazarCarbono();
-        carbonos.add(new Carbono(ultimo.getEnlacesLibres() + 1));
-    }
-
-    public void enlazarSustituyente(Sustituyente sustituyente) {
-        getUltimo().enlazarSustituyente(sustituyente);
-    }
-
-    public void enlazarSustituyente(Id funcion) {
-        getUltimo().enlazarSustituyente(funcion);
-    }
-
-    public void enlazarSustituyente(Sustituyente sustituyente, int veces) {
-        getUltimo().enlazarSustituyente(sustituyente, veces);
-    }
-
-    public void enlazarSustituyente(Id funcion, int veces) {
-        getUltimo().enlazarSustituyente(funcion, veces);
-    }
-
     // Texto:
 
     private Localizador getPrefijoPara(Id funcion) {
         Localizador prefijo;
 
-        List<Integer> posiciones = getPosicionesDe(funcion);
-        String nombre = nombrePrefijo(funcion);
+        List<Integer> posiciones = getPosicionesDeEn(funcion);
+        String nombre = nombreDePrefijo(funcion);
 
         if(esRedundante(funcion)) // Sobran los localizadores porque son evidentes
-            prefijo = new Localizador(multiplicador(posiciones.size()), nombre); // Como "difluoro"
+            prefijo = new Localizador(multiplicadorDe(posiciones.size()), nombre); // Como "difluoro"
         else if(esHalogeno(funcion) && getSustituyentesUnicos().size() == 1) // Solo hay carbonos y el halógeno
             prefijo = new Localizador("per", nombre); // Como "perfluoro"
         else prefijo = new Localizador(posiciones, nombre); // Como "1,2-difluoro"
@@ -384,14 +349,14 @@ public class CadenaSimple extends Organico {
     private String getEnlacePara(Id tipo) {
         String enlace = "";
 
-        List<Integer> posiciones = getPosicionesDe(tipo);
-        String nombre = nombreEnlace(tipo);
+        List<Integer> posiciones = getPosicionesDeEn(tipo);
+        String nombre = nombreDeEnlace(tipo);
 
         if(posiciones.size() > 0) {
             Localizador localizador;
 
             if(esRedundante(tipo)) // Sobran los localizadores porque son evidentes
-                localizador = new Localizador(multiplicador(posiciones.size()), nombre); // Como "dien"
+                localizador = new Localizador(multiplicadorDe(posiciones.size()), nombre); // Como "dien"
             else localizador = new Localizador(posiciones, nombre); // Como "1,2-dien"
 
             String localizador_to_string = localizador.toString();
@@ -408,21 +373,21 @@ public class CadenaSimple extends Organico {
     private String getSufijoPara(Id funcion) {
         String sufijo;
 
-        List<Integer> posiciones = getPosicionesDe(funcion);
-        String nombre = nombreSufijo(funcion);
+        List<Integer> posiciones = getPosicionesDeEn(funcion);
+        String nombre = nombreDeSufijo(funcion);
 
         if(esRedundante(funcion)) // Sobran los localizadores porque son evidentes
-            sufijo = multiplicador(posiciones.size()) + nombre; // Como "dioico"
+            sufijo = multiplicadorDe(posiciones.size()) + nombre; // Como "dioico"
         else sufijo = new Localizador(posiciones, nombre).toString(); // Como "2-3-diona"
 
         return sufijo;
     }
 
     public String getNombre() { // Se asume que ya la CadenaSimple está corregida con corregir()
-        if(carbonos.size() == 1 && carbonos.get(0).getCantidadDe(Id.cetona) == 2) // Caso excepcional
+        if(cadena.size() == 1 && cadena.get(0).getCantidadDe(Id.cetona) == 2) // Caso excepcional
             return "dióxido de carbono"; // CO2
 
-        List<Id> funciones = getFuncionesOrdenadas();
+        List<Id> funciones = getFuncionesOrdenadas(); // Sin hidrógeno
         int funcion = 0;
 
         // Se procesa el sufijo:
@@ -438,12 +403,11 @@ public class CadenaSimple extends Organico {
         Localizador localizador;
 
         while(funcion < funciones.size()) {
-            if(funciones.get(funcion) != Id.alqueno
-                    && funciones.get(funcion) != Id.alquino
+            if(funciones.get(funcion) != Id.alqueno && funciones.get(funcion) != Id.alquino
                     && funciones.get(funcion) != Id.radical) {
                 localizador = getPrefijoPara(funciones.get(funcion));
 
-                if(!localizador.getNombre().equals("")) // TODO: else?
+                if(!localizador.getLexema().equals("")) // TODO: else?
                     prefijos.add(localizador);
             }
 
@@ -452,9 +416,9 @@ public class CadenaSimple extends Organico {
 
         List<Sustituyente> radicales = getRadicalesUnicos();
         for(Sustituyente radical : radicales) {
-            localizador = new Localizador(getPosicionesDe(radical), nombreRadical(radical));
+            localizador = new Localizador(getPosicionesDeEn(radical), nombreDeRadical(radical));
 
-            if(!localizador.getNombre().equals("")) // TODO: else?
+            if(!localizador.getLexema().equals("")) // TODO: else?
                 prefijos.add(localizador);
         }
 
@@ -483,7 +447,7 @@ public class CadenaSimple extends Organico {
             enlaces += "-";
 
         // Se procesa el cuantificador:
-        String cuantificador = cuantificador(carbonos.size());
+        String cuantificador = cuantificadorDe(cadena.size());
 
         if(Organico.noEmpiezaPorVocal(enlaces))
             cuantificador += "a";
@@ -492,22 +456,7 @@ public class CadenaSimple extends Organico {
     }
 
     public String getFormula() {
-        StringBuilder formula = new StringBuilder();
-
-        Carbono anterior = carbonos.get(0);
-        formula.append(anterior); // Como CH
-
-        for(int i = 1; i < carbonos.size(); i++) {
-            formula.append(enlaceDeOrden(anterior.getEnlacesLibres() + 1)); // Como CH=
-            formula.append(carbonos.get(i)); // Como CH=CH
-            anterior = carbonos.get(i);
-        }
-
-        int enlaces_ultimo = getUltimo().getEnlacesLibres();
-        if(enlaces_ultimo != 4)
-            formula.append(enlaceDeOrden(enlaces_ultimo)); // Como CH=CH-
-
-        return formula.toString();
+        return formulaDe(cadena);
     }
 
     @Override

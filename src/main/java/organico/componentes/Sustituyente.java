@@ -86,6 +86,7 @@ public class Sustituyente {
             case cianuro:
             case alcohol:
             case amina:
+            case eter:
             case nitro:
             case bromo:
             case cloro:
@@ -105,7 +106,7 @@ public class Sustituyente {
     // Consultas particulares:
 
     public boolean esTipo(Id funcion) {
-        return this.funcion.equals(funcion);
+        return this.funcion == funcion;
     }
 
     @Override
@@ -229,6 +230,9 @@ public class Sustituyente {
                 break;
             case amina:
                 resultado.append("NH2");
+                break;
+            case eter:
+                resultado.append("-O-");
                 break;
             case nitro:
                 resultado.append("NO2");

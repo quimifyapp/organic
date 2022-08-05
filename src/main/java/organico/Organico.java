@@ -12,7 +12,7 @@ import static java.util.Collections.swap;
 
 public class Organico {
 
-    protected final List<Carbono> carbonos = new ArrayList<>();
+    private final List<Carbono> carbonos = new ArrayList<>();
 
     // Consultas generales:
 
@@ -37,6 +37,14 @@ public class Organico {
 
     // Consultas particulares:
 
+    protected Carbono getUltimo() {
+        return carbonos.get(carbonos.size() - 1);
+    }
+
+    protected int getEnlacesLibres() {
+        return getUltimo().getEnlacesLibres();
+    }
+
     protected boolean contiene(Id funcion) {
         for(Carbono carbono : carbonos)
             if(carbono.contiene(funcion))
@@ -47,12 +55,31 @@ public class Organico {
 
     protected boolean hayFunciones() { // Sin hidrógeno
         for(Id funcion : Id.values()) // Todas las funciones recogidas en Id
-            if(!funcion.equals(Id.hidrogeno))
+            if(funcion != Id.hidrogeno)
                 for(Carbono carbono : carbonos)
                     if(carbono.contiene(funcion))
                         return true;
 
         return false;
+    }
+
+    // Internas:
+
+    protected List<Carbono> inversaDe(List<Carbono> cadena) {
+        List<Carbono> inversa = new ArrayList<>(cadena);
+
+        // Le da la vuelta a los carbonos:
+        Collections.reverse(inversa);
+
+        // Ajusta los enlaces (no son simétricos):
+        if(inversa.size() > 1) {
+            for(int i = 0, j = cadena.size() - 2; i < inversa.size() - 1; i++)
+                inversa.get(i).setEnlacesLibres(cadena.get(j--).getEnlacesLibres());
+
+            inversa.get(inversa.size() - 1).setEnlacesLibres(0); // Se supone que cadena no tiene enlaces sueltos
+        }
+
+        return inversa;
     }
 
     // Métodos get:
@@ -66,32 +93,33 @@ public class Organico {
         return null;
     }
 
-    protected List<Id> getFuncionesOrdenadas() { // Sin hidrógeno
+    protected List<Id> getFuncionesOrdenadasEn(List<Carbono> cadena) { // Sin hidrógeno ni éter
         List<Id> funciones = new ArrayList<>(); // Funciones presentes sin repetición y en orden
 
         for(Id funcion : Id.values()) // Todas las funciones recogidas en Id
-            if(!funcion.equals(Id.hidrogeno))
-                if(contiene(funcion))
-                    funciones.add(funcion);
+            if(!(funcion == Id.hidrogeno || funcion == Id.eter))
+                for(Carbono carbono : cadena)
+                    if(carbono.contiene(funcion))
+                        funciones.add(funcion);
 
         return funciones;
     }
 
-    protected List<Integer> getPosicionesDe(Id funcion) {
+    protected List<Integer> getPosicionesDeEn(Id funcion, List<Carbono> cadena) {
         List<Integer> posiciones = new ArrayList<>(); // Posiciones de los carbonos con la función
 
-        for(int i = 0; i < carbonos.size(); i++)
-            if(carbonos.get(i).contiene(funcion))
+        for(int i = 0; i < cadena.size(); i++)
+            if(cadena.get(i).contiene(funcion))
                 posiciones.add(i);
 
         return posiciones;
     }
 
-    protected List<Integer> getPosicionesDe(Sustituyente sustituyente) {
+    protected List<Integer> getPosicionesDeEn(Sustituyente sustituyente, List<Carbono> cadena) {
         List<Integer> posiciones = new ArrayList<>(); // Posiciones de los carbonos enlazados al sustituyente
 
-        for(int i = 0; i < carbonos.size(); i++)
-            if(carbonos.get(i).estaEnlazadoA(sustituyente))
+        for(int i = 0; i < cadena.size(); i++)
+            if(cadena.get(i).estaEnlazadoA(sustituyente))
                 posiciones.add(i);
 
         return posiciones;
@@ -137,36 +165,60 @@ public class Organico {
         return sustituyentes;
     }
 
+    protected List<Carbono> getCarbonos() {
+        return carbonos;
+    }
+
+    // Interfaz:
+
+    public boolean estaCompleta() {
+        return getEnlacesLibres() == 0;
+    }
+
+    public void enlazarCarbono() {
+        Carbono ultimo = getUltimo();
+        ultimo.enlazarCarbono();
+        carbonos.add(new Carbono(ultimo.getEnlacesLibres() + 1));
+    }
+
+    public void enlazarSustituyente(Sustituyente sustituyente) {
+        getUltimo().enlazarSustituyente(sustituyente);
+    }
+
+    public void enlazarSustituyente(Id funcion) {
+        enlazarSustituyente(new Sustituyente(funcion));
+    }
+
     // Texto:
 
     protected static class Localizador {
 
         // Esta clase representa un localizador de un nombre IUPAC, como "2,3-diol".
 
-        private String posiciones, multiplicador, nombre;
+        private String posiciones, multiplicador, lexema;
 
         // EJEMPLOS:
         /*
-            "2,3-diol"  =   { posiciones: "2,3",    multiplicador: "di",    nombre: "ol"     }
-            "tetrain"   =   { posiciones: "",       multiplicador: "tetra", nombre: "in"     }
-            "fluoro"    =   { posiciones: "",       multiplicador: "",      nombre: "fluoro" }
+            "2,3-diol"  =   { posiciones: "2,3",    multiplicador: "di",    lexema: "ol"     }
+            "tetrain"   =   { posiciones: "",       multiplicador: "tetra", lexema: "in"     }
+            "fluoro"    =   { posiciones: "",       multiplicador: "",      lexema: "fluoro" }
         */
 
         private void construir(String posiciones, String multiplicador, String nombre) {
             this.posiciones = posiciones;
             this.multiplicador = multiplicador;
-            this.nombre = nombre;
+            this.lexema = nombre;
         }
 
-        public Localizador(String posiciones, String multiplicador, String nombre) {
-            construir(posiciones, multiplicador, nombre);
+        public Localizador(String posiciones, String multiplicador, String lexema) {
+            construir(posiciones, multiplicador, lexema);
         }
 
-        public Localizador(String multiplicador, String nombre) {
-            construir("", multiplicador, nombre);
+        public Localizador(String multiplicador, String lexema) {
+            construir("", multiplicador, lexema);
         }
 
-        public Localizador(List<Integer> posiciones, String nombre) {
+        public Localizador(List<Integer> posiciones, String lexema) {
             StringBuilder auxiliar = new StringBuilder();
 
             if(posiciones.size() > 0) {
@@ -175,13 +227,13 @@ public class Organico {
                 auxiliar.append(posiciones.get(posiciones.size() - 1) + 1);
             }
 
-            construir(auxiliar.toString(), Organico.multiplicador(posiciones.size()), nombre);
+            construir(auxiliar.toString(), Organico.multiplicadorDe(posiciones.size()), lexema);
         }
 
         // No se tienen en cuenta los multiplicadores ni las posiciones, como propone la IUPAC.
         // Ej.: "2,3-diol" → "ol"
         public static void ordenarAlfabeticamente(List<Localizador> localizadores) {
-            localizadores.sort(Comparator.comparing(Localizador::getNombre));
+            localizadores.sort(Comparator.comparing(Localizador::getLexema));
         }
 
         @Override
@@ -190,20 +242,20 @@ public class Organico {
 
             if(!posiciones.equals(""))
                 resultado = posiciones + "-";
-            resultado += multiplicador + nombre;
+            resultado += multiplicador + lexema;
 
             return resultado;
         }
 
         // Getters y setters:
 
-        public String getNombre() {
-            return nombre;
+        public String getLexema() {
+            return lexema;
         }
 
     }
 
-    protected static String prefijoGriego(int numero) {
+    protected static String prefijoGriegoDe(int numero) {
         String resultado;
 
         switch(numero) {
@@ -245,7 +297,7 @@ public class Organico {
         return resultado;
     }
 
-    protected static String cuantificador(int numero) {
+    protected static String cuantificadorDe(int numero) {
         String resultado;
 
         if(numero < 10) { // [1, 9]
@@ -263,7 +315,7 @@ public class Organico {
                     resultado = "but";
                     break;
                 default: // 0, 5, 6, 7, 8, 9
-                    resultado = prefijoGriego(numero);
+                    resultado = prefijoGriegoDe(numero);
                     break;
             }
         }
@@ -274,24 +326,24 @@ public class Organico {
             int unidades = numero - (decenas * 10);
 
             if(numero < 15) // 10 U [12, 14]
-                resultado = prefijoGriego(unidades) + "dec";
+                resultado = prefijoGriegoDe(unidades) + "dec";
             else if(numero < 20) // [15, 19]
-                resultado = prefijoGriego(unidades) + "adec";
+                resultado = prefijoGriegoDe(unidades) + "adec";
             else if(numero == 20) // 20
                 resultado = "icos";
             else if(numero == 21) // 21
                 resultado = "heneicos";
             else if(numero < 25) // [22, 25]
-                resultado = prefijoGriego(unidades) + "cos";
+                resultado = prefijoGriegoDe(unidades) + "cos";
             else if(numero < 30) // [26, 29]
-                resultado = prefijoGriego(unidades) + "acos";
+                resultado = prefijoGriegoDe(unidades) + "acos";
             else if(numero < 100) { // [30, 99]
-                resultado = prefijoGriego(unidades);
+                resultado = prefijoGriegoDe(unidades);
 
                 if(unidades > 4)
                     resultado += "a";
 
-                resultado += prefijoGriego(decenas);
+                resultado += prefijoGriegoDe(decenas);
 
                 if(decenas == 4)
                     resultado += "cont";
@@ -303,7 +355,7 @@ public class Organico {
                 int centenas = numero / 100;
                 decenas = decenas - (centenas * 10);
 
-                resultado = cuantificador(10 * decenas + unidades); // Recursivo
+                resultado = cuantificadorDe(10 * decenas + unidades); // Recursivo
 
                 switch(centenas) {
                     case 1: // [101, 199]
@@ -319,7 +371,7 @@ public class Organico {
                         resultado += "atetract";
                         break;
                     default: // [500, 999]
-                        resultado += "a" + prefijoGriego(centenas) + "act";
+                        resultado += "a" + prefijoGriegoDe(centenas) + "act";
                         break;
                 }
             }
@@ -329,7 +381,7 @@ public class Organico {
         return resultado;
     }
 
-    protected static String multiplicador(int numero) {
+    protected static String multiplicadorDe(int numero) {
         String resultado;
 
         switch(numero) {
@@ -346,26 +398,26 @@ public class Organico {
                 resultado = "tetra";
                 break;
             default:
-                resultado = cuantificador(numero) + "a";
+                resultado = cuantificadorDe(numero) + "a";
                 break;
         }
 
         return resultado;
     }
 
-    protected static String nombreRadical(Sustituyente radical) {
+    protected static String nombreDeRadical(Sustituyente radical) {
         String resultado;
 
         if(radical.getIso())
             resultado = "iso";
         else resultado = "";
 
-        resultado += cuantificador(radical.getCarbonos()) + "il";
+        resultado += cuantificadorDe(radical.getCarbonos()) + "il";
 
         return resultado;
     }
 
-    protected static String nombrePrefijo(Id funcion) {
+    protected static String nombreDePrefijo(Id funcion) {
         String nombre_prefijo;
 
         switch(funcion) {
@@ -406,7 +458,7 @@ public class Organico {
         return nombre_prefijo;
     }
 
-    protected static String nombreEnlace(Id enlace) {
+    protected static String nombreDeEnlace(Id enlace) {
         String nombre_enlace;
 
         switch(enlace) {
@@ -423,7 +475,7 @@ public class Organico {
         return nombre_enlace;
     }
 
-    protected static String nombreSufijo(Id funcion) {
+    protected static String nombreDeSufijo(Id funcion) {
         String nombre_sufijo;
 
         switch(funcion) {
@@ -458,16 +510,37 @@ public class Organico {
     protected static String enlaceDeOrden(int orden) {
         switch(orden) {
             case 0:
-                return ""; // Fin de la molécula
-            case 1:
                 return "-";
-            case 2:
+            case 1:
                 return "=";
-            case 3:
+            case 2:
                 return "≡";
             default:
                 throw new IllegalArgumentException("No existen enlaces de orden " + orden);
         }
+    }
+
+    protected static String formulaDe(List<Carbono> cadena) {
+        StringBuilder formula = new StringBuilder();
+
+        // Se escribe el primero:
+        Carbono primero = cadena.get(0);
+        formula.append(primero); // Como CH
+
+        // Se escribe el resto con los enlaces libres del anterior:
+        int enlaces_libres_anterior = primero.getEnlacesLibres();
+        for(int i = 1; i < cadena.size(); i++) {
+            formula.append(enlaceDeOrden(enlaces_libres_anterior)); // Como CH=
+            formula.append(cadena.get(i)); // Como CH=CH
+
+            enlaces_libres_anterior = cadena.get(i).getEnlacesLibres();
+        }
+
+        // Se escribe los enlaces libres del último:
+        if(enlaces_libres_anterior > 0 && enlaces_libres_anterior < 4) // Ni está completo ni es el primero vacío
+            formula.append(enlaceDeOrden(enlaces_libres_anterior - 1)); // Como CH=CH-CH2-C≡
+
+        return formula.toString();
     }
 
     protected static char primeraLetraDe(String texto) {

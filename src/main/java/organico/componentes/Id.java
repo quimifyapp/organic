@@ -11,6 +11,7 @@ public enum Id { // En orden de prioridad:
     cetona,     // =O
     alcohol,    // -OH
     amina,      // -NH2
+    eter,       // -O-R'
     alqueno,    // = doble enlace
     alquino,    // ≡ triple enlace
     nitro,      // -NO2

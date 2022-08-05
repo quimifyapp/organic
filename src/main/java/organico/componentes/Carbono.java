@@ -107,6 +107,12 @@ public class Carbono {
         return enlaces_libres;
     }
 
+    // Métodos set:
+
+    public void setEnlacesLibres(int enlaces_libres) {
+        this.enlaces_libres = enlaces_libres;
+    }
+
     // Texto:
 
     private static String cuantificadorMolecular(int cantidad) {
@@ -133,21 +139,27 @@ public class Carbono {
             unicos.remove(unicos.size() - 1); // Se borra el hidrógeno de la lista
         }
 
-        // Se escribe el resto de sustituyentes:
-        if(unicos.size() == 1) { // Solo hay un tipo además del hidrógeno
-            Sustituyente unico = unicos.get(0);
-            String sustituyente = unico.toString();
+        // Se escribe el resto de sustituyentes excepto el éter:
+        unicos.removeIf(sustituyente -> sustituyente.esTipo(Id.eter));
 
-            if(sustituyente.length() == 1 || Organico.esHalogeno(unico) || unico.getEnlaces() == 3)
-                resultado.append(sustituyente); // Como en "CN", "CCl", "COOH", "C(O)(NH2)", "CHO"...
-            else resultado.append("(").append(sustituyente).append(")"); // Como en "CH(OH)3", "CH3(CH2CH3)"...
+        if(unicos.size() == 1) { // Solo hay un tipo además del hidrógeno y éter
+            Sustituyente unico = unicos.get(0);
+            String texto = unico.toString();
+
+            if(texto.length() == 1 || Organico.esHalogeno(unico) || unico.getEnlaces() == 3)
+                resultado.append(texto); // Como en "CN", "CCl", "COOH", "C(O)(NH2)", "CHO"...
+            else resultado.append("(").append(texto).append(")"); // Como en "CH(OH)3", "CH3(CH2CH3)"...
 
             resultado.append((cuantificadorMolecular(getCantidadDe(unico))));
         }
-        else if(unicos.size() > 1) // Hay más de un tipo además del hidrógeno
+        else if(unicos.size() > 1) // Hay más de un tipo además del hidrógeno y éter
             for(Sustituyente sustituyente : unicos)
                 resultado.append("(").append(sustituyente).append(")") // Como en "C(OH)3(Cl)", "CH2(NO2)(CH3)"...
                         .append(cuantificadorMolecular(getCantidadDe(sustituyente)));
+
+        // Se escribe el éter:
+        if(contiene(Id.eter))
+            resultado.append(new Sustituyente(Id.eter));
 
         return resultado.toString();
     }
