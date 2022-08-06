@@ -1,6 +1,5 @@
 package organico;
 
-import organico.componentes.Carbono;
 import organico.componentes.Id;
 import organico.componentes.Sustituyente;
 
@@ -12,21 +11,22 @@ import static java.util.Collections.swap;
 
 public class Organico {
 
-    private final List<Carbono> carbonos = new ArrayList<>();
-
-    // Consultas generales:
-
     private static final List<Id> halogenos = Arrays.asList(Id.bromo, Id.cloro, Id.fluor, Id.yodo);
 
-    protected static boolean esHalogeno(Id funcion) {
+    // Métodos públicos:
+
+    public static boolean esHalogeno(Id funcion) {
         return halogenos.contains(funcion);
     }
 
-    public static boolean esHalogeno(Sustituyente sustituyente) {
+    // Métodos protegidos:
+
+    protected static boolean esHalogeno(Sustituyente sustituyente) {
         return esHalogeno(sustituyente.getFuncion());
     }
 
-    public static void ordenarPorFunciones(List<Sustituyente> sustituyentes) {
+
+    protected static void ordenarPorFunciones(List<Sustituyente> sustituyentes) {
         for(int i = 0; i < sustituyentes.size() - 1;) // Sin incremento
             if(sustituyentes.get(i).getFuncion().compareTo(sustituyentes.get(i + 1).getFuncion()) > 0) {
                 swap(sustituyentes, i, i + 1); // get(i) > get(i + 1)
@@ -35,225 +35,7 @@ public class Organico {
             else i++; // get(i) <= get(i + 1)
     }
 
-    // Consultas particulares:
-
-    protected Carbono getUltimo() {
-        return carbonos.get(carbonos.size() - 1);
-    }
-
-    protected int getEnlacesLibres() {
-        return getUltimo().getEnlacesLibres();
-    }
-
-    protected boolean contiene(Id funcion) {
-        for(Carbono carbono : carbonos)
-            if(carbono.contiene(funcion))
-                return true;
-
-        return false;
-    }
-
-    protected boolean hayFunciones() { // Sin hidrógeno
-        for(Id funcion : Id.values()) // Todas las funciones recogidas en Id
-            if(funcion != Id.hidrogeno)
-                for(Carbono carbono : carbonos)
-                    if(carbono.contiene(funcion))
-                        return true;
-
-        return false;
-    }
-
-    // Internas:
-
-    protected List<Carbono> inversaDe(List<Carbono> cadena) {
-        List<Carbono> inversa = new ArrayList<>(cadena);
-
-        // Le da la vuelta a los carbonos:
-        Collections.reverse(inversa);
-
-        // Ajusta los enlaces (no son simétricos):
-        if(inversa.size() > 1) {
-            for(int i = 0, j = cadena.size() - 2; i < inversa.size() - 1; i++)
-                inversa.get(i).setEnlacesLibres(cadena.get(j--).getEnlacesLibres());
-
-            inversa.get(inversa.size() - 1).setEnlacesLibres(0); // Se supone que cadena no tiene enlaces sueltos
-        }
-
-        return inversa;
-    }
-
-    // Métodos get:
-
-    protected Id getFuncionPrioritaria() { // Con hidrógeno
-        for(Id funcion : Id.values()) // Todas las funciones recogidas en Id
-            for(Carbono carbono : carbonos)
-                if(carbono.contiene(funcion))
-                    return funcion;
-
-        return null;
-    }
-
-    protected List<Id> getFuncionesOrdenadasEn(List<Carbono> cadena) { // Sin hidrógeno ni éter
-        List<Id> funciones = new ArrayList<>(); // Funciones presentes sin repetición y en orden
-
-        for(Id funcion : Id.values()) // Todas las funciones recogidas en Id
-            if(!(funcion == Id.hidrogeno || funcion == Id.eter))
-                for(Carbono carbono : cadena)
-                    if(carbono.contiene(funcion))
-                        funciones.add(funcion);
-
-        return funciones;
-    }
-
-    protected List<Integer> getPosicionesDeEn(Id funcion, List<Carbono> cadena) {
-        List<Integer> posiciones = new ArrayList<>(); // Posiciones de los carbonos con la función
-
-        for(int i = 0; i < cadena.size(); i++)
-            if(cadena.get(i).contiene(funcion))
-                posiciones.add(i);
-
-        return posiciones;
-    }
-
-    protected List<Integer> getPosicionesDeEn(Sustituyente sustituyente, List<Carbono> cadena) {
-        List<Integer> posiciones = new ArrayList<>(); // Posiciones de los carbonos enlazados al sustituyente
-
-        for(int i = 0; i < cadena.size(); i++)
-            if(cadena.get(i).estaEnlazadoA(sustituyente))
-                posiciones.add(i);
-
-        return posiciones;
-    }
-
-    protected List<Sustituyente> getSustituyentesUnicos() {
-        List<Sustituyente> unicos = new ArrayList<>();
-
-        for(Carbono carbono : carbonos)
-            for(Sustituyente sustituyente : carbono.getSustituyentes())
-                if(!unicos.contains(sustituyente))
-                    unicos.add(sustituyente);
-
-        return unicos;
-    }
-
-    protected List<Sustituyente> getSustituyentesSinHidrogeno() {
-        List<Sustituyente> sin_hidrogeno = new ArrayList<>();
-
-        for(Carbono carbono : carbonos)
-            sin_hidrogeno.addAll(carbono.getSustituyentesSinHidrogeno());
-
-        return sin_hidrogeno;
-    }
-
-    protected List<Sustituyente> getRadicalesUnicos() {
-        List<Sustituyente> unicos = new ArrayList<>();
-
-        for(Carbono carbono : carbonos)
-            for(Sustituyente sustituyente : carbono.getSustituyentesTipo(Id.radical))
-                if(!unicos.contains(sustituyente))
-                    unicos.add(sustituyente);
-
-        return unicos;
-    }
-
-    protected List<Sustituyente> getRadicales() {
-        List<Sustituyente> sustituyentes = new ArrayList<>();
-
-        for(Carbono carbono : carbonos)
-            sustituyentes.addAll(carbono.getSustituyentesTipo(Id.radical));
-
-        return sustituyentes;
-    }
-
-    protected List<Carbono> getCarbonos() {
-        return carbonos;
-    }
-
-    // Interfaz:
-
-    public boolean estaCompleta() {
-        return getEnlacesLibres() == 0;
-    }
-
-    public void enlazarCarbono() {
-        Carbono ultimo = getUltimo();
-        ultimo.enlazarCarbono();
-        carbonos.add(new Carbono(ultimo.getEnlacesLibres() + 1));
-    }
-
-    public void enlazarSustituyente(Sustituyente sustituyente) {
-        getUltimo().enlazarSustituyente(sustituyente);
-    }
-
-    public void enlazarSustituyente(Id funcion) {
-        enlazarSustituyente(new Sustituyente(funcion));
-    }
-
     // Texto:
-
-    protected static class Localizador {
-
-        // Esta clase representa un localizador de un nombre IUPAC, como "2,3-diol".
-
-        private String posiciones, multiplicador, lexema;
-
-        // EJEMPLOS:
-        /*
-            "2,3-diol"  =   { posiciones: "2,3",    multiplicador: "di",    lexema: "ol"     }
-            "tetrain"   =   { posiciones: "",       multiplicador: "tetra", lexema: "in"     }
-            "fluoro"    =   { posiciones: "",       multiplicador: "",      lexema: "fluoro" }
-        */
-
-        private void construir(String posiciones, String multiplicador, String nombre) {
-            this.posiciones = posiciones;
-            this.multiplicador = multiplicador;
-            this.lexema = nombre;
-        }
-
-        public Localizador(String posiciones, String multiplicador, String lexema) {
-            construir(posiciones, multiplicador, lexema);
-        }
-
-        public Localizador(String multiplicador, String lexema) {
-            construir("", multiplicador, lexema);
-        }
-
-        public Localizador(List<Integer> posiciones, String lexema) {
-            StringBuilder auxiliar = new StringBuilder();
-
-            if(posiciones.size() > 0) {
-                for(int i = 0; i < posiciones.size() - 1; i++)
-                    auxiliar.append(posiciones.get(i) + 1).append(",");
-                auxiliar.append(posiciones.get(posiciones.size() - 1) + 1);
-            }
-
-            construir(auxiliar.toString(), Organico.multiplicadorDe(posiciones.size()), lexema);
-        }
-
-        // No se tienen en cuenta los multiplicadores ni las posiciones, como propone la IUPAC.
-        // Ej.: "2,3-diol" → "ol"
-        public static void ordenarAlfabeticamente(List<Localizador> localizadores) {
-            localizadores.sort(Comparator.comparing(Localizador::getLexema));
-        }
-
-        @Override
-        public String toString() {
-            String resultado = "";
-
-            if(!posiciones.equals(""))
-                resultado = posiciones + "-";
-            resultado += multiplicador + lexema;
-
-            return resultado;
-        }
-
-        // Getters y setters:
-
-        public String getLexema() {
-            return lexema;
-        }
-
-    }
 
     protected static String prefijoGriegoDe(int numero) {
         String resultado;
@@ -405,6 +187,70 @@ public class Organico {
         return resultado;
     }
 
+    protected static class Localizador {
+
+        // Esta clase representa un localizador de un nombre IUPAC, como "2,3-diol".
+
+        private String posiciones, multiplicador, lexema;
+
+        // EJEMPLOS:
+        /*
+            "2,3-diol"  =   { posiciones: "2,3",    multiplicador: "di",    lexema: "ol"     }
+            "tetrain"   =   { posiciones: "",       multiplicador: "tetra", lexema: "in"     }
+            "fluoro"    =   { posiciones: "",       multiplicador: "",      lexema: "fluoro" }
+        */
+
+        private void construir(String posiciones, String multiplicador, String nombre) {
+            this.posiciones = posiciones;
+            this.multiplicador = multiplicador;
+            this.lexema = nombre;
+        }
+
+        public Localizador(String posiciones, String multiplicador, String lexema) {
+            construir(posiciones, multiplicador, lexema);
+        }
+
+        public Localizador(String multiplicador, String lexema) {
+            construir("", multiplicador, lexema);
+        }
+
+        public Localizador(List<Integer> posiciones, String lexema) {
+            StringBuilder auxiliar = new StringBuilder();
+
+            if(posiciones.size() > 0) {
+                for(int i = 0; i < posiciones.size() - 1; i++)
+                    auxiliar.append(posiciones.get(i) + 1).append(",");
+                auxiliar.append(posiciones.get(posiciones.size() - 1) + 1);
+            }
+
+            construir(auxiliar.toString(), Organico.multiplicadorDe(posiciones.size()), lexema);
+        }
+
+        // No se tienen en cuenta los multiplicadores ni las posiciones, como propone la IUPAC.
+        // Ej.: "2,3-diol" → "ol"
+        public static void ordenarAlfabeticamente(List<Localizador> localizadores) {
+            localizadores.sort(Comparator.comparing(Localizador::getLexema));
+        }
+
+        @Override
+        public String toString() {
+            String resultado = "";
+
+            if(!posiciones.equals(""))
+                resultado = posiciones + "-";
+            resultado += multiplicador + lexema;
+
+            return resultado;
+        }
+
+        // Getters y setters:
+
+        public String getLexema() {
+            return lexema;
+        }
+
+    }
+
     protected static String nombreDeRadical(Sustituyente radical) {
         String resultado;
 
@@ -518,29 +364,6 @@ public class Organico {
             default:
                 throw new IllegalArgumentException("No existen enlaces de orden " + orden);
         }
-    }
-
-    protected static String formulaDe(List<Carbono> cadena) {
-        StringBuilder formula = new StringBuilder();
-
-        // Se escribe el primero:
-        Carbono primero = cadena.get(0);
-        formula.append(primero); // Como CH
-
-        // Se escribe el resto con los enlaces libres del anterior:
-        int enlaces_libres_anterior = primero.getEnlacesLibres();
-        for(int i = 1; i < cadena.size(); i++) {
-            formula.append(enlaceDeOrden(enlaces_libres_anterior)); // Como CH=
-            formula.append(cadena.get(i)); // Como CH=CH
-
-            enlaces_libres_anterior = cadena.get(i).getEnlacesLibres();
-        }
-
-        // Se escribe los enlaces libres del último:
-        if(enlaces_libres_anterior > 0 && enlaces_libres_anterior < 4) // Ni está completo ni es el primero vacío
-            formula.append(enlaceDeOrden(enlaces_libres_anterior - 1)); // Como CH=CH-CH2-C≡
-
-        return formula.toString();
     }
 
     protected static char primeraLetraDe(String texto) {

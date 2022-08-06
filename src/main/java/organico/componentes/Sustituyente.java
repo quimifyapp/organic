@@ -1,8 +1,5 @@
 package organico.componentes;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class Sustituyente {
 
     private Id funcion; // El tipo de sustituyente
@@ -14,39 +11,19 @@ public class Sustituyente {
 
 	// EJEMPLOS:
     /*
-	cetona:     =O              →  { organico.componentes.Id:cetona,    enlaces: 2,  carbonos: 0,  iso: false }
+	cetona:     =O              →  { Id:cetona,    enlaces: 2,  carbonos: 0,  iso: false }
 
-	propil:     -CH2-CH2-CH3    →  { organico.componentes.Id::radical,  enlaces: 1,  carbonos: 3,  iso: false }
+	propil:     -CH2-CH2-CH3    →  { Id::radical,  enlaces: 1,  carbonos: 3,  iso: false }
 
                            CH3
                           /
-	isopentil:  -CH2-CH2-CH     →  { organico.componentes.Id::radical,  enlaces: 1,  carbonos: 5,  iso: true  }
+	isopentil:  -CH2-CH2-CH     →  {Id::radical,  enlaces: 1,  carbonos: 5,  iso: true  }
                           \
                            CH3
 	*/
 
     // Constructores:
 
-    private void construir(Id funcion, int enlaces, int carbonos, boolean iso) {
-        this.funcion = funcion;
-        this.enlaces = enlaces;
-        this.carbonos = carbonos;
-        this.iso = iso;
-    }
-
-    private void construir(Id funcion, int enlaces) {
-        construir(funcion, enlaces, 0, false);
-    }
-
-    private void construir(int carbonos, boolean iso) {
-        construir(Id.radical, 1, carbonos, iso);
-    }
-
-    private void construir(int carbonos) {
-        if(carbonos > 0)
-            construir(carbonos, false);
-        else throw new IllegalArgumentException("No existen radicales con 0 carbonos");
-    }
 
     public Sustituyente(int carbonos, boolean iso) {
         if(iso) {
@@ -103,6 +80,27 @@ public class Sustituyente {
         }
     }
 
+    private void construir(Id funcion, int enlaces, int carbonos, boolean iso) {
+        this.funcion = funcion;
+        this.enlaces = enlaces;
+        this.carbonos = carbonos;
+        this.iso = iso;
+    }
+
+    private void construir(Id funcion, int enlaces) {
+        construir(funcion, enlaces, 0, false);
+    }
+
+    private void construir(int carbonos, boolean iso) {
+        construir(Id.radical, 1, carbonos, iso);
+    }
+
+    private void construir(int carbonos) {
+        if(carbonos > 0)
+            construir(carbonos, false);
+        else throw new IllegalArgumentException("No existen radicales con 0 carbonos");
+    }
+
     // Consultas particulares:
 
     public boolean esTipo(Id funcion) {
@@ -110,18 +108,19 @@ public class Sustituyente {
     }
 
     @Override
-    public boolean equals(Object sustituyente) {
-        boolean resultado;
+    public boolean equals(Object otro) {
+        boolean es_igual;
 
-        if(sustituyente != null && sustituyente.getClass() == this.getClass()) {
-            Sustituyente s = (Sustituyente) sustituyente;
-            resultado = funcion == Id.radical
-                    ? carbonos == s.carbonos && iso == s.iso
-                    : funcion == s.funcion && enlaces == s.enlaces;
+        if(otro != null && otro.getClass() == this.getClass()) {
+            Sustituyente nuevo = (Sustituyente) otro;
+
+            es_igual = funcion == Id.radical
+                    ? carbonos == nuevo.carbonos && iso == nuevo.iso
+                    : funcion == nuevo.funcion && enlaces == nuevo.enlaces;
         }
-        else resultado = false;
+        else es_igual = false;
 
-        return resultado;
+        return es_igual;
     }
 
     // Para radicales:
@@ -164,34 +163,31 @@ public class Sustituyente {
         return carbonos - (iso ? 1 : 0);
     }
 
-    public List<Carbono> getRadical() {
-        List<Carbono> radical = new ArrayList<>();
+    public Cadena getCadena() {
+        Cadena cadena = new Cadena();
 
         if(carbonos > 0) {
-            radical.add(new Carbono(0));
-            radical.get(0).enlazarSustituyente(Id.hidrogeno, 3); // CH3-
-            radical.get(0).enlazarCarbono();
+            cadena.comenzar(0); // (C)
+            cadena.enlazar(Id.hidrogeno, 3); // CH3-
 
             int anteriores = 1; // CH3-
 
             if(iso) {
-                radical.add(new Carbono(1)); // CH3-C≡
-                radical.get(1).enlazarSustituyente(Id.hidrogeno); // CH3-CH=
-                radical.get(1).enlazarSustituyente(new Sustituyente(1)); // CH3-CH(CH3)-
-                radical.get(1).enlazarCarbono();
+                cadena.enlazarCarbono(); // CH3-C≡
+                cadena.enlazar(Id.hidrogeno); // CH3-CH=
+                cadena.enlazar(new Sustituyente(1)); // CH3-CH(CH3)-
 
                 anteriores += 2; // CH3-CH(CH3)-
             }
 
-            Carbono CH2 = new Carbono(1); // -C≡
-            CH2.enlazarSustituyente(Id.hidrogeno, 2); // -CH2=
-            CH2.enlazarCarbono(); // -CH2-
+            for(int i = anteriores; i < carbonos; i++) {
+                cadena.enlazarCarbono(); // CH3-CH(CH3)-C≡
+                cadena.enlazar(Id.hidrogeno, 2); // CH3-CH(CH3)-CH2-
+            }
 
-            for(int i = anteriores; i < carbonos; i++)
-                radical.add(CH2);
         }
 
-        return radical;
+        return cadena; // CH3-CH(CH3)-CH2-
     }
 
     // Texto:

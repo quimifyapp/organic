@@ -1,54 +1,43 @@
 package organico.tipos;
 
 import organico.Organico;
-import organico.componentes.Carbono;
+import organico.componentes.Cadena;
 import organico.componentes.Id;
 import organico.componentes.Sustituyente;
 
 import java.util.ArrayList;
 import java.util.List;
 
-
 // Esta clase representa éteres: dos cadenas con funciones de prioridad menor a la función éter unidas por un oxígeno.
 
 public final class Eter extends Organico {
 
-	private final List<Carbono> primaria; // R
+	private final Cadena primaria; // R
 	private boolean hay_eter; // -O-
-	private final List<Carbono> secundaria; // R'
-	private List<Carbono> cadena; // Apunta a la cadena que se está formando (primarios | secundarios)
+	private final Cadena secundaria; // R'
+
+	private Cadena seleccionada; // Apunta a la cadena que se está formando (primarios | secundarios)
 
 	// Constructores:
 
 	public Eter() {
-		primaria = getCarbonos();
-		secundaria = new ArrayList<>();
+		primaria = new Cadena(0); // (C)
+		secundaria = new Cadena(1); // (-C)
 
-		cadena = primaria;
-		cadena.add(new Carbono(0)); // (C)
-
+		seleccionada = primaria;
 		hay_eter = false;
 	}
 
-	// Internos:
-
-	@Override
-	protected Carbono getUltimo() {
-		return cadena.get(cadena.size() - 1);
-	}
-
 	private void empezarCadenaSecundaria() {
-		cadena = secundaria;
-		cadena.add(new Carbono(1)); // (-C)
-
+		seleccionada = secundaria;
 		hay_eter = true;
 	}
 
-	private boolean esRedundante(Id funcion) {
-		return false;
-	}
-
 	// Interfaz:
+
+	public boolean estaCompleta() {
+		return seleccionada.estaCompleta();
+	}
 
 	public List<Id> getSustituyentesDisponibles() {
 		List<Id> disponibles = new ArrayList<>();
@@ -58,15 +47,16 @@ public final class Eter extends Organico {
 			case 3:
 			case 2:
 			case 1:
-				if(!hay_eter && getEnlacesLibres() == 1)
-					disponibles.add(Id.eter); // Los éteres admiten funciones de prioridad menor al éter
-				disponibles.add(Id.nitro);
-				disponibles.add(Id.bromo);
-				disponibles.add(Id.cloro);
-				disponibles.add(Id.fluor);
-				disponibles.add(Id.yodo);
-				disponibles.add(Id.radical);
-				disponibles.add(Id.hidrogeno);
+				if(hay_eter || getEnlacesLibres() > 1) {
+					disponibles.add(Id.nitro);
+					disponibles.add(Id.bromo);
+					disponibles.add(Id.cloro);
+					disponibles.add(Id.fluor);
+					disponibles.add(Id.yodo);
+					disponibles.add(Id.radical);
+					disponibles.add(Id.hidrogeno);
+				}
+				else disponibles.add(Id.eter); // Los éteres admiten funciones de prioridad menor al éter
 				// Hasta aquí
 				break;
 		}
@@ -74,46 +64,76 @@ public final class Eter extends Organico {
 		return disponibles;
 	}
 
-	public void corregir() {
-		// ...
-	}
-
-	@Override
-	public void enlazarCarbono() {
-		Carbono ultimo = getUltimo();
-		ultimo.enlazarCarbono();
-		cadena.add(new Carbono(ultimo.getEnlacesLibres() + 1));
-	}
-
-	@Override
-	public void enlazarSustituyente(Sustituyente sustituyente) {
-		getUltimo().enlazarSustituyente(sustituyente);
+	public void enlazar(Sustituyente sustituyente) {
+		seleccionada.enlazar(sustituyente);
 
 		if(sustituyente.esTipo(Id.eter))
 			empezarCadenaSecundaria();
 	}
 
+	public void enlazar(Id funcion) {
+		enlazar(new Sustituyente(funcion));
+	}
+
+	public void enlazarCarbono() {
+		seleccionada.enlazarCarbono();
+	}
+
+	public void corregir() {
+		// ...
+	}
+
+
+	// Modificadores:
+
+	// ...
+
+	// Internos:
+
+	private boolean esRedundante(Id funcion) {
+		// ...
+		return false;
+	}
+
+	// Consultas:
+
+	@Override
+	public boolean equals(Object otro) {
+		boolean es_igual;
+
+		if(otro != null && otro.getClass() == this.getClass()) {
+			Eter nuevo = (Eter) otro;
+
+			es_igual = (primaria.equals(nuevo.primaria) && secundaria.equals(nuevo.secundaria))
+					|| (primaria.equals(nuevo.secundaria) && secundaria.equals(nuevo.primaria));
+		}
+		else es_igual = false;
+
+		return es_igual;
+	}
+
 	// Texto:
 
-	private Localizador getPrefijoParaEn(Id funcion, List<Carbono> cadena) {
+	////////////////////////////////////
+	private Localizador getPrefijoParaEn(Id funcion, Cadena cadena) {
 		Localizador prefijo;
 
-		List<Integer> posiciones = getPosicionesDeEn(funcion, cadena);
+		List<Integer> posiciones = cadena.getPosicionesDe(funcion);
 		String nombre = nombreDePrefijo(funcion);
 
 		if(esRedundante(funcion)) // Sobran los localizadores porque son evidentes
 			prefijo = new Localizador(multiplicadorDe(posiciones.size()), nombre); // Como "difluoro"
-		else if(esHalogeno(funcion) && getSustituyentesUnicos().size() == 1) // Solo hay carbonos y el halógeno
+		else if(esHalogeno(funcion) && cadena.getSustituyentesUnicos().size() == 1) // Solo hay carbonos y el halógeno
 			prefijo = new Localizador("per", nombre); // Como "perfluoro"
 		else prefijo = new Localizador(posiciones, nombre); // Como "1,2-difluoro"
 
 		return prefijo;
 	}
 
-	private String getEnlaceParaEn(Id tipo, List<Carbono> cadena) {
+	private String getEnlaceParaEn(Id tipo, Cadena cadena) {
 		String enlace = "";
 
-		List<Integer> posiciones = getPosicionesDeEn(tipo, cadena);
+		List<Integer> posiciones = cadena.getPosicionesDe(tipo);
 		String nombre = nombreDeEnlace(tipo);
 
 		if(posiciones.size() > 0) {
@@ -134,10 +154,9 @@ public final class Eter extends Organico {
 		return enlace;
 	}
 
-
-	private String getNombreCadena(List<Carbono> cadena) { // TODO: iso, terc
-		List<Id> funciones = getFuncionesOrdenadasEn(cadena); // Sin hidrógeno
-		int funcion = 0;
+	private String getNombreCadena(Cadena cadena) { // TODO: iso, terc
+		List<Id> funciones = getFuncionesOrdenadas(); // Sin hidrógeno
+		int funcion = 1; // La primera es éter
 
 		// Se procesan los prefijos:
 		List<Localizador> prefijos = new ArrayList<>();
@@ -155,15 +174,15 @@ public final class Eter extends Organico {
 			funcion++;
 		}
 
-		List<Sustituyente> radicales = getRadicalesUnicos();
+		List<Sustituyente> radicales = cadena.getRadicalesUnicos();
 		for(Sustituyente radical : radicales) {
-			localizador = new Localizador(getPosicionesDeEn(radical, cadena), nombreDeRadical(radical));
+			localizador = new Localizador(cadena.getPosicionesDe(radical), nombreDeRadical(radical));
 
 			if(!localizador.getLexema().equals("")) // TODO: else?
 				prefijos.add(localizador);
 		}
 
-		StringBuilder prefijo = new StringBuilder(contiene(Id.acido) ? "ácido " : "");
+		StringBuilder prefijo = new StringBuilder(cadena.contiene(Id.acido) ? "ácido " : "");
 		if(prefijos.size() > 0) {
 			Localizador.ordenarAlfabeticamente(prefijos);
 
@@ -180,9 +199,8 @@ public final class Eter extends Organico {
 		// Se procesan los enlaces:
 		String enlaces = getEnlaceParaEn(Id.alqueno, cadena) + getEnlaceParaEn(Id.alquino, cadena);
 
-
 		// Se procesa el cuantificador:
-		String cuantificador = cuantificadorDe(cadena.size());
+		String cuantificador = cuantificadorDe(cadena.getSize());
 
 		if(!enlaces.equals("") && Organico.noEmpiezaPorVocal(enlaces))
 			cuantificador += "a";
@@ -210,12 +228,67 @@ public final class Eter extends Organico {
 	public String getFormula() {
 		String formula = "";
 
-		formula += formulaDe(primaria);
+		formula += primaria.getFormula();
 
 		if(hay_eter)
-			formula += formulaDe(secundaria);
+			formula += secundaria.getFormula();
 
 		return formula;
+	}
+	////////////////////////////////////
+
+	// Alias:
+
+	private void invertirOrden() {
+		seleccionada.invertirOrden();
+	}
+
+	private int getSize() {
+		return seleccionada.getSize();
+	}
+
+	private int getEnlacesLibres() {
+		return seleccionada.getEnlacesLibres();
+	}
+
+	private boolean hayFunciones() { // Sin hidrógeno
+		return seleccionada.hayFunciones();
+	}
+
+	private boolean contiene(Id funcion) {
+		return seleccionada.contiene(funcion);
+	}
+
+	private Id getFuncionPrioritaria() {
+		return seleccionada.getFuncionPrioritaria();
+	}
+
+	private List<Id> getFuncionesOrdenadas() {
+		return seleccionada.getFuncionesOrdenadas();
+	}
+
+	private List<Integer> getPosicionesDe(Id funcion) {
+		return seleccionada.getPosicionesDe(funcion);
+	}
+
+	private List<Integer> getPosicionesDe(Sustituyente sustituyente) {
+		return seleccionada.getPosicionesDe(sustituyente);
+	}
+
+	private List<Sustituyente> getRadicales() {
+		return seleccionada.getRadicales();
+	}
+
+	private List<Sustituyente> getRadicalesUnicos() {
+		return seleccionada.getRadicalesUnicos();
+	}
+
+	private List<Sustituyente> getSustituyentesUnicos() {
+		return seleccionada.getSustituyentesUnicos();
+	}
+
+	private List<Sustituyente> getSustituyentesSinHidrogeno() {
+		return seleccionada.getSustituyentesSinHidrogeno();
 	}
 
 	@Override

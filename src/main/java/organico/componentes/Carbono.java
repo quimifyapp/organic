@@ -4,15 +4,26 @@ import organico.Organico;
 
 import java.util.*;
 
-public class Carbono {
+public class Carbono extends Organico {
 
-    private final List<Sustituyente> sustituyentes = new ArrayList<>();
+    private final List<Sustituyente> sustituyentes;
     private int enlaces_libres;
 
     // Constructor:
 
     public Carbono(int enlaces_previos) {
+        sustituyentes = new ArrayList<>();
         enlaces_libres = 4 - enlaces_previos;
+    }
+
+    public Carbono(Id funcion, int veces) {
+        sustituyentes = new ArrayList<>();
+        enlazar(funcion, veces);
+    }
+
+    public Carbono(Carbono otro) {
+        sustituyentes = new ArrayList<>(otro.sustituyentes);
+        enlaces_libres = otro.enlaces_libres;
     }
 
     // Consultas:
@@ -52,6 +63,24 @@ public class Carbono {
                 cantidad += 1;
 
         return cantidad;
+    }
+
+    @Override
+    public boolean equals(Object otro) {
+        boolean es_igual = false;
+
+        if(otro != null && otro.getClass() == this.getClass()) {
+            Carbono nuevo = (Carbono) otro;
+
+            if(enlaces_libres == nuevo.enlaces_libres && sustituyentes.size() == nuevo.sustituyentes.size())
+                for(int i = 0; i < sustituyentes.size(); i++)
+                    if(sustituyentes.get(i).equals(nuevo.sustituyentes.get(i))) {
+                        es_igual = true;
+                        break;
+                    }
+        }
+
+        return es_igual;
     }
 
     // Métodos get:
@@ -166,40 +195,40 @@ public class Carbono {
 
     // Modificadores:
 
-    public void enlazarSustituyente(Sustituyente sustituyente) {
+    public void enlazar(Sustituyente sustituyente) {
         sustituyentes.add(sustituyente);
         enlaces_libres -= sustituyente.getEnlaces();
     }
 
-    public void enlazarSustituyente(Id funcion) {
-        enlazarSustituyente(new Sustituyente(funcion));
+    public void enlazar(Id funcion) {
+        enlazar(new Sustituyente(funcion));
     }
 
-    public void enlazarSustituyente(Sustituyente sustituyente, int veces) {
+    public void enlazar(Sustituyente sustituyente, int veces) {
         for(int i = 0; i < veces; i++)
-            enlazarSustituyente(sustituyente);
+            enlazar(sustituyente);
     }
 
-    public void enlazarSustituyente(Id funcion, int veces) {
+    public void enlazar(Id funcion, int veces) {
         for(int i = 0; i < veces; i++)
-            enlazarSustituyente(funcion);
+            enlazar(funcion);
     }
 
-    public void eliminarSustituyente(Sustituyente sustituyente) {
+    public void eliminar(Sustituyente sustituyente) {
         sustituyentes.remove(sustituyente); // No se ha eliminado su enlace
     }
 
-    public void eliminarSustituyente(Id funcion) {
-        eliminarSustituyente(new Sustituyente(funcion)); // No se ha eliminado su enlace
+    public void eliminar(Id funcion) {
+        eliminar(new Sustituyente(funcion)); // No se ha eliminado su enlace
     }
 
-    public void eliminarSustituyenteConEnlaces(Sustituyente sustituyente) {
-        eliminarSustituyente(sustituyente);
+    public void eliminarConEnlaces(Sustituyente sustituyente) {
+        eliminar(sustituyente);
         enlaces_libres += sustituyente.getEnlaces();
     }
 
-    public void eliminarSustituyenteConEnlaces(Id funcion) {
-        eliminarSustituyenteConEnlaces(new Sustituyente(funcion));
+    public void eliminarConEnlaces(Id funcion) {
+        eliminarConEnlaces(new Sustituyente(funcion));
     }
 
     public void enlazarCarbono() {

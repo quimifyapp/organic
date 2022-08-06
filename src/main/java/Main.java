@@ -1,6 +1,8 @@
 import organico.componentes.*;
-import organico.opsin.*;
-import organico.pubchem.*;
+import organico.intermediarios.opsin.Opsin;
+import organico.intermediarios.opsin.OpsinResultado;
+import organico.intermediarios.pubchem.PubChem;
+import organico.intermediarios.pubchem.PubChemResultado;
 import organico.tipos.*;
 
 import java.awt.*;
@@ -8,6 +10,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.concurrent.ThreadLocalRandom;
 
 class Main {
 
@@ -31,203 +34,41 @@ class Main {
 
     // TODO: Eter corregir()
 
-    // TODO: reordenar métodos de las clases de orgánica (un desastre ahora mismo D:)
-
     // TODO: OPSIN amidas (aminas, nitrilos, carbamoil?)
 
     // TODO: -CHO es carbaldehído (añadirlo para ciclos?)
 
     private static final Scanner scanner = new Scanner(System.in);
 
-    private static String probarEter() {
-        Eter eter = new Eter();
-
-        List<Integer> elecciones = new ArrayList<>();
-        boolean primer_carbono = true;
-
-        while(!eter.estaCompleta()) {
-            System.out.println("Fórmula: " + eter);
-
-            if(!primer_carbono)
-                System.out.println("0: C");
-
-            List<Id> disponibles = eter.getSustituyentesDisponibles();
-            for(int i = 0; i < disponibles.size(); i++) {
-                if(disponibles.get(i) != Id.radical)
-                    System.out.println((i + 1) + ": " + new Sustituyente(disponibles.get(i)));
-                else System.out.println((i + 1) + ": " + "-CH2(...)CH3");
-            }
-
-            System.out.print("Elección: ");
-            int eleccion = scanner.nextInt();
-            elecciones.add(eleccion);
-
-            if(eleccion == 0 && !primer_carbono)
-                eter.enlazarCarbono();
-            else if(disponibles.get(eleccion - 1) != Id.radical)
-                eter.enlazarSustituyente(disponibles.get(eleccion - 1));
-            else {
-                System.out.println();
-                System.out.println("0: -CH2(...)CH3");
-                System.out.println("1: -CH2(...)CH(CH3)2");
-
-                System.out.print("Elección: ");
-                eleccion = scanner.nextInt();
-                elecciones.add(eleccion);
-
-                System.out.print("Carbonos en el radical: ");
-                int carbonos = scanner.nextInt();
-                elecciones.add(carbonos);
-
-                eter.enlazarSustituyente(new Sustituyente(carbonos, eleccion == 1));
-            }
-            System.out.println();
-
-            if(primer_carbono)
-                primer_carbono = false;
+    private static void probarEter() {
+        while(true) {
+            probarOpsinPubChem(inputEter());
         }
-
-        System.out.println();
-
-        System.out.print("Secuencia:");
-        for(int eleccion : elecciones)
-            System.out.print(" " + eleccion);
-        System.out.println();
-
-        System.out.println();
-        System.out.println("Fórmula: " + eter);
-        eter.corregir();
-        System.out.println("Corregida: " + eter);
-
-        return eter.getNombre();
-    }
-    
-    private static String probarCadenaSimple() {
-        CadenaSimple cadena_simple = new CadenaSimple();
-
-        List<Integer> elecciones = new ArrayList<>();
-        boolean primer_carbono = true;
-        while(!cadena_simple.estaCompleta()) {
-            System.out.println("Fórmula: " + cadena_simple);
-
-            if(!primer_carbono)
-                System.out.println("0: C");
-
-            List<Id> disponibles = cadena_simple.getSustituyentesDisponibles();
-            for(int i = 0; i < disponibles.size(); i++) {
-                if(disponibles.get(i) != Id.radical)
-                    System.out.println((i + 1) + ": " + new Sustituyente(disponibles.get(i)));
-                else System.out.println((i + 1) + ": " + "-CH2(...)CH3");
-            }
-
-            System.out.print("Elección: ");
-            int eleccion = scanner.nextInt();
-            elecciones.add(eleccion);
-
-            if(eleccion == 0 && !primer_carbono)
-                cadena_simple.enlazarCarbono();
-            else if(disponibles.get(eleccion - 1) != Id.radical)
-                cadena_simple.enlazarSustituyente(disponibles.get(eleccion - 1));
-            else {
-                System.out.println();
-                System.out.println("0: -CH2(...)CH3");
-                System.out.println("1: -CH2(...)CH(CH3)2");
-
-                System.out.print("Elección: ");
-                eleccion = scanner.nextInt();
-                elecciones.add(eleccion);
-
-                System.out.print("Carbonos en el radical: ");
-                int carbonos = scanner.nextInt();
-                elecciones.add(carbonos);
-
-                cadena_simple.enlazarSustituyente(new Sustituyente(carbonos, eleccion == 1));
-            }
-            System.out.println();
-
-            if(primer_carbono)
-                primer_carbono = false;
-        }
-
-        System.out.println();
-
-        System.out.print("Secuencia:");
-        for(int eleccion : elecciones)
-            System.out.print(" " + eleccion);
-        System.out.println();
-
-        System.out.println();
-        System.out.println("Fórmula: " + cadena_simple);
-        cadena_simple.corregir();
-        System.out.println("Corregida: " + cadena_simple);
-
-        return cadena_simple.getNombre();
     }
 
-    private static void probarOPSIN() {
-        String input = new Scanner(System.in).nextLine();
-
-        OpsinResultado resultado = Opsin.procesarNombreES(input); // El input debe ser un nombre en español
-        String smiles = resultado.getSmiles();
-
-        if(smiles != null) { // Lo encuentra?
-            System.out.print("es: ");
-            System.out.println(smiles);
+    private static void probarCadenaSimple() {
+        while(true) {
+            probarOpsinPubChem(inputCadenaSimple());
         }
-        else {
-            resultado = Opsin.procesarNombreEN(input); // El input debe ser un nombre en inglés
-            smiles = resultado.getSmiles();
+    }
 
-            if (smiles != null) { // Lo encuentra?
-                System.out.print("en: ");
-                System.out.println(smiles);
-            } else System.out.println("No se ha encontrado ni en español ni en inglés");
+    private static void probarCadenaSimpleAleatorio() {
+        while(true) {
+            probarOpsinPubChem(inputCadenaSimpleAleatorio());
         }
     }
 
     public static void main(String[] args) {
         new Opsin(); // Para cargar sus recursos ya y no esperar después
 
-        while(true) {
-            String nombre;
+        // Elegir uno:
 
-            //nombre = probarCadenaSimple();
-            nombre = probarEter();
+        //probarOPSIN();
 
-            System.out.println("Nombre: " + nombre);
-            System.out.println();
+        probarCadenaSimple();
+        //probarCadenaSimpleAleatorio();
 
-            OpsinResultado opsin_resultado = Opsin.procesarNombreES(nombre);
-            String smiles = opsin_resultado.getSmiles();
-
-            System.out.println("OPSIN smiles: " + opsin_resultado.getSmiles());
-
-            if(smiles != null) {
-                PubChemResultado pub_chem_resultado = PubChem.procesarSmiles(smiles);
-
-                System.out.print("PubChem masa: ");
-                if(pub_chem_resultado.getMasa().isPresent())
-                    System.out.println(pub_chem_resultado.getMasa().get() + " g/mol");
-                else System.out.println("no encontrada");
-
-                String url_2d = pub_chem_resultado.getUrl_2d();
-                System.out.println("PubChem 2D: " + url_2d);
-                System.out.println();
-
-                try {
-                    Desktop.getDesktop().browse(new URI(url_2d));
-                }
-                catch(Exception ignore) {}
-            }
-
-            try {
-                System.out.println("Enter para continuar...");
-                System.in.read();
-            }
-            catch(Exception ignore) {}
-
-            //probarOPSIN();
-        }
+        //probarEter();
 
         /*
         List<Integer> indices = Arrays.asList(0, 1, 1, 2);
@@ -266,6 +107,254 @@ class Main {
         System.out.println(carbono);
         */
 
+    }
+
+    private static String inputCadenaSimple() {
+        Simple cadena_simple = new Simple();
+
+        List<Integer> elecciones = new ArrayList<>();
+        boolean primer_carbono = true;
+        while(!cadena_simple.estaCompleta()) {
+            System.out.println("Fórmula: " + cadena_simple);
+
+            if(!primer_carbono)
+                System.out.println("0: C");
+
+            List<Id> disponibles = cadena_simple.getSustituyentesDisponibles();
+            for(int i = 0; i < disponibles.size(); i++) {
+                if(disponibles.get(i) != Id.radical)
+                    System.out.println((i + 1) + ": " + new Sustituyente(disponibles.get(i)));
+                else System.out.println((i + 1) + ": " + "-CH2(...)CH3");
+            }
+
+            System.out.print("Elección: ");
+            int eleccion = scanner.nextInt();
+            elecciones.add(eleccion);
+
+            if(eleccion == 0 && !primer_carbono)
+                cadena_simple.enlazarCarbono();
+            else if(disponibles.get(eleccion - 1) != Id.radical)
+                cadena_simple.enlazar(disponibles.get(eleccion - 1));
+            else {
+                System.out.println();
+                System.out.println("0: -CH2(...)CH3");
+                System.out.println("1: -CH2(...)CH(CH3)2");
+
+                System.out.print("Elección: ");
+                eleccion = scanner.nextInt();
+                elecciones.add(eleccion);
+
+                System.out.print("Carbonos en el radical: ");
+                int carbonos = scanner.nextInt();
+                elecciones.add(carbonos);
+
+                cadena_simple.enlazar(new Sustituyente(carbonos, eleccion == 1));
+            }
+            System.out.println();
+
+            if(primer_carbono)
+                primer_carbono = false;
+        }
+
+        System.out.println();
+
+        System.out.print("Secuencia:");
+        for(int eleccion : elecciones)
+            System.out.print(" " + eleccion);
+        System.out.println();
+
+        System.out.println();
+        System.out.println("Fórmula: " + cadena_simple);
+        cadena_simple.corregir();
+        System.out.println("Corregida: " + cadena_simple);
+
+        return cadena_simple.getNombre();
+    }
+
+    private static String inputCadenaSimpleAleatorio() {
+        Simple cadena_simple = new Simple();
+
+        List<Integer> elecciones = new ArrayList<>();
+        boolean primer_carbono = true;
+        while(!cadena_simple.estaCompleta()) {
+            System.out.println("Fórmula: " + cadena_simple);
+
+            if(!primer_carbono)
+                System.out.println("0: C");
+
+            List<Id> disponibles = cadena_simple.getSustituyentesDisponibles();
+            for(int i = 0; i < disponibles.size(); i++) {
+                if(disponibles.get(i) != Id.radical)
+                    System.out.println((i + 1) + ": " + new Sustituyente(disponibles.get(i)));
+                else System.out.println((i + 1) + ": " + "-CH2(...)CH3");
+            }
+
+            System.out.print("Elección: ");
+            int eleccion = ThreadLocalRandom.current().nextInt(0, 2) == 0 && !primer_carbono
+                    ? 0
+                    : (ThreadLocalRandom.current().nextInt(0, 2) == 0
+                    ? ThreadLocalRandom.current().nextInt(1, disponibles.size())
+                    : disponibles.size() - 1);
+            elecciones.add(eleccion);
+
+            if(eleccion == 0 && !primer_carbono)
+                cadena_simple.enlazarCarbono();
+            else if(disponibles.get(eleccion - 1) != Id.radical)
+                cadena_simple.enlazar(disponibles.get(eleccion - 1));
+            else {
+                System.out.println();
+                System.out.println("0: -CH2(...)CH3");
+                System.out.println("1: -CH2(...)CH(CH3)2");
+
+                System.out.print("Elección: ");
+                eleccion = ThreadLocalRandom.current().nextInt(0, 2);
+                elecciones.add(eleccion);
+
+                System.out.print("Carbonos en el radical: ");
+                int carbonos = ThreadLocalRandom.current().nextInt(3, 8);
+                elecciones.add(carbonos);
+
+                cadena_simple.enlazar(new Sustituyente(carbonos, eleccion == 1));
+            }
+            System.out.println();
+
+            if(primer_carbono)
+                primer_carbono = false;
+        }
+
+        System.out.println();
+
+        System.out.print("Secuencia:");
+        for(int eleccion : elecciones)
+            System.out.print(" " + eleccion);
+        System.out.println();
+
+        System.out.println();
+        System.out.println("Fórmula: " + cadena_simple);
+        cadena_simple.corregir();
+        System.out.println("Corregida: " + cadena_simple);
+
+        return cadena_simple.getNombre();
+    }
+
+    private static String inputEter() {
+        Eter eter = new Eter();
+
+        List<Integer> elecciones = new ArrayList<>();
+        boolean primer_carbono = true;
+
+        while(!eter.estaCompleta()) {
+            System.out.println("Fórmula: " + eter);
+
+            if(!primer_carbono)
+                System.out.println("0: C");
+
+            List<Id> disponibles = eter.getSustituyentesDisponibles();
+            for(int i = 0; i < disponibles.size(); i++) {
+                if(disponibles.get(i) != Id.radical)
+                    System.out.println((i + 1) + ": " + new Sustituyente(disponibles.get(i)));
+                else System.out.println((i + 1) + ": " + "-CH2(...)CH3");
+            }
+
+            System.out.print("Elección: ");
+            int eleccion = scanner.nextInt();
+            elecciones.add(eleccion);
+
+            if(eleccion == 0 && !primer_carbono)
+                eter.enlazarCarbono();
+            else if(disponibles.get(eleccion - 1) != Id.radical)
+                eter.enlazar(disponibles.get(eleccion - 1));
+            else {
+                System.out.println();
+                System.out.println("0: -CH2(...)CH3");
+                System.out.println("1: -CH2(...)CH(CH3)2");
+
+                System.out.print("Elección: ");
+                eleccion = scanner.nextInt();
+                elecciones.add(eleccion);
+
+                System.out.print("Carbonos en el radical: ");
+                int carbonos = scanner.nextInt();
+                elecciones.add(carbonos);
+
+                eter.enlazar(new Sustituyente(carbonos, eleccion == 1));
+            }
+            System.out.println();
+
+            if(primer_carbono)
+                primer_carbono = false;
+        }
+
+        System.out.println();
+
+        System.out.print("Secuencia:");
+        for(int eleccion : elecciones)
+            System.out.print(" " + eleccion);
+        System.out.println();
+
+        System.out.println();
+        System.out.println("Fórmula: " + eter);
+        eter.corregir();
+        System.out.println("Corregida: " + eter);
+
+        return eter.getNombre();
+    }
+
+    private static void probarOpsinPubChem(String nombre) {
+        System.out.println("Nombre: " + nombre);
+        System.out.println();
+
+        OpsinResultado opsin_resultado = Opsin.procesarNombreES(nombre);
+        String smiles = opsin_resultado.getSmiles();
+
+        System.out.println("OPSIN smiles: " + opsin_resultado.getSmiles());
+
+        if(smiles != null) {
+            PubChemResultado pub_chem_resultado = PubChem.procesarSmiles(smiles);
+
+            System.out.print("PubChem masa: ");
+            if(pub_chem_resultado.getMasa().isPresent())
+                System.out.println(pub_chem_resultado.getMasa().get() + " g/mol");
+            else System.out.println("no encontrada");
+
+            String url_2d = pub_chem_resultado.getUrl_2d();
+            System.out.println("PubChem 2D: " + url_2d);
+            System.out.println();
+
+            try {
+                //Desktop.getDesktop().browse(new URI(url_2d));
+            }
+            catch(Exception ignore) {}
+        }
+
+        try {
+            System.out.println("Enter para continuar...");
+            System.in.read();
+        }
+        catch(Exception ignore) {}
+    }
+
+    private static void probarOPSIN() {
+        while(true) {
+            String input = new Scanner(System.in).nextLine();
+
+            OpsinResultado resultado = Opsin.procesarNombreES(input); // El input debe ser un nombre en español
+            String smiles = resultado.getSmiles();
+
+            if(smiles != null) { // Lo encuentra?
+                System.out.print("es: ");
+                System.out.println(smiles);
+            }
+            else {
+                resultado = Opsin.procesarNombreEN(input); // El input debe ser un nombre en inglés
+                smiles = resultado.getSmiles();
+
+                if (smiles != null) { // Lo encuentra?
+                    System.out.print("en: ");
+                    System.out.println(smiles);
+                } else System.out.println("No se ha encontrado ni en español ni en inglés");
+            }
+        }
     }
 
 }
