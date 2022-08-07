@@ -266,6 +266,15 @@ public class Cadena extends Organico {
 		return getUltimo().getEnlacesLibres();
 	}
 
+	public int getCantidadDe(Id funcion) {
+		int cantidad = 0;
+
+		for(Carbono carbono : carbonos)
+			cantidad += carbono.getCantidadDe(funcion);
+
+		return cantidad;
+	}
+
 	public Id getFuncionPrioritaria() { // Con hidrógeno
 		for(Id funcion : Id.values()) // Todas las funciones recogidas en Id
 			for(Carbono carbono : carbonos)
@@ -281,8 +290,10 @@ public class Cadena extends Organico {
 		for(Id funcion : Id.values()) // Todas las funciones recogidas en Id
 			if(funcion != Id.hidrogeno) // Excepto hidrógeno
 				for(Carbono carbono : carbonos)
-					if(carbono.contiene(funcion))
+					if(carbono.contiene(funcion)) {
 						funciones.add(funcion);
+						break;
+					}
 
 		return funciones;
 	}

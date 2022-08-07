@@ -123,8 +123,6 @@ public final class Eter extends Organico {
 
 		if(esRedundante(funcion)) // Sobran los localizadores porque son evidentes
 			prefijo = new Localizador(multiplicadorDe(posiciones.size()), nombre); // Como "difluoro"
-		else if(esHalogeno(funcion) && cadena.getSustituyentesUnicos().size() == 1) // Solo hay carbonos y el halógeno
-			prefijo = new Localizador("per", nombre); // Como "perfluoro"
 		else prefijo = new Localizador(posiciones, nombre); // Como "1,2-difluoro"
 
 		return prefijo;
@@ -163,8 +161,7 @@ public final class Eter extends Organico {
 		Localizador localizador;
 
 		while(funcion < funciones.size()) {
-			if(funciones.get(funcion) != Id.alqueno && funciones.get(funcion) != Id.alquino
-					&& funciones.get(funcion) != Id.radical) {
+			if(!esAlquenoOAlquino(funciones.get(funcion)) && funciones.get(funcion) != Id.radical) {
 				localizador = getPrefijoParaEn(funciones.get(funcion), cadena);
 
 				if(!localizador.getLexema().equals("")) // TODO: else?

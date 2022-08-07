@@ -211,7 +211,7 @@ class Main {
                 elecciones.add(eleccion);
 
                 System.out.print("Carbonos en el radical: ");
-                int carbonos = ThreadLocalRandom.current().nextInt(3, 8);
+                int carbonos = ThreadLocalRandom.current().nextInt(3, 5);
                 elecciones.add(carbonos);
 
                 cadena_simple.enlazar(new Sustituyente(carbonos, eleccion == 1));
@@ -326,10 +326,11 @@ class Main {
             }
             catch(Exception ignore) {}
         }
+        else System.out.println("Error en OPSIN");
 
         try {
-            System.out.println("Enter para continuar...");
-            System.in.read();
+            //System.out.println("Enter para continuar...");
+            //System.in.read();
         }
         catch(Exception ignore) {}
     }

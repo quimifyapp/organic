@@ -166,34 +166,20 @@ public final class Simple extends Organico {
     private boolean esRedundante(Id funcion) {
         boolean es_redundante;
 
+        // Sustituyentes terminales:
+        if(funcion != Id.radical && !(esAlquenoOAlquino(funcion))) // Por: new Sustituyente(funcion)
+            es_redundante = new Sustituyente(funcion).getEnlaces() == 3; // Solo puede ir en el primero y/o último
+        // Derivados del propeno:
+        else if(getSize() == 3)
+            es_redundante = funcion == Id.alqueno && getCantidadDe(Id.alqueno) == 2; // Es propadieno
         // Derivados del etano:
-        if(getSize() == 2) {
-            if(funcion == Id.alqueno || funcion == Id.alquino) // Solo hay una posición para el enlace
+        else if(getSize() == 2) {
+            if(esAlquenoOAlquino(funcion)) // Solo hay una posición para el enlace
                 es_redundante = true;
-            else if(getSustituyentesSinHidrogeno().size() == 1) // Solo hay un sustituyente (como cloroetano, etenol...)
-                es_redundante = true;
-            else if(contiene(Id.alquino)) // Solo cabe un sustituyente en cada carbono (como C(NO2)≡CCl)
-                es_redundante = true;
-            else { // Hay más de un sustituyente, no es alquino y la función no es alqueno o alquino
-                List<Sustituyente> sustituyentes = getSustituyentesSinHidrogeno();
-
-                if(sustituyentes.size() == 2) { // Hay dos funciones distintas de alqueno (y alquino)
-                    int suma_enlaces = sustituyentes.get(0).getEnlaces() + sustituyentes.get(1).getEnlaces();
-
-                    if(suma_enlaces > 3 || (suma_enlaces > 1 && contiene(Id.alqueno))) // No caben en un solo carbono
-                        es_redundante = true;
-                    else es_redundante = funcion == sustituyentes.get(0).getFuncion(); // Es la prioritaria (orden)
-                }
-                else es_redundante = false;
-            }
+            else es_redundante = getSustituyentesSinHidrogeno().size() == 1; // Solo hay uno, como cloroetino o etanol
         }
         // Derivados del metano:
-        else if(getSize() == 1)
-            es_redundante = true;
-        // Sustituyentes terminales:
-        else if(funcion != Id.radical && funcion != Id.alqueno && funcion != Id.alquino) // Para new Sustituyente()
-            es_redundante = new Sustituyente(funcion).getEnlaces() == 3; // Solo puede ir en el primero y/o último
-        else es_redundante = false;
+        else es_redundante = getSize() == 1;
 
         return es_redundante;
     }
@@ -209,8 +195,6 @@ public final class Simple extends Organico {
 
         if(esRedundante(funcion)) // Sobran los localizadores porque son evidentes
             prefijo = new Localizador(multiplicadorDe(posiciones.size()), nombre); // Como "difluoro"
-        else if(esHalogeno(funcion) && getSustituyentesUnicos().size() == 1) // Solo hay carbonos y el halógeno
-            prefijo = new Localizador("per", nombre); // Como "perfluoro"
         else prefijo = new Localizador(posiciones, nombre); // Como "1,2-difluoro"
 
         return prefijo;
@@ -262,20 +246,17 @@ public final class Simple extends Organico {
 
         // Se procesa el sufijo:
         String sufijo;
-        if(funciones.size() > 0 && !esHalogeno(funciones.get(0)) // Nunca son sufijos
-                && funciones.get(0) != Id.alqueno && funciones.get(0) != Id.alquino
-                && funciones.get(0) != Id.nitro && funciones.get(0) != Id.radical)
+        if(funciones.size() > 0 && funciones.get(0) != Id.nitro && funciones.get(0) != Id.radical // Nunca son sufijos
+                && !esHalogeno(funciones.get(0)) && !esAlquenoOAlquino(funciones.get(0)))
             sufijo = getSufijoPara(funciones.get(funcion++));
         else sufijo = "";
 
         // Se procesan los prefijos:
         List<Localizador> prefijos = new ArrayList<>();
-        Localizador localizador;
 
         while(funcion < funciones.size()) {
-            if(funciones.get(funcion) != Id.alqueno && funciones.get(funcion) != Id.alquino
-                    && funciones.get(funcion) != Id.radical) {
-                localizador = getPrefijoPara(funciones.get(funcion));
+            if(!esAlquenoOAlquino(funciones.get(funcion)) && funciones.get(funcion) != Id.radical) {
+                Localizador localizador = getPrefijoPara(funciones.get(funcion));
 
                 if(!localizador.getLexema().equals("")) // TODO: else?
                     prefijos.add(localizador);
@@ -286,7 +267,7 @@ public final class Simple extends Organico {
 
         List<Sustituyente> radicales = getRadicalesUnicos();
         for(Sustituyente radical : radicales) {
-            localizador = new Localizador(getPosicionesDe(radical), nombreDeRadical(radical));
+            Localizador localizador = new Localizador(getPosicionesDe(radical), nombreDeRadical(radical));
 
             if(!localizador.getLexema().equals("")) // TODO: else?
                 prefijos.add(localizador);
@@ -342,6 +323,10 @@ public final class Simple extends Organico {
 
     private int getEnlacesLibres() {
         return cadena.getEnlacesLibres();
+    }
+
+    private int getCantidadDe(Id funcion) {
+        return cadena.getCantidadDe(funcion);
     }
 
     private boolean hayFunciones() { // Sin hidrógeno

@@ -51,16 +51,21 @@ public class Carbono extends Organico {
         return false;
     }
 
-    public int getCantidadDe(Sustituyente sustituyente) {
+    private int getCantidadDe(Sustituyente sustituyente) {
         return Collections.frequency(sustituyentes, sustituyente);
     }
 
     public int getCantidadDe(Id funcion) {
         int cantidad = 0;
 
-        for(Sustituyente sustituyente : sustituyentes)
-            if(sustituyente.esTipo(funcion))
-                cantidad += 1;
+        if(contiene(funcion)) {
+            if(funcion != Id.alqueno && funcion != Id.alquino) {
+                for(Sustituyente sustituyente : sustituyentes)
+                    if(sustituyente.esTipo(funcion))
+                        cantidad += 1;
+            }
+            else cantidad = 1;
+        }
 
         return cantidad;
     }
@@ -143,12 +148,6 @@ public class Carbono extends Organico {
     }
 
     // Texto:
-
-    private static String cuantificadorMolecular(int cantidad) {
-        return (cantidad != 1)
-                ? String.valueOf(cantidad) // Como en "CO2"
-                : ""; // Como en "CO"
-    }
 
     @Override
     public String toString() {

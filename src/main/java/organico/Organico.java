@@ -19,12 +19,15 @@ public class Organico {
         return halogenos.contains(funcion);
     }
 
+    public static boolean esAlquenoOAlquino(Id funcion) {
+        return funcion == Id.alqueno || funcion ==  Id.alquino;
+    }
+
     // Métodos protegidos:
 
     protected static boolean esHalogeno(Sustituyente sustituyente) {
         return esHalogeno(sustituyente.getFuncion());
     }
-
 
     protected static void ordenarPorFunciones(List<Sustituyente> sustituyentes) {
         for(int i = 0; i < sustituyentes.size() - 1;) // Sin incremento
@@ -364,6 +367,12 @@ public class Organico {
             default:
                 throw new IllegalArgumentException("No existen enlaces de orden " + orden);
         }
+    }
+
+    protected static String cuantificadorMolecular(int cantidad) {
+        return (cantidad != 1)
+                ? String.valueOf(cantidad) // Como en "CO2"
+                : ""; // Como en "CO"
     }
 
     protected static char primeraLetraDe(String texto) {
