@@ -80,9 +80,15 @@ public final class Eter extends Organico {
 	}
 
 	public void corregir() {
-		// ...
+		if(estaCompleta() && hayFunciones()) {
+			primaria.corregirRadicalesPorLaIzquierda(); // Comprobará internamente si hay radicales
+			if(secundaria.contiene(Id.radical)) { // Para ahorrar el invertir la cadena
+				secundaria.invertirOrden(); // En lugar de corregirlos por la derecha
+				secundaria.corregirRadicalesPorLaIzquierda(); // CHF(CH3)(CH2CH3) → CH3-CH2-CHF-CH3
+				secundaria.invertirOrden(); // Es necesario para no romper el orden del éter
+			}
+		}
 	}
-
 
 	// Modificadores:
 
@@ -90,9 +96,19 @@ public final class Eter extends Organico {
 
 	// Internos:
 
-	private boolean esRedundante(Id funcion) {
-		// ...
-		return false;
+	private boolean esRedundante(Id funcion, Cadena cadena) {
+		boolean es_redundante;
+
+		// Derivados del propil:
+		if(cadena.getSize() == 3)
+			es_redundante = funcion == Id.alqueno && cadena.getCantidadDe(Id.alqueno) == 2; // Es propadienil
+		// Derivados del etil:
+        else if(cadena.getSize() == 2)
+			es_redundante = esAlquenoOAlquino(funcion); // Solo hay una posición posible para el enlace
+		// Derivados del metil:
+		else es_redundante = cadena.getSize() == 1;
+
+		return es_redundante;
 	}
 
 	// Consultas:
@@ -121,7 +137,7 @@ public final class Eter extends Organico {
 		List<Integer> posiciones = cadena.getPosicionesDe(funcion);
 		String nombre = nombreDePrefijo(funcion);
 
-		if(esRedundante(funcion)) // Sobran los localizadores porque son evidentes
+		if(esRedundante(funcion, cadena)) // Sobran los localizadores porque son evidentes
 			prefijo = new Localizador(multiplicadorDe(posiciones.size()), nombre); // Como "difluoro"
 		else prefijo = new Localizador(posiciones, nombre); // Como "1,2-difluoro"
 
@@ -137,14 +153,14 @@ public final class Eter extends Organico {
 		if(posiciones.size() > 0) {
 			Localizador localizador;
 
-			if(esRedundante(tipo)) // Sobran los localizadores porque son evidentes
+			if(esRedundante(tipo, cadena)) // Sobran los localizadores porque son evidentes
 				localizador = new Localizador(multiplicadorDe(posiciones.size()), nombre); // Como "dien"
 			else localizador = new Localizador(posiciones, nombre); // Como "1,2-dien"
 
 			String localizador_to_string = localizador.toString();
 
 			if(empiezaPorDigito(localizador_to_string))
-				enlace += "-"; // Guión *antes* de los localizadores
+				enlace += "-"; // Guion *antes* de los localizadores
 
 			enlace += localizador_to_string;
 		}
@@ -152,7 +168,15 @@ public final class Eter extends Organico {
 		return enlace;
 	}
 
-	private String getNombreCadena(Cadena cadena) { // TODO: iso, terc
+	private String getNombreCadena(Cadena cadena) {
+		// Se anticipan los casos excepcionales:
+		if(cadena.getFuncionesOrdenadas().size() == 1 && cadena.getRadicales().size() == 1) {
+			if(cadena.getSize() > 1 && cadena.get(cadena.getSize() - 2).estaEnlazadoA(Organico.CH3))
+				return "iso" + cuantificadorDe(cadena.getSize() + 1) + "il";
+			else if(cadena.getSize() > 2 && cadena.get(cadena.getSize() - 3).estaEnlazadoA(Organico.CH3))
+				return "sec" + cuantificadorDe(cadena.getSize() + 1) + "il";
+		}
+
 		List<Id> funciones = cadena.getFuncionesOrdenadas(); // Sin hidrógeno ni éter
 		int funcion = 0;
 
@@ -205,23 +229,21 @@ public final class Eter extends Organico {
 		return prefijo + cuantificador + enlaces + "il";
 	}
 
-	public String getNombre() {
+	public String getNombre() { // Se asume que ya está corregida con corregir()
 		String nombre;
 
-		// TODO: si las dos son iguales
+		String nombre_primaria = getNombreCadena(primaria.getInversa()); // Se empieza a contar desde el oxígeno
+		String nombre_secundaria = getNombreCadena(secundaria); // La secundaria ya está en el orden bueno
 
-		// TODO: el carbono 1 no es el primero sino al lado del -O-
+		if(!nombre_primaria.equals(nombre_secundaria)) {
+			// Se disponen en orden alfabético:
+			if(nombre_primaria.compareTo(nombre_secundaria) < 0)
+				nombre = nombre_primaria + " " + nombre_secundaria;
+			else nombre = nombre_secundaria + " " + nombre_primaria;
+		}
+		else nombre = (empiezaPorDigito(nombre_primaria) ? "di " : "di") + nombre_primaria;
 
-		String nombre_primaria = getNombreCadena(primaria);
-		String nombre_secundaria = getNombreCadena(secundaria);
-
-		// TODO: orden alfabético
-
-		if(nombre_primaria.equals(nombre_secundaria))
-			nombre = (empiezaPorDigito(nombre_primaria) ? "di " : "di") + nombre_primaria + " éter";
-		else nombre = nombre_primaria + " " + nombre_secundaria + " éter";
-
-		return nombre;
+		return nombre + " éter";
 	}
 
 	public String getFormula() {
@@ -238,56 +260,12 @@ public final class Eter extends Organico {
 
 	// Alias:
 
-	private void invertirOrden() {
-		seleccionada.invertirOrden();
-	}
-
-	private int getSize() {
-		return seleccionada.getSize();
-	}
-
 	private int getEnlacesLibres() {
 		return seleccionada.getEnlacesLibres();
 	}
 
-	private boolean hayFunciones() { // Sin hidrógeno
-		return seleccionada.hayFunciones();
-	}
-
-	private boolean contiene(Id funcion) {
-		return seleccionada.contiene(funcion);
-	}
-
-	private Id getFuncionPrioritaria() {
-		return seleccionada.getFuncionPrioritaria();
-	}
-
-	private List<Id> getFuncionesOrdenadas() {
-		return seleccionada.getFuncionesOrdenadas();
-	}
-
-	private List<Integer> getPosicionesDe(Id funcion) {
-		return seleccionada.getPosicionesDe(funcion);
-	}
-
-	private List<Integer> getPosicionesDe(Sustituyente sustituyente) {
-		return seleccionada.getPosicionesDe(sustituyente);
-	}
-
-	private List<Sustituyente> getRadicales() {
-		return seleccionada.getRadicales();
-	}
-
-	private List<Sustituyente> getRadicalesUnicos() {
-		return seleccionada.getRadicalesUnicos();
-	}
-
-	private List<Sustituyente> getSustituyentesUnicos() {
-		return seleccionada.getSustituyentesUnicos();
-	}
-
-	private List<Sustituyente> getSustituyentesSinHidrogeno() {
-		return seleccionada.getSustituyentesSinHidrogeno();
+	private boolean hayFunciones() { // Sin hidrógeno ni éter
+		return primaria.hayFunciones() || secundaria.hayFunciones();
 	}
 
 	@Override

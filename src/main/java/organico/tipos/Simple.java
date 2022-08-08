@@ -80,7 +80,7 @@ public final class Simple extends Organico {
         if(estaCompleta() && hayFunciones()) {
             // Se corrigen los radicales que podrían formar parte de la cadena principal:
             cadena.corregirRadicalesPorLaIzquierda(); // Comprobará internamente si hay radicales
-            if(contiene(Id.radical)) { // Para ahorrar la inversión de la cadena
+            if(contiene(Id.radical)) { // Para ahorrar el invertir la cadena
                 invertirOrden(); // En lugar de corregirlos por la derecha
                 cadena.corregirRadicalesPorLaIzquierda(); // CHF(CH3)(CH2CH3) → CH3-CH2-CHF-CH3
             }
@@ -174,7 +174,7 @@ public final class Simple extends Organico {
             es_redundante = funcion == Id.alqueno && getCantidadDe(Id.alqueno) == 2; // Es propadieno
         // Derivados del etano:
         else if(getSize() == 2) {
-            if(esAlquenoOAlquino(funcion) || contiene(Id.alquino)) // Solo hay una posición para el enlace
+            if(esAlquenoOAlquino(funcion) || contiene(Id.alquino)) // Solo hay una posición posible
                 es_redundante = true;
             else es_redundante = getSustituyentesSinHidrogeno().size() == 1; // Solo hay uno, como cloroetino o etanol
         }
@@ -237,8 +237,9 @@ public final class Simple extends Organico {
         return sufijo;
     }
 
-    public String getNombre() { // Se asume que ya la CadenaSimple está corregida con corregir()
-        if(cadena.equals(CO2)) // Caso excepcional
+    public String getNombre() { // Se asume que ya está corregida con corregir()
+        // Se anticipan los casos excepcionales:
+        if(cadena.equals(CO2))
             return "dióxido de carbono";
 
         List<Id> funciones = getFuncionesOrdenadas(); // Sin hidrógeno

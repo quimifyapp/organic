@@ -16,9 +16,12 @@ public class ProbarEter {
 		while(true) {
 			Eter eter = getEter();
 
+			System.out.println();
+			System.out.println("Fórmula: " + eter);
 			eter.corregir(); // Es necesario
-			String nombre = eter.getNombre();
+			System.out.println("Corregida: " + eter);
 
+			String nombre = eter.getNombre();
 			Resultado.analizar(nombre);
 		}
 	}
@@ -77,11 +80,6 @@ public class ProbarEter {
 		for(int eleccion : elecciones)
 			System.out.print(" " + eleccion);
 		System.out.println();
-
-		System.out.println();
-		System.out.println("Fórmula: " + eter);
-		eter.corregir();
-		System.out.println("Corregida: " + eter);
 
 		return eter;
 	}

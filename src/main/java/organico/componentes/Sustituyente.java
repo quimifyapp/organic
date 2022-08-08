@@ -1,5 +1,7 @@
 package organico.componentes;
 
+import organico.Organico;
+
 public class Sustituyente {
 
     private Id funcion; // El tipo de sustituyente
@@ -23,7 +25,6 @@ public class Sustituyente {
 	*/
 
     // Constructores:
-
 
     public Sustituyente(int carbonos, boolean iso) {
         if(iso) {
@@ -175,7 +176,7 @@ public class Sustituyente {
             if(iso) {
                 cadena.enlazarCarbono(); // CH3-C≡
                 cadena.enlazar(Id.hidrogeno); // CH3-CH=
-                cadena.enlazar(new Sustituyente(1)); // CH3-CH(CH3)-
+                cadena.enlazar(Organico.CH3); // CH3-CH(CH3)-
 
                 anteriores += 2; // CH3-CH(CH3)-
             }

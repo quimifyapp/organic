@@ -16,9 +16,12 @@ public class ProbarSimple {
 		while(true) {
 			Simple simple = getSimple();
 
+			System.out.println();
+			System.out.println("Fórmula: " + simple);
 			simple.corregir(); // Es necesario
-			String nombre = simple.getNombre();
+			System.out.println("Corregida: " + simple);
 
+			String nombre = simple.getNombre();
 			Resultado.analizar(nombre);
 		}
 	}
@@ -76,11 +79,6 @@ public class ProbarSimple {
 		for(int eleccion : elecciones)
 			System.out.print(" " + eleccion);
 		System.out.println();
-
-		System.out.println();
-		System.out.println("Fórmula: " + simple);
-		simple.corregir();
-		System.out.println("Corregida: " + simple);
 
 		return simple;
 	}

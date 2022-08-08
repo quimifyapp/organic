@@ -11,22 +11,21 @@ import static java.util.Collections.swap;
 
 public class Organico {
 
+    public static final Sustituyente CH3 = new Sustituyente(1);
     private static final List<Id> halogenos = Arrays.asList(Id.bromo, Id.cloro, Id.fluor, Id.yodo);
 
-    // Métodos públicos:
+    // Consultas:
 
-    public static boolean esHalogeno(Id funcion) {
+    protected static boolean esHalogeno(Id funcion) {
         return halogenos.contains(funcion);
     }
 
-    public static boolean esAlquenoOAlquino(Id funcion) {
-        return funcion == Id.alqueno || funcion ==  Id.alquino;
-    }
-
-    // Métodos protegidos:
-
     protected static boolean esHalogeno(Sustituyente sustituyente) {
         return esHalogeno(sustituyente.getFuncion());
+    }
+
+    protected static boolean esAlquenoOAlquino(Id funcion) {
+        return funcion == Id.alqueno || funcion ==  Id.alquino;
     }
 
     protected static void ordenarPorFunciones(List<Sustituyente> sustituyentes) {
@@ -40,7 +39,7 @@ public class Organico {
 
     // Texto:
 
-    protected static String prefijoGriegoDe(int numero) {
+    private static String prefijoGriegoDe(int numero) {
         String resultado;
 
         switch(numero) {
@@ -198,19 +197,15 @@ public class Organico {
 
         // EJEMPLOS:
         /*
-            "2,3-diol"  =   { posiciones: "2,3",    multiplicador: "di",    lexema: "ol"     }
-            "tetrain"   =   { posiciones: "",       multiplicador: "tetra", lexema: "in"     }
-            "fluoro"    =   { posiciones: "",       multiplicador: "",      lexema: "fluoro" }
+            "2,3-diol"  =   { posiciones: "2,3",  multiplicador: "di",     lexema: "ol"     }
+            "tetrain"   =   { posiciones: "",     multiplicador: "tetra",  lexema: "in"     }
+            "fluoro"    =   { posiciones: "",     multiplicador: "",       lexema: "fluoro" }
         */
 
         private void construir(String posiciones, String multiplicador, String nombre) {
             this.posiciones = posiciones;
             this.multiplicador = multiplicador;
             this.lexema = nombre;
-        }
-
-        public Localizador(String posiciones, String multiplicador, String lexema) {
-            construir(posiciones, multiplicador, lexema);
         }
 
         public Localizador(String multiplicador, String lexema) {

@@ -101,9 +101,8 @@ public class Cadena extends Organico {
 						Sustituyente antiguo;
 
 						// Aquí se tiene en cuenta que, de haber un radical, solo podría ser metil
-						Sustituyente CH3 = new Sustituyente(1); // Sustituyente metil
 						if(i > 1 && carbonos.get(1).contiene(Id.radical) // Hay un radical en el segundo carbono
-								&& carbonos.get(1).getSustituyentesSinHidrogeno().get(0).equals(CH3)) // Y es metil
+								&& carbonos.get(1).getSustituyentesSinHidrogeno().get(0).equals(Organico.CH3)) // Metil
 							antiguo = new Sustituyente(i + 1, true);
 						else antiguo = new Sustituyente(i);
 
@@ -207,9 +206,9 @@ public class Cadena extends Organico {
 		return getEnlacesLibres() == 0;
 	}
 
-	public boolean hayFunciones() { // Sin hidrógeno
+	public boolean hayFunciones() { // Sin hidrógeno ni éter
 		for(Id funcion : Id.values()) // Todas las funciones recogidas en Id
-			if(funcion != Id.hidrogeno)
+			if(funcion != Id.hidrogeno && funcion != Id.eter)
 				for(Carbono carbono : carbonos)
 					if(carbono.contiene(funcion))
 						return true;
@@ -237,11 +236,15 @@ public class Cadena extends Organico {
 
 	// Métodos get:
 
+	public Carbono get(int indice) {
+		return carbonos.get(indice);
+	}
+
 	public int getSize() {
 		return carbonos.size();
 	}
 
-	private Cadena getInversa() {
+	public Cadena getInversa() {
 		Cadena inversa = new Cadena(carbonos);
 
 		// Le da la vuelta a los carbonos:

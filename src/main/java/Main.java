@@ -1,5 +1,3 @@
-package organico.interfaz;
-
 import organico.componentes.Carbono;
 import organico.componentes.Id;
 
@@ -26,6 +24,7 @@ class Main {
     // TODO: Eter corregir()
 
     // TODO: -CHO es carbaldehído (añadirlo para ciclos?)
+    // TODO: funcion fenil -C6H5
 
     public static void main(String[] args) {
         Carbono carbono = new organico.componentes.Carbono(0);
