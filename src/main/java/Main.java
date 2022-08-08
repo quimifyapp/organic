@@ -65,8 +65,8 @@ class Main {
 
         //probarOPSIN();
 
-        probarCadenaSimple();
-        //probarCadenaSimpleAleatorio();
+        //probarCadenaSimple();
+        probarCadenaSimpleAleatorio();
 
         //probarEter();
 
@@ -177,19 +177,8 @@ class Main {
         List<Integer> elecciones = new ArrayList<>();
         boolean primer_carbono = true;
         while(!cadena_simple.estaCompleta()) {
-            System.out.println("Fórmula: " + cadena_simple);
-
-            if(!primer_carbono)
-                System.out.println("0: C");
-
             List<Id> disponibles = cadena_simple.getSustituyentesDisponibles();
-            for(int i = 0; i < disponibles.size(); i++) {
-                if(disponibles.get(i) != Id.radical)
-                    System.out.println((i + 1) + ": " + new Sustituyente(disponibles.get(i)));
-                else System.out.println((i + 1) + ": " + "-CH2(...)CH3");
-            }
 
-            System.out.print("Elección: ");
             int eleccion = ThreadLocalRandom.current().nextInt(0, 2) == 0 && !primer_carbono
                     ? 0
                     : (ThreadLocalRandom.current().nextInt(0, 2) == 0
@@ -202,27 +191,15 @@ class Main {
             else if(disponibles.get(eleccion - 1) != Id.radical)
                 cadena_simple.enlazar(disponibles.get(eleccion - 1));
             else {
-                System.out.println();
-                System.out.println("0: -CH2(...)CH3");
-                System.out.println("1: -CH2(...)CH(CH3)2");
-
-                System.out.print("Elección: ");
-                eleccion = ThreadLocalRandom.current().nextInt(0, 2);
-                elecciones.add(eleccion);
-
-                System.out.print("Carbonos en el radical: ");
                 int carbonos = ThreadLocalRandom.current().nextInt(3, 5);
                 elecciones.add(carbonos);
 
                 cadena_simple.enlazar(new Sustituyente(carbonos, eleccion == 1));
             }
-            System.out.println();
 
             if(primer_carbono)
                 primer_carbono = false;
         }
-
-        System.out.println();
 
         System.out.print("Secuencia:");
         for(int eleccion : elecciones)
@@ -300,6 +277,9 @@ class Main {
         return eter.getNombre();
     }
 
+    private static int encontrados_ingles = 0;
+    private static int no_encontrados_ingles = 0;
+
     private static void probarOpsinPubChem(String nombre) {
         System.out.println("Nombre: " + nombre);
         System.out.println();
@@ -310,21 +290,39 @@ class Main {
         System.out.println("OPSIN smiles: " + opsin_resultado.getSmiles());
 
         if(smiles != null) {
+            /*
             PubChemResultado pub_chem_resultado = PubChem.procesarSmiles(smiles);
+
+            System.out.print("Nombre inglés: ");
+            if(pub_chem_resultado.getNombre_ingles().isPresent()) {
+                System.out.println(pub_chem_resultado.getNombre_ingles().get());
+                encontrados_ingles += 1;
+            }
+            else {
+                System.out.println("no encontrado");
+                no_encontrados_ingles += 1;
+            }
+
+            int porcentaje = 100 * encontrados_ingles / (encontrados_ingles + no_encontrados_ingles);
+            System.out.println("Encontrados inglés: " + porcentaje + "%");
 
             System.out.print("PubChem masa: ");
             if(pub_chem_resultado.getMasa().isPresent())
                 System.out.println(pub_chem_resultado.getMasa().get() + " g/mol");
             else System.out.println("no encontrada");
 
-            String url_2d = pub_chem_resultado.getUrl_2d();
-            System.out.println("PubChem 2D: " + url_2d);
+            System.out.print("PubChem 2D: ");
+            if(pub_chem_resultado.getUrl_2d().isPresent())
+                System.out.println(pub_chem_resultado.getUrl_2d().get());
+            else System.out.println("no encontrado");
+
             System.out.println();
 
             try {
                 //Desktop.getDesktop().browse(new URI(url_2d));
             }
             catch(Exception ignore) {}
+             */
         }
         else System.out.println("Error en OPSIN");
 

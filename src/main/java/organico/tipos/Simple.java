@@ -174,7 +174,7 @@ public final class Simple extends Organico {
             es_redundante = funcion == Id.alqueno && getCantidadDe(Id.alqueno) == 2; // Es propadieno
         // Derivados del etano:
         else if(getSize() == 2) {
-            if(esAlquenoOAlquino(funcion)) // Solo hay una posición para el enlace
+            if(esAlquenoOAlquino(funcion) || contiene(Id.alquino)) // Solo hay una posición para el enlace
                 es_redundante = true;
             else es_redundante = getSustituyentesSinHidrogeno().size() == 1; // Solo hay uno, como cloroetino o etanol
         }
