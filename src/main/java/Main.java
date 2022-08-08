@@ -290,7 +290,7 @@ class Main {
         System.out.println("OPSIN smiles: " + opsin_resultado.getSmiles());
 
         if(smiles != null) {
-            /*
+
             PubChemResultado pub_chem_resultado = PubChem.procesarSmiles(smiles);
 
             System.out.print("Nombre inglés: ");
@@ -322,7 +322,7 @@ class Main {
                 //Desktop.getDesktop().browse(new URI(url_2d));
             }
             catch(Exception ignore) {}
-             */
+
         }
         else System.out.println("Error en OPSIN");
 
