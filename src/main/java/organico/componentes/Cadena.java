@@ -284,11 +284,11 @@ public class Cadena extends Organico {
 		return null;
 	}
 
-	public List<Id> getFuncionesOrdenadas() { // Sin hidrógeno
+	public List<Id> getFuncionesOrdenadas() { // Sin hidrógeno ni éter
 		List<Id> funciones = new ArrayList<>(); // Funciones presentes sin repetición y en orden
 
 		for(Id funcion : Id.values()) // Todas las funciones recogidas en Id
-			if(funcion != Id.hidrogeno) // Excepto hidrógeno
+			if(funcion != Id.hidrogeno && funcion != Id.eter) // Excepto hidrógeno y éter
 				for(Carbono carbono : carbonos)
 					if(carbono.contiene(funcion)) {
 						funciones.add(funcion);

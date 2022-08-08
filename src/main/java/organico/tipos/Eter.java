@@ -153,8 +153,8 @@ public final class Eter extends Organico {
 	}
 
 	private String getNombreCadena(Cadena cadena) { // TODO: iso, terc
-		List<Id> funciones = getFuncionesOrdenadas(); // Sin hidrógeno
-		int funcion = 1; // La primera es éter
+		List<Id> funciones = cadena.getFuncionesOrdenadas(); // Sin hidrógeno ni éter
+		int funcion = 0;
 
 		// Se procesan los prefijos:
 		List<Localizador> prefijos = new ArrayList<>();
@@ -209,6 +209,8 @@ public final class Eter extends Organico {
 		String nombre;
 
 		// TODO: si las dos son iguales
+
+		// TODO: el carbono 1 no es el primero sino al lado del -O-
 
 		String nombre_primaria = getNombreCadena(primaria);
 		String nombre_secundaria = getNombreCadena(secundaria);
