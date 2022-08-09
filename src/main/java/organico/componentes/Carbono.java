@@ -1,10 +1,10 @@
 package organico.componentes;
 
-import organico.Organico;
+import organico.Organica;
 
 import java.util.*;
 
-public class Carbono extends Organico {
+public class Carbono extends Organica {
 
     private final List<Sustituyente> sustituyentes;
     private int enlaces_libres;
@@ -16,7 +16,7 @@ public class Carbono extends Organico {
         enlaces_libres = 4 - enlaces_previos;
     }
 
-    public Carbono(Id funcion, int veces) {
+    public Carbono(Funciones funcion, int veces) {
         sustituyentes = new ArrayList<>();
         enlazar(funcion, veces);
     }
@@ -28,7 +28,7 @@ public class Carbono extends Organico {
 
     // Consultas:
 
-    public boolean contiene(Id funcion) {
+    public boolean contiene(Funciones funcion) {
         switch(funcion) {
             case alqueno:
                 return enlaces_libres == 1; // Como en -CO=
@@ -55,11 +55,11 @@ public class Carbono extends Organico {
         return Collections.frequency(sustituyentes, sustituyente);
     }
 
-    public int getCantidadDe(Id funcion) {
+    public int getCantidadDe(Funciones funcion) {
         int cantidad = 0;
 
         if(contiene(funcion)) {
-            if(funcion != Id.alqueno && funcion != Id.alquino) {
+            if(funcion != Funciones.alqueno && funcion != Funciones.alquino) {
                 for(Sustituyente sustituyente : sustituyentes)
                     if(sustituyente.esTipo(funcion))
                         cantidad += 1;
@@ -90,7 +90,7 @@ public class Carbono extends Organico {
 
     // Métodos get:
 
-    public List<Sustituyente> getSustituyentesTipo(Id funcion) {
+    public List<Sustituyente> getSustituyentesTipo(Funciones funcion) {
         List<Sustituyente> resultado = new ArrayList<>();
 
         for(Sustituyente sustituyente : sustituyentes)
@@ -104,7 +104,7 @@ public class Carbono extends Organico {
         List<Sustituyente> sin_hidrogeno = new ArrayList<>();
 
         for(Sustituyente sustituyente : sustituyentes)
-            if(!sustituyente.esTipo(Id.hidrogeno))
+            if(!sustituyente.esTipo(Funciones.hidrogeno))
                 sin_hidrogeno.add(sustituyente);
 
         return sin_hidrogeno;
@@ -127,7 +127,7 @@ public class Carbono extends Organico {
     public Sustituyente getMayorRadical() {
         Sustituyente mayor_radical;
 
-        List<Sustituyente> radicales = getSustituyentesTipo(Id.radical);
+        List<Sustituyente> radicales = getSustituyentesTipo(Funciones.radical);
         mayor_radical = radicales.get(0); // Se asume que tiene radicales
 
         for(int i = 1; i < radicales.size(); i++)
@@ -157,10 +157,10 @@ public class Carbono extends Organico {
         List<Sustituyente> unicos = getUnicosSustituyentes(); // Sin repetirse
 
         // Se ordenan según la prioridad de su función:
-        Organico.ordenarPorFunciones(unicos);
+        Organica.ordenarPorFunciones(unicos);
 
         // Se escribe los hidrógenos:
-        Sustituyente hidrogeno = new Sustituyente(Id.hidrogeno);
+        Sustituyente hidrogeno = new Sustituyente(Funciones.hidrogeno);
         int cantidad = getCantidadDe(hidrogeno);
         if(cantidad > 0) {
             resultado.append(hidrogeno).append(cuantificadorMolecular(cantidad));
@@ -168,13 +168,13 @@ public class Carbono extends Organico {
         }
 
         // Se escribe el resto de sustituyentes excepto el éter:
-        unicos.removeIf(sustituyente -> sustituyente.esTipo(Id.eter));
+        unicos.removeIf(sustituyente -> sustituyente.esTipo(Funciones.eter));
 
         if(unicos.size() == 1) { // Solo hay un tipo además del hidrógeno y éter
             Sustituyente unico = unicos.get(0);
             String texto = unico.toString();
 
-            if(texto.length() == 1 || Organico.esHalogeno(unico) || unico.getEnlaces() == 3)
+            if(texto.length() == 1 || unico.esHalogeno() || unico.getEnlaces() == 3)
                 resultado.append(texto); // Como en "CN", "CCl", "COOH", "C(O)(NH2)", "CHO"...
             else resultado.append("(").append(texto).append(")"); // Como en "CH(OH)3", "CH3(CH2CH3)"...
 
@@ -186,8 +186,8 @@ public class Carbono extends Organico {
                         .append(cuantificadorMolecular(getCantidadDe(sustituyente)));
 
         // Se escribe el éter:
-        if(contiene(Id.eter))
-            resultado.append(new Sustituyente(Id.eter));
+        if(contiene(Funciones.eter))
+            resultado.append(new Sustituyente(Funciones.eter));
 
         return resultado.toString();
     }
@@ -199,7 +199,7 @@ public class Carbono extends Organico {
         enlaces_libres -= sustituyente.getEnlaces();
     }
 
-    public void enlazar(Id funcion) {
+    public void enlazar(Funciones funcion) {
         enlazar(new Sustituyente(funcion));
     }
 
@@ -208,7 +208,7 @@ public class Carbono extends Organico {
             enlazar(sustituyente);
     }
 
-    public void enlazar(Id funcion, int veces) {
+    public void enlazar(Funciones funcion, int veces) {
         for(int i = 0; i < veces; i++)
             enlazar(funcion);
     }
@@ -217,16 +217,12 @@ public class Carbono extends Organico {
         sustituyentes.remove(sustituyente); // No se ha eliminado su enlace
     }
 
-    public void eliminar(Id funcion) {
-        eliminar(new Sustituyente(funcion)); // No se ha eliminado su enlace
-    }
-
     public void eliminarConEnlaces(Sustituyente sustituyente) {
         eliminar(sustituyente);
         enlaces_libres += sustituyente.getEnlaces();
     }
 
-    public void eliminarConEnlaces(Id funcion) {
+    public void eliminarConEnlaces(Funciones funcion) {
         eliminarConEnlaces(new Sustituyente(funcion));
     }
 

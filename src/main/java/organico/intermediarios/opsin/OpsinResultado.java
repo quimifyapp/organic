@@ -4,33 +4,29 @@ import uk.ac.cam.ch.wwmm.opsin.*;
 
 public class OpsinResultado {
 
-    private final boolean correcto;
-    private String smiles;
+    private final String smiles; // Especie de fórmula más técnica
+    private final String cml; // Chemical Markup Language
 
     // Constructores:
 
     public OpsinResultado(es.opsin.OpsinResult opsin_result) {
-        correcto = opsin_result.getStatus() == es.opsin.OpsinResult.OPSIN_RESULT_STATUS.SUCCESS;
-
-        if(correcto) {
-            // ...
-            smiles = opsin_result.getSmiles();
-        }
+        smiles = opsin_result.getSmiles();
+        cml = opsin_result.getCml();
     }
 
     public OpsinResultado(OpsinResult opsin_result) {
-        correcto = opsin_result.getStatus() == OpsinResult.OPSIN_RESULT_STATUS.SUCCESS;
-
-        if(correcto) {
-            // ...
-            smiles = opsin_result.getSmiles();
-        }
+        smiles = opsin_result.getSmiles();
+        cml = opsin_result.getCml();
     }
 
     // Métodos get:
 
     public String getSmiles() {
         return smiles;
+    }
+
+    public String getCml() {
+        return cml;
     }
 
 }

@@ -2,28 +2,47 @@ package organico.intermediarios.opsin;
 
 import uk.ac.cam.ch.wwmm.opsin.*;
 
+import java.util.Optional;
+
 public class Opsin {
 
     protected static final es.opsin.NameToStructure opsin_es = es.opsin.NameToStructure.getInstance();
     protected static final NameToStructure opsin_en = NameToStructure.getInstance();
 
-    public static OpsinResultado procesarNombreES(String nombre) {
+    public static Optional<OpsinResultado> procesarNombreES(String nombre) {
+        Optional<OpsinResultado> resultado;
+
         // Nuestra adaptación al español de la librería OPSIN rechaza el prefijo "ácido", por eso se elimina:
         nombre = nombre.replaceFirst("ácido|acido", "");
 
         // La librería OPSIN rechaza el prefijo "di" de los éteres simétricos en algunos casos:
         nombre = corregirEter(nombre);
 
+        // Se procesa:
         es.opsin.OpsinResult opsin_result = opsin_es.parseChemicalName(nombre);
 
-        return new OpsinResultado(opsin_result);
+        // Se convierte a la clase propia OpsinResultado:
+        if(opsin_result.getStatus() == es.opsin.OpsinResult.OPSIN_RESULT_STATUS.SUCCESS)
+            resultado = Optional.of(new OpsinResultado(opsin_result));
+        else resultado = Optional.empty();
+
+        return resultado;
     }
-    public static OpsinResultado procesarNombreEN(String nombre) {
+    public static Optional<OpsinResultado> procesarNombreEN(String nombre) {
+        Optional<OpsinResultado> resultado;
+
+        // La librería OPSIN rechaza el prefijo "di" de los éteres simétricos en algunos casos:
         nombre = corregirEter(nombre);
 
+        // Se procesa:
         OpsinResult opsin_result = opsin_en.parseChemicalName(nombre);
 
-        return new OpsinResultado(opsin_result);
+        // Se convierte a la clase propia OpsinResultado:
+        if(opsin_result.getStatus() == OpsinResult.OPSIN_RESULT_STATUS.SUCCESS)
+            resultado = Optional.of(new OpsinResultado(opsin_result));
+        else resultado = Optional.empty();
+
+        return resultado;
     }
 
     private static String corregirEter(String nombre) {

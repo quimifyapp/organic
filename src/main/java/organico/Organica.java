@@ -1,6 +1,6 @@
 package organico;
 
-import organico.componentes.Id;
+import organico.componentes.Funciones;
 import organico.componentes.Sustituyente;
 
 import java.util.*;
@@ -9,23 +9,18 @@ import static java.util.Collections.swap;
 
 // Esta clase generaliza distintos tipos de compuestos orgánicos: cadenas simples, cíclicos, ésteres...
 
-public class Organico {
+public class Organica {
 
-    public static final Sustituyente CH3 = new Sustituyente(1);
-    private static final List<Id> halogenos = Arrays.asList(Id.bromo, Id.cloro, Id.fluor, Id.yodo);
+    private static final List<Funciones> halogenos = Arrays.asList(Funciones.bromo, Funciones.cloro, Funciones.fluor, Funciones.yodo);
 
     // Consultas:
 
-    protected static boolean esHalogeno(Id funcion) {
+    protected static boolean esHalogeno(Funciones funcion) {
         return halogenos.contains(funcion);
     }
 
-    protected static boolean esHalogeno(Sustituyente sustituyente) {
-        return esHalogeno(sustituyente.getFuncion());
-    }
-
-    protected static boolean esAlquenoOAlquino(Id funcion) {
-        return funcion == Id.alqueno || funcion ==  Id.alquino;
+    protected static boolean esAlquenoOAlquino(Funciones funcion) {
+        return funcion == Funciones.alqueno || funcion ==  Funciones.alquino;
     }
 
     protected static void ordenarPorFunciones(List<Sustituyente> sustituyentes) {
@@ -221,7 +216,7 @@ public class Organico {
                 auxiliar.append(posiciones.get(posiciones.size() - 1) + 1);
             }
 
-            construir(auxiliar.toString(), Organico.multiplicadorDe(posiciones.size()), lexema);
+            construir(auxiliar.toString(), Organica.multiplicadorDe(posiciones.size()), lexema);
         }
 
         // No se tienen en cuenta los multiplicadores ni las posiciones, como propone la IUPAC.
@@ -261,7 +256,7 @@ public class Organico {
         return resultado;
     }
 
-    protected static String nombreDePrefijo(Id funcion) {
+    protected static String nombreDePrefijo(Funciones funcion) {
         String nombre_prefijo;
 
         switch(funcion) {
@@ -302,7 +297,7 @@ public class Organico {
         return nombre_prefijo;
     }
 
-    protected static String nombreDeEnlace(Id enlace) {
+    protected static String nombreDeEnlace(Funciones enlace) {
         String nombre_enlace;
 
         switch(enlace) {
@@ -319,7 +314,7 @@ public class Organico {
         return nombre_enlace;
     }
 
-    protected static String nombreDeSufijo(Id funcion) {
+    protected static String nombreDeSufijo(Funciones funcion) {
         String nombre_sufijo;
 
         switch(funcion) {

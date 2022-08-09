@@ -1,32 +1,30 @@
-package organico.interfaz.aleatorio;
+package organico.interfaz.nombrar;
 
-import organico.componentes.Id;
+import organico.componentes.Funciones;
 import organico.componentes.Sustituyente;
 import organico.intermediarios.opsin.Opsin;
 import organico.intermediarios.opsin.OpsinResultado;
-import organico.tipos.Eter;
 import organico.tipos.Simple;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
+import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 
-public class AleatorioEter {
+public class NombrarSimpleAleatorio {
 
-	private static final Scanner scanner = new Scanner(System.in);
 	private static List<Integer> secuencia;
 
 	public static void main(String[] args) {
 		while(true) {
-			Eter eter = getEterAleatorio();
+			Simple simple = getSimpleAleatorio();
 
-			eter.corregir(); // Es necesario
-			String nombre = eter.getNombre();
+			simple.corregir(); // Es necesario
+			String nombre = simple.getNombre();
 
-			OpsinResultado opsin_resultado = Opsin.procesarNombreES(nombre);
+			Optional<OpsinResultado> opsin_resultado = Opsin.procesarNombreES(nombre);
 
-			if(opsin_resultado.getSmiles() == null) {
+			if(opsin_resultado.isEmpty()) {
 				System.out.print("Secuencia BUG:");
 				for(int eleccion : secuencia)
 					System.out.print(" " + eleccion);
@@ -35,26 +33,26 @@ public class AleatorioEter {
 		}
 	}
 
-	private static Eter getEterAleatorio() {
-		Eter eter = new Eter();
+	private static Simple getSimpleAleatorio() {
+		Simple simple = new organico.tipos.Simple();
 
 		List<Integer> elecciones = new ArrayList<>();
 		boolean primer_carbono = true;
 
-		while(!eter.estaCompleta()) {
-			List<Id> disponibles = eter.getSustituyentesDisponibles();
+		while(!simple.estaCompleta()) {
+			List<Funciones> disponibles = simple.getSustituyentesDisponibles();
 
-			int eleccion = ThreadLocalRandom.current().nextInt(0, 5) == 0 && !primer_carbono
+			int eleccion = ThreadLocalRandom.current().nextInt(0, 2) == 0 && !primer_carbono
 					? 0
 					: (ThreadLocalRandom.current().nextInt(0, 2) == 0
-						? (disponibles.size() > 1 ? ThreadLocalRandom.current().nextInt(1, disponibles.size()) : 1)
+						? ThreadLocalRandom.current().nextInt(1, disponibles.size())
 						: disponibles.size() - 1);
 			elecciones.add(eleccion);
 
 			if(eleccion == 0 && !primer_carbono)
-				eter.enlazarCarbono();
-			else if(disponibles.get(eleccion - 1) != Id.radical)
-				eter.enlazar(disponibles.get(eleccion - 1));
+				simple.enlazarCarbono();
+			else if(disponibles.get(eleccion - 1) != Funciones.radical)
+				simple.enlazar(disponibles.get(eleccion - 1));
 			else {
 				int carbonos = ThreadLocalRandom.current().nextInt(3, 5);
 				if(eleccion == 1)
@@ -62,7 +60,7 @@ public class AleatorioEter {
 				else elecciones.add(0);
 				elecciones.add(carbonos);
 
-				eter.enlazar(new Sustituyente(carbonos, eleccion == 1));
+				simple.enlazar(new Sustituyente(carbonos, eleccion == 1));
 			}
 
 			if(primer_carbono)
@@ -71,7 +69,7 @@ public class AleatorioEter {
 
 		secuencia = elecciones;
 
-		return eter;
+		return simple;
 	}
 
 }

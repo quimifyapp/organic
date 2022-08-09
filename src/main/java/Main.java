@@ -1,5 +1,5 @@
 import organico.componentes.Carbono;
-import organico.componentes.Id;
+import organico.componentes.Funciones;
 
 class Main {
 
@@ -21,17 +21,15 @@ class Main {
 
     // ////////////////////////////////////////////////////////
 
-    // TODO: Eter corregir()
-
     // TODO: -CHO es carbaldehído (añadirlo para ciclos?)
     // TODO: funcion fenil -C6H5
 
     public static void main(String[] args) {
         Carbono carbono = new organico.componentes.Carbono(0);
 
-        carbono.enlazar(Id.hidrogeno);
-        carbono.enlazar(Id.cetona);
-        carbono.enlazar(Id.cloro);
+        carbono.enlazar(Funciones.hidrogeno);
+        carbono.enlazar(Funciones.cetona);
+        carbono.enlazar(Funciones.cloro);
 
         System.out.println(carbono);
 

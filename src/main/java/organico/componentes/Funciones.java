@@ -1,6 +1,6 @@
 package organico.componentes;
 
-public enum Id { // En orden de prioridad:
+public enum Funciones { // En orden de prioridad:
     acido,      // =O, -OH
     carboxil,   // -COOH ácido no principal
     amida,      // =O, -NH2

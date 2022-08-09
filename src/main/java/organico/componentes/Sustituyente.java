@@ -1,10 +1,10 @@
 package organico.componentes;
 
-import organico.Organico;
+import organico.Organica;
 
-public class Sustituyente {
+public class Sustituyente extends Organica {
 
-    private Id funcion; // El tipo de sustituyente
+    private Funciones funcion; // El tipo de sustituyente
     private int enlaces; // Número de e- que comparte con el carbono
 
     // Solo para radicales:
@@ -23,6 +23,8 @@ public class Sustituyente {
                           \
                            CH3
 	*/
+
+    public static final Sustituyente CH3 = new Sustituyente(1);
 
     // Constructores:
 
@@ -47,7 +49,7 @@ public class Sustituyente {
         construir(carbonos);
     }
 
-    public Sustituyente(Id funcion) {
+    public Sustituyente(Funciones funcion) {
         switch(funcion) {
             case acido:
             case amida:
@@ -81,19 +83,19 @@ public class Sustituyente {
         }
     }
 
-    private void construir(Id funcion, int enlaces, int carbonos, boolean iso) {
+    private void construir(Funciones funcion, int enlaces, int carbonos, boolean iso) {
         this.funcion = funcion;
         this.enlaces = enlaces;
         this.carbonos = carbonos;
         this.iso = iso;
     }
 
-    private void construir(Id funcion, int enlaces) {
+    private void construir(Funciones funcion, int enlaces) {
         construir(funcion, enlaces, 0, false);
     }
 
     private void construir(int carbonos, boolean iso) {
-        construir(Id.radical, 1, carbonos, iso);
+        construir(Funciones.radical, 1, carbonos, iso);
     }
 
     private void construir(int carbonos) {
@@ -104,8 +106,12 @@ public class Sustituyente {
 
     // Consultas particulares:
 
-    public boolean esTipo(Id funcion) {
+    public boolean esTipo(Funciones funcion) {
         return this.funcion == funcion;
+    }
+
+    public boolean esHalogeno() {
+        return Organica.esHalogeno(funcion);
     }
 
     @Override
@@ -115,7 +121,7 @@ public class Sustituyente {
         if(otro != null && otro.getClass() == this.getClass()) {
             Sustituyente nuevo = (Sustituyente) otro;
 
-            es_igual = funcion == Id.radical
+            es_igual = funcion == Funciones.radical
                     ? carbonos == nuevo.carbonos && iso == nuevo.iso
                     : funcion == nuevo.funcion && enlaces == nuevo.enlaces;
         }
@@ -139,7 +145,7 @@ public class Sustituyente {
 
     // Métodos get:
 
-    public Id getFuncion() {
+    public Funciones getFuncion() {
         return funcion;
     }
 
@@ -169,21 +175,21 @@ public class Sustituyente {
 
         if(carbonos > 0) {
             cadena.comenzar(0); // (C)
-            cadena.enlazar(Id.hidrogeno, 3); // CH3-
+            cadena.enlazar(Funciones.hidrogeno, 3); // CH3-
 
             int anteriores = 1; // CH3-
 
             if(iso) {
                 cadena.enlazarCarbono(); // CH3-C≡
-                cadena.enlazar(Id.hidrogeno); // CH3-CH=
-                cadena.enlazar(Organico.CH3); // CH3-CH(CH3)-
+                cadena.enlazar(Funciones.hidrogeno); // CH3-CH=
+                cadena.enlazar(CH3); // CH3-CH(CH3)-
 
                 anteriores += 2; // CH3-CH(CH3)-
             }
 
             for(int i = anteriores; i < carbonos; i++) {
                 cadena.enlazarCarbono(); // CH3-CH(CH3)-C≡
-                cadena.enlazar(Id.hidrogeno, 2); // CH3-CH(CH3)-CH2-
+                cadena.enlazar(Funciones.hidrogeno, 2); // CH3-CH(CH3)-CH2-
             }
 
         }

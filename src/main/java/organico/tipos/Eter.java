@@ -1,8 +1,8 @@
 package organico.tipos;
 
-import organico.Organico;
+import organico.Organica;
 import organico.componentes.Cadena;
-import organico.componentes.Id;
+import organico.componentes.Funciones;
 import organico.componentes.Sustituyente;
 
 import java.util.ArrayList;
@@ -10,7 +10,9 @@ import java.util.List;
 
 // Esta clase representa éteres: dos cadenas con funciones de prioridad menor a la función éter unidas por un oxígeno.
 
-public final class Eter extends Organico {
+public final class Eter extends Organica {
+
+	// R - O - R'
 
 	private final Cadena primaria; // R
 	private boolean hay_eter; // -O-
@@ -39,8 +41,8 @@ public final class Eter extends Organico {
 		return seleccionada.estaCompleta();
 	}
 
-	public List<Id> getSustituyentesDisponibles() {
-		List<Id> disponibles = new ArrayList<>();
+	public List<Funciones> getSustituyentesDisponibles() {
+		List<Funciones> disponibles = new ArrayList<>();
 
 		switch(getEnlacesLibres()) {
 			case 4: // El primer carbono
@@ -48,15 +50,15 @@ public final class Eter extends Organico {
 			case 2:
 			case 1:
 				if(hay_eter || getEnlacesLibres() > 1) {
-					disponibles.add(Id.nitro);
-					disponibles.add(Id.bromo);
-					disponibles.add(Id.cloro);
-					disponibles.add(Id.fluor);
-					disponibles.add(Id.yodo);
-					disponibles.add(Id.radical);
-					disponibles.add(Id.hidrogeno);
+					disponibles.add(Funciones.nitro);
+					disponibles.add(Funciones.bromo);
+					disponibles.add(Funciones.cloro);
+					disponibles.add(Funciones.fluor);
+					disponibles.add(Funciones.yodo);
+					disponibles.add(Funciones.radical);
+					disponibles.add(Funciones.hidrogeno);
 				}
-				else disponibles.add(Id.eter); // Los éteres admiten funciones de prioridad menor al éter
+				else disponibles.add(Funciones.eter); // Los éteres admiten funciones de prioridad menor al éter
 				// Hasta aquí
 				break;
 		}
@@ -67,11 +69,11 @@ public final class Eter extends Organico {
 	public void enlazar(Sustituyente sustituyente) {
 		seleccionada.enlazar(sustituyente);
 
-		if(sustituyente.esTipo(Id.eter))
+		if(sustituyente.esTipo(Funciones.eter))
 			empezarCadenaSecundaria();
 	}
 
-	public void enlazar(Id funcion) {
+	public void enlazar(Funciones funcion) {
 		enlazar(new Sustituyente(funcion));
 	}
 
@@ -82,7 +84,7 @@ public final class Eter extends Organico {
 	public void corregir() {
 		if(estaCompleta() && hayFunciones()) {
 			primaria.corregirRadicalesPorLaIzquierda(); // Comprobará internamente si hay radicales
-			if(secundaria.contiene(Id.radical)) { // Para ahorrar el invertir la cadena
+			if(secundaria.contiene(Funciones.radical)) { // Para ahorrar el invertir la cadena
 				secundaria.invertirOrden(); // En lugar de corregirlos por la derecha
 				secundaria.corregirRadicalesPorLaIzquierda(); // CHF(CH3)(CH2CH3) → CH3-CH2-CHF-CH3
 				secundaria.invertirOrden(); // Es necesario para no romper el orden del éter
@@ -96,12 +98,12 @@ public final class Eter extends Organico {
 
 	// Internos:
 
-	private boolean esRedundante(Id funcion, Cadena cadena) {
+	private boolean esRedundante(Funciones funcion, Cadena cadena) {
 		boolean es_redundante;
 
 		// Derivados del propil:
 		if(cadena.getSize() == 3)
-			es_redundante = funcion == Id.alqueno && cadena.getCantidadDe(Id.alqueno) == 2; // Es propadienil
+			es_redundante = funcion == Funciones.alqueno && cadena.getCantidadDe(Funciones.alqueno) == 2; // Es propadienil
 		// Derivados del etil:
         else if(cadena.getSize() == 2)
 			es_redundante = esAlquenoOAlquino(funcion); // Solo hay una posición posible para el enlace
@@ -131,7 +133,7 @@ public final class Eter extends Organico {
 	// Texto:
 
 	////////////////////////////////////
-	private Localizador getPrefijoParaEn(Id funcion, Cadena cadena) {
+	private Localizador getPrefijoParaEn(Funciones funcion, Cadena cadena) {
 		Localizador prefijo;
 
 		List<Integer> posiciones = cadena.getPosicionesDe(funcion);
@@ -144,7 +146,7 @@ public final class Eter extends Organico {
 		return prefijo;
 	}
 
-	private String getEnlaceParaEn(Id tipo, Cadena cadena) {
+	private String getEnlaceParaEn(Funciones tipo, Cadena cadena) {
 		String enlace = "";
 
 		List<Integer> posiciones = cadena.getPosicionesDe(tipo);
@@ -171,13 +173,13 @@ public final class Eter extends Organico {
 	private String getNombreCadena(Cadena cadena) {
 		// Se anticipan los casos excepcionales:
 		if(cadena.getFuncionesOrdenadas().size() == 1 && cadena.getRadicales().size() == 1) {
-			if(cadena.getSize() > 1 && cadena.get(cadena.getSize() - 2).estaEnlazadoA(Organico.CH3))
+			if(cadena.getSize() > 1 && cadena.get(cadena.getSize() - 2).estaEnlazadoA(Sustituyente.CH3))
 				return "iso" + cuantificadorDe(cadena.getSize() + 1) + "il";
-			else if(cadena.getSize() > 2 && cadena.get(cadena.getSize() - 3).estaEnlazadoA(Organico.CH3))
+			else if(cadena.getSize() > 2 && cadena.get(cadena.getSize() - 3).estaEnlazadoA(Sustituyente.CH3))
 				return "sec" + cuantificadorDe(cadena.getSize() + 1) + "il";
 		}
 
-		List<Id> funciones = cadena.getFuncionesOrdenadas(); // Sin hidrógeno ni éter
+		List<Funciones> funciones = cadena.getFuncionesOrdenadas(); // Sin hidrógeno ni éter
 		int funcion = 0;
 
 		// Se procesan los prefijos:
@@ -185,7 +187,7 @@ public final class Eter extends Organico {
 		Localizador localizador;
 
 		while(funcion < funciones.size()) {
-			if(!esAlquenoOAlquino(funciones.get(funcion)) && funciones.get(funcion) != Id.radical) {
+			if(!esAlquenoOAlquino(funciones.get(funcion)) && funciones.get(funcion) != Funciones.radical) {
 				localizador = getPrefijoParaEn(funciones.get(funcion), cadena);
 
 				if(!localizador.getLexema().equals("")) // TODO: else?
@@ -203,7 +205,7 @@ public final class Eter extends Organico {
 				prefijos.add(localizador);
 		}
 
-		StringBuilder prefijo = new StringBuilder(cadena.contiene(Id.acido) ? "ácido " : "");
+		StringBuilder prefijo = new StringBuilder(cadena.contiene(Funciones.acido) ? "ácido " : "");
 		if(prefijos.size() > 0) {
 			Localizador.ordenarAlfabeticamente(prefijos);
 
@@ -218,12 +220,12 @@ public final class Eter extends Organico {
 		}
 
 		// Se procesan los enlaces:
-		String enlaces = getEnlaceParaEn(Id.alqueno, cadena) + getEnlaceParaEn(Id.alquino, cadena);
+		String enlaces = getEnlaceParaEn(Funciones.alqueno, cadena) + getEnlaceParaEn(Funciones.alquino, cadena);
 
 		// Se procesa el cuantificador:
 		String cuantificador = cuantificadorDe(cadena.getSize());
 
-		if(!enlaces.equals("") && Organico.noEmpiezaPorVocal(enlaces))
+		if(!enlaces.equals("") && Organica.noEmpiezaPorVocal(enlaces))
 			cuantificador += "a";
 
 		return prefijo + cuantificador + enlaces + "il";

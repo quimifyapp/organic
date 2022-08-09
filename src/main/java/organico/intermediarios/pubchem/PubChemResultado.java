@@ -4,8 +4,8 @@ import java.util.Optional;
 
 public class PubChemResultado {
 
+	private String url_2d;
 	private Optional<String> masa = Optional.empty();
-	private Optional<String> url_2d = Optional.empty();
 	private Optional<String> nombre_ingles = Optional.empty();
 
 	// Getters y setters:
@@ -18,12 +18,12 @@ public class PubChemResultado {
 		this.masa = Optional.ofNullable(masa);
 	}
 
-	public Optional<String> getUrl_2d() {
+	public String getUrl_2d() {
 		return url_2d;
 	}
 
 	public void setUrl_2d(String url_2d) {
-		this.url_2d = Optional.ofNullable(url_2d);
+		this.url_2d = url_2d;
 	}
 
 	public Optional<String> getNombre_ingles() {

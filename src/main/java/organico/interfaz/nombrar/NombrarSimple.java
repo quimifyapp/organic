@@ -1,46 +1,47 @@
-package organico.interfaz.probar;
+package organico.interfaz.nombrar;
 
-import organico.componentes.Id;
+import organico.OrganicoResultado;
+import organico.OrganicoService;
+import organico.componentes.Funciones;
 import organico.componentes.Sustituyente;
-import organico.tipos.Eter;
+import organico.tipos.Simple;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-public class ProbarEter {
+public class NombrarSimple {
 
 	private static final Scanner scanner = new Scanner(System.in);
 
 	public static void main(String[] args) {
 		while(true) {
-			Eter eter = getEter();
+			Simple simple = getSimple();
+			OrganicoResultado resultado = OrganicoService.nombrar(simple);
+			resultado.mostrar();
 
-			System.out.println();
-			System.out.println("Fórmula: " + eter);
-			eter.corregir(); // Es necesario
-			System.out.println("Corregida: " + eter);
-
-			String nombre = eter.getNombre();
-			Resultado.analizar(nombre);
+			try {
+				System.out.println("Enter para continuar...");
+				System.in.read();
+			}
+			catch(Exception ignore) {}
 		}
 	}
 
-	private static Eter getEter() {
-		Eter eter = new organico.tipos.Eter();
+	private static Simple getSimple() {
+		Simple simple = new organico.tipos.Simple();
 
 		List<Integer> elecciones = new ArrayList<>();
 		boolean primer_carbono = true;
-
-		while(!eter.estaCompleta()) {
-			System.out.println("Fórmula: " + eter);
+		while(!simple.estaCompleta()) {
+			System.out.println("Fórmula: " + simple);
 
 			if(!primer_carbono)
 				System.out.println("0: C");
 
-			List<Id> disponibles = eter.getSustituyentesDisponibles();
+			List<Funciones> disponibles = simple.getSustituyentesDisponibles();
 			for(int i = 0; i < disponibles.size(); i++) {
-				if(disponibles.get(i) != Id.radical)
+				if(disponibles.get(i) != Funciones.radical)
 					System.out.println((i + 1) + ": " + new Sustituyente(disponibles.get(i)));
 				else System.out.println((i + 1) + ": " + "-CH2(...)CH3");
 			}
@@ -50,9 +51,9 @@ public class ProbarEter {
 			elecciones.add(eleccion);
 
 			if(eleccion == 0 && !primer_carbono)
-				eter.enlazarCarbono();
-			else if(disponibles.get(eleccion - 1) != Id.radical)
-				eter.enlazar(disponibles.get(eleccion - 1));
+				simple.enlazarCarbono();
+			else if(disponibles.get(eleccion - 1) != Funciones.radical)
+				simple.enlazar(disponibles.get(eleccion - 1));
 			else {
 				System.out.println();
 				System.out.println("0: -CH2(...)CH3");
@@ -66,7 +67,7 @@ public class ProbarEter {
 				int carbonos = scanner.nextInt();
 				elecciones.add(carbonos);
 
-				eter.enlazar(new Sustituyente(carbonos, eleccion == 1));
+				simple.enlazar(new Sustituyente(carbonos, eleccion == 1));
 			}
 			System.out.println();
 
@@ -81,7 +82,7 @@ public class ProbarEter {
 			System.out.print(" " + eleccion);
 		System.out.println();
 
-		return eter;
+		return simple;
 	}
 
 }

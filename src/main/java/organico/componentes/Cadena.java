@@ -1,12 +1,12 @@
 package organico.componentes;
 
-import organico.Organico;
+import organico.Organica;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class Cadena extends Organico {
+public class Cadena extends Organica {
 
 	private final List<Carbono> carbonos;
 
@@ -50,7 +50,7 @@ public class Cadena extends Organico {
 		getUltimo().enlazar(sustituyente);
 	}
 
-	public void enlazar(Id funcion) {
+	public void enlazar(Funciones funcion) {
 		enlazar(new Sustituyente(funcion));
 	}
 
@@ -58,7 +58,7 @@ public class Cadena extends Organico {
 		getUltimo().enlazar(sustituyente, veces);
 	}
 
-	public void enlazar(Id funcion, int veces) {
+	public void enlazar(Funciones funcion, int veces) {
 		enlazar(new Sustituyente(funcion), veces);
 	}
 
@@ -87,7 +87,7 @@ public class Cadena extends Organico {
 		boolean hubo_correcion; // Para actualizar el iterador tras iteración
 
 		for (int i = 0; i < carbonos.size(); i = hubo_correcion ? 0 : i + 1) { // Sin incremento
-			if(carbonos.get(i).getSustituyentesTipo(Id.radical).size() > 0) { // Este carbono tiene radicales
+			if(carbonos.get(i).getSustituyentesTipo(Funciones.radical).size() > 0) { // Este carbono tiene radicales
 				// Se obtiene el mayor radical de este carbono:
 				Sustituyente mayor_radical = carbonos.get(i).getMayorRadical();
 
@@ -101,8 +101,8 @@ public class Cadena extends Organico {
 						Sustituyente antiguo;
 
 						// Aquí se tiene en cuenta que, de haber un radical, solo podría ser metil
-						if(i > 1 && carbonos.get(1).contiene(Id.radical) // Hay un radical en el segundo carbono
-								&& carbonos.get(1).getSustituyentesSinHidrogeno().get(0).equals(Organico.CH3)) // Metil
+						if(i > 1 && carbonos.get(1).contiene(Funciones.radical) // Hay un metil en el segundo carbono
+								&& carbonos.get(1).getSustituyentesSinHidrogeno().get(0).equals(Sustituyente.CH3))
 							antiguo = new Sustituyente(i + 1, true);
 						else antiguo = new Sustituyente(i);
 
@@ -143,24 +143,24 @@ public class Cadena extends Organico {
 	}
 
 	public void componerAldehido() {
-		if(getFuncionPrioritaria().compareTo(Id.aldehido) >= 0) // No hay otra de mayor prioridad, puede haber aldehídos
-			sustituirCetonaConPor(Id.hidrogeno, Id.aldehido);
+		if(getFuncionPrioritaria().compareTo(Funciones.aldehido) >= 0) // No hay otra de mayor prioridad, puede haber aldehídos
+			sustituirCetonaConPor(Funciones.hidrogeno, Funciones.aldehido);
 	}
 
-	public void sustituirCetonaConPor(Id complementaria, Id sustituta) { // C(O)(A)- → C(B)-
+	public void sustituirCetonaConPor(Funciones complementaria, Funciones sustituta) { // C(O)(A)- → C(B)-
 		sustituirCetonaConPorEn(complementaria, sustituta, carbonos.get(0));
 		sustituirCetonaConPorEn(complementaria, sustituta, getUltimo());
 	}
 
-	private void sustituirCetonaConPorEn(Id complementaria, Id sustituta, Carbono terminal) { // C(O)(A)- → C(B)-
-		if(terminal.contiene(Id.cetona) && terminal.contiene(complementaria)) {
-			terminal.eliminarConEnlaces(Id.cetona);
+	private void sustituirCetonaConPorEn(Funciones complementaria, Funciones sustituta, Carbono terminal) { // C(O)(A)- → C(B)-
+		if(terminal.contiene(Funciones.cetona) && terminal.contiene(complementaria)) {
+			terminal.eliminarConEnlaces(Funciones.cetona);
 			terminal.eliminarConEnlaces(complementaria);
 			terminal.enlazar(sustituta);
 		}
 	}
 
-	public void sustituirTerminalPor(Id terminal, Id funcion) { // COOH-C(A)- → COOH(CA)-
+	public void sustituirTerminalPor(Funciones terminal, Funciones funcion) { // COOH-C(A)- → COOH(CA)-
 		if(getFuncionPrioritaria() != terminal) { // Hay una función de mayor prioridad, se debe descomponer el terminal
 			if(carbonos.size() >= 2) // Para poder acceder a cadena.get(1)
 				sustituirTerminalDePorEn(terminal, carbonos.get(0), funcion, carbonos.get(1));
@@ -169,7 +169,7 @@ public class Cadena extends Organico {
 		}
 	}
 
-	private void sustituirTerminalDePorEn(Id terminal, Carbono carbono, Id funcion, Carbono otro) { // CX-C≡ → C(CX)≡
+	private void sustituirTerminalDePorEn(Funciones terminal, Carbono carbono, Funciones funcion, Carbono otro) { // CX-C≡ → C(CX)≡
 		if(carbono.contiene(terminal)) {
 			carbonos.remove(carbono);
 			otro.eliminarEnlace();
@@ -178,23 +178,23 @@ public class Cadena extends Organico {
 	}
 
 	public void descomponerAldehido() { // COOH-CHO → COOH-CH(O)
-		if(getFuncionPrioritaria() != Id.aldehido) { // Hay otra de mayor prioridad, se debe descomponer el aldehído
+		if(getFuncionPrioritaria() != Funciones.aldehido) { // Hay otra de mayor prioridad, se debe descomponer el aldehído
 			descomponerAldehidoEn(carbonos.get(0));
 			descomponerAldehidoEn(getUltimo());
 		}
 	}
 
 	private void descomponerAldehidoEn(Carbono carbono) { // COOH-CHO → COOH-CH(O)
-		if(carbono.contiene(Id.aldehido)) {
-			carbono.eliminarConEnlaces(Id.aldehido);
-			carbono.enlazar(Id.cetona);
-			carbono.enlazar(Id.hidrogeno);
+		if(carbono.contiene(Funciones.aldehido)) {
+			carbono.eliminarConEnlaces(Funciones.aldehido);
+			carbono.enlazar(Funciones.cetona);
+			carbono.enlazar(Funciones.hidrogeno);
 		}
 	}
 
 	// Consultas:
 
-	public boolean contiene(Id funcion) {
+	public boolean contiene(Funciones funcion) {
 		for(Carbono carbono : carbonos)
 			if(carbono.contiene(funcion))
 				return true;
@@ -207,8 +207,8 @@ public class Cadena extends Organico {
 	}
 
 	public boolean hayFunciones() { // Sin hidrógeno ni éter
-		for(Id funcion : Id.values()) // Todas las funciones recogidas en Id
-			if(funcion != Id.hidrogeno && funcion != Id.eter)
+		for(Funciones funcion : Funciones.values()) // Todas las funciones recogidas en Id
+			if(funcion != Funciones.hidrogeno && funcion != Funciones.eter)
 				for(Carbono carbono : carbonos)
 					if(carbono.contiene(funcion))
 						return true;
@@ -269,7 +269,7 @@ public class Cadena extends Organico {
 		return getUltimo().getEnlacesLibres();
 	}
 
-	public int getCantidadDe(Id funcion) {
+	public int getCantidadDe(Funciones funcion) {
 		int cantidad = 0;
 
 		for(Carbono carbono : carbonos)
@@ -278,8 +278,8 @@ public class Cadena extends Organico {
 		return cantidad;
 	}
 
-	public Id getFuncionPrioritaria() { // Con hidrógeno
-		for(Id funcion : Id.values()) // Todas las funciones recogidas en Id
+	public Funciones getFuncionPrioritaria() { // Con hidrógeno
+		for(Funciones funcion : Funciones.values()) // Todas las funciones recogidas en Id
 			for(Carbono carbono : carbonos)
 				if(carbono.contiene(funcion))
 					return funcion;
@@ -287,11 +287,11 @@ public class Cadena extends Organico {
 		return null;
 	}
 
-	public List<Id> getFuncionesOrdenadas() { // Sin hidrógeno ni éter
-		List<Id> funciones = new ArrayList<>(); // Funciones presentes sin repetición y en orden
+	public List<Funciones> getFuncionesOrdenadas() { // Sin hidrógeno ni éter
+		List<Funciones> funciones = new ArrayList<>(); // Funciones presentes sin repetición y en orden
 
-		for(Id funcion : Id.values()) // Todas las funciones recogidas en Id
-			if(funcion != Id.hidrogeno && funcion != Id.eter) // Excepto hidrógeno y éter
+		for(Funciones funcion : Funciones.values()) // Todas las funciones recogidas en Id
+			if(funcion != Funciones.hidrogeno && funcion != Funciones.eter) // Excepto hidrógeno y éter
 				for(Carbono carbono : carbonos)
 					if(carbono.contiene(funcion)) {
 						funciones.add(funcion);
@@ -301,7 +301,7 @@ public class Cadena extends Organico {
 		return funciones;
 	}
 
-	public List<Integer> getPosicionesDe(Id funcion) {
+	public List<Integer> getPosicionesDe(Funciones funcion) {
 		List<Integer> posiciones = new ArrayList<>(); // Posiciones de los carbonos con la función
 
 		for(int i = 0; i < carbonos.size(); i++)
@@ -325,7 +325,7 @@ public class Cadena extends Organico {
 		List<Sustituyente> sustituyentes = new ArrayList<>();
 
 		for(Carbono carbono : carbonos)
-			sustituyentes.addAll(carbono.getSustituyentesTipo(Id.radical));
+			sustituyentes.addAll(carbono.getSustituyentesTipo(Funciones.radical));
 
 		return sustituyentes;
 	}
@@ -334,7 +334,7 @@ public class Cadena extends Organico {
 		List<Sustituyente> unicos = new ArrayList<>();
 
 		for(Carbono carbono : carbonos)
-			for(Sustituyente sustituyente : carbono.getSustituyentesTipo(Id.radical))
+			for(Sustituyente sustituyente : carbono.getSustituyentesTipo(Funciones.radical))
 				if(!unicos.contains(sustituyente))
 					unicos.add(sustituyente);
 

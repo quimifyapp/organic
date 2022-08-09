@@ -1,9 +1,9 @@
 package organico.tipos;
 
-import organico.Organico;
+import organico.Organica;
 import organico.componentes.Cadena;
 import organico.componentes.Carbono;
-import organico.componentes.Id;
+import organico.componentes.Funciones;
 import organico.componentes.Sustituyente;
 
 import java.util.ArrayList;
@@ -11,13 +11,13 @@ import java.util.List;
 
 // Esta clase representa compuestos formados por una sola cadena carbonada finita con sustituyentes.
 
-public final class Simple extends Organico {
+public final class Simple extends Organica {
 
     private final Cadena cadena;
 
     // Constante:
 
-    private static final Cadena CO2 = new Cadena(List.of(new Carbono(Id.cetona, 2)));
+    private static final Cadena CO2 = new Cadena(List.of(new Carbono(Funciones.cetona, 2)));
 
     // Constructores:
 
@@ -35,28 +35,28 @@ public final class Simple extends Organico {
         return cadena.estaCompleta();
     }
 
-    public List<Id> getSustituyentesDisponibles() {
-        List<Id> disponibles = new ArrayList<>();
+    public List<Funciones> getSustituyentesDisponibles() {
+        List<Funciones> disponibles = new ArrayList<>();
 
         switch(getEnlacesLibres()) {
             case 4: // El primer carbono
             case 3:
-                disponibles.add(Id.acido);
-                disponibles.add(Id.amida);
-                disponibles.add(Id.nitrilo);
-                disponibles.add(Id.aldehido);
+                disponibles.add(Funciones.acido);
+                disponibles.add(Funciones.amida);
+                disponibles.add(Funciones.nitrilo);
+                disponibles.add(Funciones.aldehido);
             case 2:
-                disponibles.add(Id.cetona);
+                disponibles.add(Funciones.cetona);
             case 1:
-                disponibles.add(Id.alcohol);
-                disponibles.add(Id.amina);
-                disponibles.add(Id.nitro);
-                disponibles.add(Id.bromo);
-                disponibles.add(Id.cloro);
-                disponibles.add(Id.fluor);
-                disponibles.add(Id.yodo);
-                disponibles.add(Id.radical);
-                disponibles.add(Id.hidrogeno);
+                disponibles.add(Funciones.alcohol);
+                disponibles.add(Funciones.amina);
+                disponibles.add(Funciones.nitro);
+                disponibles.add(Funciones.bromo);
+                disponibles.add(Funciones.cloro);
+                disponibles.add(Funciones.fluor);
+                disponibles.add(Funciones.yodo);
+                disponibles.add(Funciones.radical);
+                disponibles.add(Funciones.hidrogeno);
                 // Hasta aquí
                 break;
         }
@@ -68,7 +68,7 @@ public final class Simple extends Organico {
         cadena.enlazar(sustituyente);
     }
 
-    public void enlazar(Id funcion) {
+    public void enlazar(Funciones funcion) {
         enlazar(new Sustituyente(funcion));
     }
 
@@ -80,7 +80,7 @@ public final class Simple extends Organico {
         if(estaCompleta() && hayFunciones()) {
             // Se corrigen los radicales que podrían formar parte de la cadena principal:
             cadena.corregirRadicalesPorLaIzquierda(); // Comprobará internamente si hay radicales
-            if(contiene(Id.radical)) { // Para ahorrar el invertir la cadena
+            if(contiene(Funciones.radical)) { // Para ahorrar el invertir la cadena
                 invertirOrden(); // En lugar de corregirlos por la derecha
                 cadena.corregirRadicalesPorLaIzquierda(); // CHF(CH3)(CH2CH3) → CH3-CH2-CHF-CH3
             }
@@ -91,10 +91,10 @@ public final class Simple extends Organico {
             cadena.componerAldehido(); // CH(O)- → C(HO)
 
             // Cetona con alcohol → ácido:
-            cadena.sustituirCetonaConPor(Id.alcohol, Id.acido); // C(O)(OH)- → COOH-
+            cadena.sustituirCetonaConPor(Funciones.alcohol, Funciones.acido); // C(O)(OH)- → COOH-
 
             // Cetona con amina → amida:
-            cadena.sustituirCetonaConPor(Id.amina, Id.amida); // C(O)(NH2)- → CONH2-
+            cadena.sustituirCetonaConPor(Funciones.amina, Funciones.amida); // C(O)(NH2)- → CONH2-
 
             // Descomposición:
 
@@ -102,10 +102,10 @@ public final class Simple extends Organico {
             cadena.descomponerAldehido(); // COOH-CHO → COOH-CH(O)
 
             // Amida no principal → carbamoil del anterior:
-            cadena.sustituirTerminalPor(Id.amida, Id.carbamoil); // CONH2-COOH → C(OOH)(CONH2)
+            cadena.sustituirTerminalPor(Funciones.amida, Funciones.carbamoil); // CONH2-COOH → C(OOH)(CONH2)
 
             // Nitrilos no principal → cianuro del anterior:
-            cadena.sustituirTerminalPor(Id.nitrilo, Id.cianuro); // CN-COOH → C(OOH)(CN)
+            cadena.sustituirTerminalPor(Funciones.nitrilo, Funciones.cianuro); // CN-COOH → C(OOH)(CN)
 
             // Orden:
 
@@ -122,7 +122,7 @@ public final class Simple extends Organico {
         Simple inversa = new Simple(cadena);
         inversa.invertirOrden();
 
-        List<Id> funciones = getFuncionesOrdenadas();
+        List<Funciones> funciones = getFuncionesOrdenadas();
         for(int i = 0; i < funciones.size() && !corregido; i++) {
             // Se calculan las sumas de sus posiciones:
             int suma_normal = getPosicionesDe(funciones.get(i)).stream().mapToInt(Integer::intValue).sum();
@@ -133,13 +133,13 @@ public final class Simple extends Organico {
         }
 
         // Los radicales determinan el orden alfabéticamente como última instancia, solo cuando lo demás es indiferente.
-        if(!corregido && contiene(Id.radical)) {
+        if(!corregido && contiene(Funciones.radical)) {
             // Se obtienen los radicales de ambas versiones, ordenados por sus carbonos:
             List<String> normales = new ArrayList<>();
-            getRadicales().forEach(radical -> normales.add(Organico.nombreDeRadical(radical)));
+            getRadicales().forEach(radical -> normales.add(Organica.nombreDeRadical(radical)));
 
             List<String> inversos = new ArrayList<>();
-            inversa.getRadicales().forEach(radical -> inversos.add(Organico.nombreDeRadical(radical)));
+            inversa.getRadicales().forEach(radical -> inversos.add(Organica.nombreDeRadical(radical)));
 
             // Se comparan los radicales dos a dos desde ambos extremos alfabéticamente:
             for(int i = 0; i < normales.size() && !corregido; i++)
@@ -163,18 +163,18 @@ public final class Simple extends Organico {
 
     // Internos:
 
-    private boolean esRedundante(Id funcion) {
+    private boolean esRedundante(Funciones funcion) {
         boolean es_redundante;
 
         // Sustituyentes terminales:
-        if(funcion != Id.radical && !(esAlquenoOAlquino(funcion))) // Por: new Sustituyente(funcion)
+        if(funcion != Funciones.radical && !(esAlquenoOAlquino(funcion))) // Por: new Sustituyente(funcion)
             es_redundante = new Sustituyente(funcion).getEnlaces() == 3; // Solo puede ir en el primero y/o último
         // Derivados del propeno:
         else if(getSize() == 3)
-            es_redundante = funcion == Id.alqueno && getCantidadDe(Id.alqueno) == 2; // Es propadieno
+            es_redundante = funcion == Funciones.alqueno && getCantidadDe(Funciones.alqueno) == 2; // Es propadieno
         // Derivados del etano:
         else if(getSize() == 2) {
-            if(esAlquenoOAlquino(funcion) || contiene(Id.alquino)) // Solo hay una posición posible
+            if(esAlquenoOAlquino(funcion) || contiene(Funciones.alquino)) // Solo hay una posición posible
                 es_redundante = true;
             else es_redundante = getSustituyentesSinHidrogeno().size() == 1; // Solo hay uno, como cloroetino o etanol
         }
@@ -187,7 +187,7 @@ public final class Simple extends Organico {
     // Texto:
 
     ////////////////////////////////////
-    private Localizador getPrefijoPara(Id funcion) {
+    private Localizador getPrefijoPara(Funciones funcion) {
         Localizador prefijo;
 
         List<Integer> posiciones = getPosicionesDe(funcion);
@@ -200,7 +200,7 @@ public final class Simple extends Organico {
         return prefijo;
     }
 
-    private String getEnlacePara(Id tipo) {
+    private String getEnlacePara(Funciones tipo) {
         String enlace = "";
 
         List<Integer> posiciones = getPosicionesDe(tipo);
@@ -224,7 +224,7 @@ public final class Simple extends Organico {
         return enlace;
     }
 
-    private String getSufijoPara(Id funcion) {
+    private String getSufijoPara(Funciones funcion) {
         String sufijo;
 
         List<Integer> posiciones = getPosicionesDe(funcion);
@@ -242,12 +242,12 @@ public final class Simple extends Organico {
         if(cadena.equals(CO2))
             return "dióxido de carbono";
 
-        List<Id> funciones = getFuncionesOrdenadas(); // Sin hidrógeno
+        List<Funciones> funciones = getFuncionesOrdenadas(); // Sin hidrógeno
         int funcion = 0;
 
         // Se procesa el sufijo:
         String sufijo;
-        if(funciones.size() > 0 && funciones.get(0) != Id.nitro && funciones.get(0) != Id.radical // Nunca son sufijos
+        if(funciones.size() > 0 && funciones.get(0) != Funciones.nitro && funciones.get(0) != Funciones.radical // Nunca son sufijos
                 && !esHalogeno(funciones.get(0)) && !esAlquenoOAlquino(funciones.get(0)))
             sufijo = getSufijoPara(funciones.get(funcion++));
         else sufijo = "";
@@ -256,7 +256,7 @@ public final class Simple extends Organico {
         List<Localizador> prefijos = new ArrayList<>();
 
         while(funcion < funciones.size()) {
-            if(!esAlquenoOAlquino(funciones.get(funcion)) && funciones.get(funcion) != Id.radical) {
+            if(!esAlquenoOAlquino(funciones.get(funcion)) && funciones.get(funcion) != Funciones.radical) {
                 Localizador localizador = getPrefijoPara(funciones.get(funcion));
 
                 if(!localizador.getLexema().equals("")) // TODO: else?
@@ -274,7 +274,7 @@ public final class Simple extends Organico {
                 prefijos.add(localizador);
         }
 
-        StringBuilder prefijo = new StringBuilder(contiene(Id.acido) ? "ácido " : "");
+        StringBuilder prefijo = new StringBuilder(contiene(Funciones.acido) ? "ácido " : "");
         if(prefijos.size() > 0) {
             Localizador.ordenarAlfabeticamente(prefijos);
 
@@ -289,19 +289,19 @@ public final class Simple extends Organico {
         }
 
         // Se procesan los enlaces:
-        String enlaces = getEnlacePara(Id.alqueno) + getEnlacePara(Id.alquino);
+        String enlaces = getEnlacePara(Funciones.alqueno) + getEnlacePara(Funciones.alquino);
 
         if(enlaces.equals(""))
             enlaces = "an";
-        if(sufijo.equals("") || Organico.noEmpiezaPorVocal(sufijo))
+        if(sufijo.equals("") || Organica.noEmpiezaPorVocal(sufijo))
             enlaces += "o";
-        if(!sufijo.equals("") && Organico.empiezaPorDigito(sufijo))
+        if(!sufijo.equals("") && Organica.empiezaPorDigito(sufijo))
             enlaces += "-";
 
         // Se procesa el cuantificador:
         String cuantificador = cuantificadorDe(getSize());
 
-        if(Organico.noEmpiezaPorVocal(enlaces))
+        if(Organica.noEmpiezaPorVocal(enlaces))
             cuantificador += "a";
 
         return prefijo + cuantificador + enlaces + sufijo;
@@ -326,7 +326,7 @@ public final class Simple extends Organico {
         return cadena.getEnlacesLibres();
     }
 
-    private int getCantidadDe(Id funcion) {
+    private int getCantidadDe(Funciones funcion) {
         return cadena.getCantidadDe(funcion);
     }
 
@@ -334,19 +334,19 @@ public final class Simple extends Organico {
         return cadena.hayFunciones();
     }
 
-    private boolean contiene(Id funcion) {
+    private boolean contiene(Funciones funcion) {
         return cadena.contiene(funcion);
     }
 
-    private Id getFuncionPrioritaria() {
+    private Funciones getFuncionPrioritaria() {
         return cadena.getFuncionPrioritaria();
     }
 
-    private List<Id> getFuncionesOrdenadas() {
+    private List<Funciones> getFuncionesOrdenadas() {
         return cadena.getFuncionesOrdenadas();
     }
 
-    private List<Integer> getPosicionesDe(Id funcion) {
+    private List<Integer> getPosicionesDe(Funciones funcion) {
         return cadena.getPosicionesDe(funcion);
     }
 
