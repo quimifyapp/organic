@@ -61,9 +61,14 @@ public class OrganicoService {
 		if(opsin_resultado.isPresent()) {
 			OrganicoResultado organico_resultado = new OrganicoResultado();
 
+			String cml = opsin_resultado.get().getCml(); // Chemical Markup Language
+
+			// Se procesa el Chemical Markup Language:
+
 			// ...
-			String cml = opsin_resultado.get().getCml();
-			// ...
+
+			organico_resultado.setNombre(nombre); // Test
+			organico_resultado.setFormula(opsin_resultado.get().getSmiles()); // Test
 
 			completarConPubChem(organico_resultado, opsin_resultado.get().getSmiles());
 

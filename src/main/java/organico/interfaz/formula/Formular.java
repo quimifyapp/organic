@@ -19,6 +19,8 @@ public class Formular {
 			if(resultado.isPresent())
 				resultado.get().mostrar();
 			else System.out.println("No encontrado");
+
+			System.out.println();
 		}
 	}
 
