@@ -6,7 +6,7 @@ import java.util.Set;
 public class Atomo {
 
 	private int id;
-	private final Atomos atomo;
+	private final Atomos tipo;
 	private final Set<Atomo> enlazados;
 
 	// Constructor:
@@ -17,28 +17,28 @@ public class Atomo {
 
 		switch(simbolo) {
 			case "C":
-				atomo = Atomos.C;
+				tipo = Atomos.C;
 				break;
 			case "H":
-				atomo = Atomos.H;
+				tipo = Atomos.H;
 				break;
 			case "N":
-				atomo = Atomos.N;
+				tipo = Atomos.N;
 				break;
 			case "O":
-				atomo = Atomos.O;
+				tipo = Atomos.O;
 				break;
 			case "Br":
-				atomo = Atomos.Br;
+				tipo = Atomos.Br;
 				break;
 			case "Cl":
-				atomo = Atomos.Cl;
+				tipo = Atomos.Cl;
 				break;
 			case "F":
-				atomo = Atomos.F;
+				tipo = Atomos.F;
 				break;
 			case "I":
-				atomo = Atomos.I;
+				tipo = Atomos.I;
 				break;
 			default:
 				throw new IllegalArgumentException("No se contempla el átomo: " + simbolo);
@@ -47,8 +47,24 @@ public class Atomo {
 
 	// Modificadores:
 
-	public void enlazarA(Atomo otro) {
+	public void enlazar(Atomo otro) {
 		enlazados.add(otro);
+	}
+
+	// Consultas:
+
+	public boolean esTipo(Atomos tipo) {
+		return this.tipo == tipo;
+	}
+
+	public int cantidadDe(Atomos tipo) {
+		int cantidad = 0;
+
+		for(Atomo enlazado : enlazados)
+			if(enlazado.esTipo(tipo))
+				cantidad++;
+
+		return cantidad;
 	}
 
 	// Getters y setters:
@@ -59,6 +75,14 @@ public class Atomo {
 
 	public void setId(int id) {
 		this.id = id;
+	}
+
+	public Atomos getTipo() {
+		return tipo;
+	}
+
+	public Set<Atomo> getEnlazados() {
+		return enlazados;
 	}
 
 }

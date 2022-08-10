@@ -8,8 +8,6 @@ class Main {
 
     // ////////////////////////////////////////////////////////
 
-    // TODO: [Organico → "but-1-eno"]
-
     // TODO: Aprender: alertas sobre el proceso con cada solución (Ej.: se ha escogido otra cadena principal más larga)
 
     // ////////////////////////////////////////////////////////
