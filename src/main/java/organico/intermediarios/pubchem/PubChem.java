@@ -45,7 +45,7 @@ public class PubChem {
 			// Error...
 		}
 
-		if(resultado.getUrl_2d().isEmpty())
+		if(resultado.getUrl_2d() == null)
 			resultado.setUrl_2d(REST + SMILES + smiles + PNG); // Este es de mala calidad (300 x 300) px :(
 
 		return resultado;

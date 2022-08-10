@@ -8,13 +8,6 @@ class Main {
 
     // ////////////////////////////////////////////////////////
 
-    // TODO: [OpsinResultado → Organico]
-    //      1. Quitar enlaces de hidrógenos a carbonos, y esos átomos
-    //      2. Hay más átomos que C, H?
-    //          ? Ver si hay una sola cadena con funciones o si hay más
-    //          : Empezar por alguno terminal
-    //      3. ...
-
     // TODO: [Organico → "but-1-eno"]
 
     // TODO: Aprender: alertas sobre el proceso con cada solución (Ej.: se ha escogido otra cadena principal más larga)

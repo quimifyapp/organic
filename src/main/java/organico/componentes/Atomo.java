@@ -5,21 +5,15 @@ import java.util.Set;
 
 public class Atomo {
 
-	private final int id;
+	private int id;
 	private final Atomos atomo;
 	private final Set<Atomo> enlazados;
 
-	private final boolean es_sufijo;
-	private final boolean esta_en_ciclo;
-
 	// Constructor:
 
-	public Atomo(int id, boolean es_sufijo, boolean esta_en_ciclo, String simbolo) {
-		enlazados = new HashSet<>();
-
+	public Atomo(int id, String simbolo) {
 		this.id = id;
-		this.es_sufijo = es_sufijo;
-		this.esta_en_ciclo = esta_en_ciclo;
+		enlazados = new HashSet<>();
 
 		switch(simbolo) {
 			case "C":
@@ -53,8 +47,18 @@ public class Atomo {
 
 	// Modificadores:
 
-	public void enlazar(Atomo otro) {
+	public void enlazarA(Atomo otro) {
+		enlazados.add(otro);
+	}
 
+	// Getters y setters:
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
 	}
 
 }
