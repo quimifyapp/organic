@@ -68,12 +68,12 @@ public class Atomo {
 	private Atomo(Atomos tipo) {
 		id = null;
 		this.tipo = tipo;
-		this.enlazados = new ArrayList<>();
+		enlazados = new ArrayList<>();
 	}
 
 	private Atomo(Atomo otro) {
-		this.id = otro.id;
-		this.tipo = otro.tipo;
+		id = otro.id;
+		tipo = otro.tipo;
 		enlazados = new ArrayList<>(otro.enlazados);
 	}
 
@@ -95,6 +95,10 @@ public class Atomo {
 				return false;
 
 		return true;
+	}
+
+	public boolean esOxigenoPuente() {
+		return esTipo(Atomos.O) && getCantidadDeEnlazados() == 2 && todosSusEnlazadosSonTipo(Atomos.C); // C-O-C
 	}
 
 	@Override
@@ -126,6 +130,20 @@ public class Atomo {
 		return es_igual;
 	}
 
+	// Internos:
+
+	private List<Atomo> getEnlazadosSeparados(List<Atomo> por_separar) {
+		List<Atomo> enlazados_separados = new ArrayList<>();
+
+		for(Atomo enlazado : por_separar) {
+			Atomo nuevo = new Atomo(enlazado);
+			nuevo.enlazados.removeIf(otro -> Objects.equals(id, otro.id));
+			enlazados_separados.add(nuevo);
+		}
+
+		return enlazados_separados;
+	}
+
 	// Métodos get:
 
 	public int getCantidadDeEnlazados() {
@@ -142,27 +160,20 @@ public class Atomo {
 		return cantidad;
 	}
 
-	public List<Atomo> getEnlazadosSinCarbonos() {
-		return enlazados.stream().filter(enlazado -> !enlazado.esTipo(Atomos.C)).collect(Collectors.toList());
-	}
-
-
 	public List<Atomo> getEnlazadosCarbonos() {
 		return enlazados.stream().filter(enlazado -> enlazado.esTipo(Atomos.C)).collect(Collectors.toList());
 	}
 
+	public List<Atomo> getEnlazadosSinCarbonos() {
+		return enlazados.stream().filter(enlazado -> !enlazado.esTipo(Atomos.C)).collect(Collectors.toList());
+	}
+
 	public List<Atomo> getEnlazadosSeparados() {
-		List<Atomo> enlazados_separados = new ArrayList<>();
+		return getEnlazadosSeparados(enlazados);
+	}
 
-		for(Atomo enlazado : enlazados) {
-			Atomo nuevo = new Atomo(enlazado);
-
-			nuevo.enlazados.removeIf(otro -> Objects.equals(id, otro.id));
-
-			enlazados_separados.add(nuevo);
-		}
-
-		return enlazados_separados;
+	public List<Atomo> getEnlazadosCarbonosSeparados() {
+		return getEnlazadosSeparados(getEnlazadosCarbonos());
 	}
 
 	public Optional<Funciones> toFuncion() {

@@ -52,6 +52,7 @@ public class Generico extends Organica {
 			Element enlace = (Element) enlaces_xml.item(i);
 
 			String[] id = enlace.getAttribute("id").replaceAll("a", "").split("_");
+
 			Integer[] ids = {
 					Integer.valueOf(id[0]),
 					Integer.valueOf(id[1])};
@@ -67,20 +68,44 @@ public class Generico extends Organica {
 
 	// Consultas internas:
 
-	private Optional<Atomo> getUnCarbonoExtremo() {
+	private List<Atomo> getCarbonos() {
+		return molecula.stream().filter(atomo -> atomo.getTipo() == Atomos.C).collect(Collectors.toList());
+	}
+
+	private Optional<Atomo> getCarbonoExtremo() {
 		Optional<Atomo> extremo = Optional.empty();
 
-		for(Atomo atomo : getCarbonos())
-			if(atomo.getCantidadDe(Atomos.C) < 2) {
-				extremo = Optional.of(atomo);
+		for(Atomo carbono : getCarbonos())
+			if(carbono.getCantidadDe(Atomos.C) < 2) {
+				extremo = Optional.of(carbono);
 				break;
 			}
 
 		return extremo;
 	}
 
-	private List<Atomo> getCarbonos() {
-		return molecula.stream().filter(atomo -> atomo.getTipo() == Atomos.C).collect(Collectors.toList());
+	private Optional<Atomo> getOxigenoPuente() {
+		Optional<Atomo> extremo = Optional.empty();
+
+		for(Atomo enlazado : molecula)
+			if(enlazado.esOxigenoPuente()) {
+				extremo = Optional.of(enlazado);
+				break;
+			}
+
+		return extremo;
+	}
+
+	private int getCarbonosAlAlcanceDe(Atomo carbono) {
+		int cantidad;
+
+		List<Atomo> enlazados = carbono.getEnlazadosCarbonosSeparados();
+
+		cantidad = enlazados.size();
+		for(Atomo enlazado : enlazados)
+			cantidad += getCarbonosAlAlcanceDe(enlazado);
+
+		return cantidad;
 	}
 
 	private boolean esEter() {
@@ -92,38 +117,18 @@ public class Generico extends Organica {
 		return false;
 	}
 
-	// TODO: rehacer usando getEnlazadosCarbonosSeparados()
-
-	private int carbonosAlAlcanceDeSin(Atomo carbono, Atomo anterior) {
-		int cantidad = 0;
-
-		List<Atomo> enlazados = carbono.getEnlazadosCarbonos();
-		enlazados.remove(anterior);
-
-		cantidad += enlazados.size();
-
-		for(Atomo enlazado : enlazados)
-			cantidad += carbonosAlAlcanceDeSin(enlazado, carbono);
-
-		return cantidad;
-	}
-
-	private int carbonosAlAlcanceDe(Atomo carbono) {
-		return carbonosAlAlcanceDeSin(carbono, null);
-	}
-
 	// Texto:
 
 	public Optional<String> getFormula() {
 		Optional<String> formula = Optional.empty();
 
-		// Se comprueba que no es cíclica:
+		// Se comprueba que hay ningún ciclo:
 		if(!smiles.matches(".*[0-9].*")) {
 			// Se busca un extremo de la molécula:
-			Optional<Atomo> extremo = getUnCarbonoExtremo();
+			Optional<Atomo> extremo = getCarbonoExtremo();
 
-			if(extremo.isPresent()) { // Si no es una molécula cíclica
-				int contiguos = 1 + carbonosAlAlcanceDeSin(extremo.get(), extremo.get());
+			if(extremo.isPresent()) { // Debe haberlo
+				int contiguos = 1 + getCarbonosAlAlcanceDe(extremo.get());
 
 				if(contiguos == getCarbonos().size()) { // Todos los carbonos están unidos
 					Simple simple = new Simple();
@@ -137,7 +142,7 @@ public class Generico extends Organica {
 
 							if(funcion.isPresent())
 								simple.enlazar(funcion.get());
-							else return Optional.empty();
+							else return Optional.empty(); // Hay un átomo no reconocido, como plomo u oro
 						}
 					}
 
@@ -145,17 +150,29 @@ public class Generico extends Organica {
 
 					formula = Optional.of(simple.getFormula());
 				}
-				else if(esEter()) {
-					formula = Optional.of("éter");
-				}
 				else {
-					formula = Optional.of("¿Qué es esto, qué está pasando?");
+					Optional<Atomo> oxigeno_puente = getOxigenoPuente();
+
+					if(oxigeno_puente.isPresent()) { // Podría ser éster o éter
+						List<Atomo> dos_extremos = oxigeno_puente.get().getEnlazadosCarbonos();
+
+						int contiguos_izquierda = 1 + getCarbonosAlAlcanceDe(dos_extremos.get(0));
+						int contiguos_derecha = 1 + getCarbonosAlAlcanceDe(dos_extremos.get(1));
+
+						if(contiguos_izquierda + contiguos_derecha == getCarbonos().size()) { //
+							formula = Optional.of("Éter o éster");
+						}
+					}
+					else formula = Optional.of("PSEUDO éter o éster");
 				}
 				// TODO: es eter?
 				// TODO: los carbonos están contiguos
 				// TODO: get los carbonos contiguos
 
 				// TODO: nombre?
+			}
+			else {
+				// Error...
 			}
 		}
 
