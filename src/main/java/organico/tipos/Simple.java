@@ -22,7 +22,7 @@ public final class Simple extends Organica {
     // Constructores:
 
     public Simple() {
-        cadena = new Cadena(0);
+        cadena = new Cadena();
     }
 
     private Simple(Cadena nueva) {
@@ -64,18 +64,6 @@ public final class Simple extends Organica {
         return disponibles;
     }
 
-    public void enlazar(Sustituyente sustituyente) {
-        cadena.enlazar(sustituyente);
-    }
-
-    public void enlazar(Funciones funcion) {
-        enlazar(new Sustituyente(funcion));
-    }
-
-    public void enlazarCarbono() {
-        cadena.enlazarCarbono();
-    }
-
     public void corregir() {
         if(estaCompleta() && hayFunciones()) {
             // Se corrigen los radicales que podrían formar parte de la cadena principal:
@@ -112,6 +100,20 @@ public final class Simple extends Organica {
             // Corrige el orden de la molécula según la prioridad y los localizadores:
             corregirOrden(); // butan-3-ol → butan-2-ol
         }
+    }
+
+    // Alías de interfaz:
+
+    public void enlazar(Sustituyente sustituyente) {
+        cadena.enlazar(sustituyente);
+    }
+
+    public void enlazar(Funciones funcion) {
+        enlazar(new Sustituyente(funcion));
+    }
+
+    public void enlazarCarbono() {
+        cadena.enlazarCarbono();
     }
 
     // Modificadores:
@@ -237,7 +239,8 @@ public final class Simple extends Organica {
         return sufijo;
     }
 
-    public String getNombre() { // Se asume que ya está corregida con corregir()
+    // Se asume que ya está corregida con corregir()
+    public String getNombre() {
         // Se anticipan los casos excepcionales:
         if(cadena.equals(CO2))
             return "dióxido de carbono";
@@ -338,14 +341,6 @@ public final class Simple extends Organica {
         return cadena.contiene(funcion);
     }
 
-    private Funciones getFuncionPrioritaria() {
-        return cadena.getFuncionPrioritaria();
-    }
-
-    private List<Funciones> getFuncionesOrdenadas() {
-        return cadena.getFuncionesOrdenadas();
-    }
-
     private List<Integer> getPosicionesDe(Funciones funcion) {
         return cadena.getPosicionesDe(funcion);
     }
@@ -354,16 +349,16 @@ public final class Simple extends Organica {
         return cadena.getPosicionesDe(sustituyente);
     }
 
+    private List<Funciones> getFuncionesOrdenadas() {
+        return cadena.getFuncionesOrdenadas();
+    }
+
     private List<Sustituyente> getRadicales() {
         return cadena.getRadicales();
     }
 
     private List<Sustituyente> getRadicalesUnicos() {
         return cadena.getRadicalesUnicos();
-    }
-
-    private List<Sustituyente> getSustituyentesUnicos() {
-        return cadena.getSustituyentesUnicos();
     }
 
     private List<Sustituyente> getSustituyentesSinHidrogeno() {

@@ -174,7 +174,7 @@ public class Sustituyente extends Organica {
         Cadena cadena = new Cadena();
 
         if(carbonos > 0) {
-            cadena.comenzar(0); // (C)
+            cadena.enlazarCarbono(); // (C)
             cadena.enlazar(Funciones.hidrogeno, 3); // CH3-
 
             int anteriores = 1; // CH3-

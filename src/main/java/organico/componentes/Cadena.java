@@ -40,7 +40,7 @@ public class Cadena extends Organica {
 		agregarCopiaDe(otra.carbonos);
 	}
 
-	public void comenzar(int enlaces_previos) {
+	private void comenzar(int enlaces_previos) {
 		carbonos.add(new Carbono(enlaces_previos));
 	}
 
@@ -69,9 +69,12 @@ public class Cadena extends Organica {
 	}
 
 	public void enlazarCarbono() {
-		Carbono ultimo = getUltimo();
-		ultimo.enlazarCarbono();
-		carbonos.add(new Carbono(ultimo.getEnlacesLibres() + 1));
+		if(carbonos.size() > 0) {
+			Carbono ultimo = getUltimo();
+			ultimo.enlazarCarbono();
+			carbonos.add(new Carbono(ultimo.getEnlacesLibres() + 1));
+		}
+		else comenzar(0);
 	}
 
 	private void transformarEn(Cadena otra) {
@@ -366,22 +369,24 @@ public class Cadena extends Organica {
 	public String getFormula() {
 		StringBuilder formula = new StringBuilder();
 
-		// Se escribe el primero:
-		Carbono primero = carbonos.get(0);
-		formula.append(primero); // Como CH
+		if(carbonos.size() > 0) {
+			// Se escribe el primero:
+			Carbono primero = carbonos.get(0);
+			formula.append(primero); // Como CH
 
-		// Se escribe el resto con los enlaces libres del anterior:
-		int enlaces_libres_anterior = primero.getEnlacesLibres();
-		for(int i = 1; i < carbonos.size(); i++) {
-			formula.append(enlaceDeOrden(enlaces_libres_anterior)); // Como CH=
-			formula.append(carbonos.get(i)); // Como CH=CH
+			// Se escribe el resto con los enlaces libres del anterior:
+			int enlaces_libres_anterior = primero.getEnlacesLibres();
+			for(int i = 1; i < carbonos.size(); i++) {
+				formula.append(enlaceDeOrden(enlaces_libres_anterior)); // Como CH=
+				formula.append(carbonos.get(i)); // Como CH=CH
 
-			enlaces_libres_anterior = carbonos.get(i).getEnlacesLibres();
+				enlaces_libres_anterior = carbonos.get(i).getEnlacesLibres();
+			}
+
+			// Se escribe los enlaces libres del último:
+			if(enlaces_libres_anterior > 0 && enlaces_libres_anterior < 4) // Ni está completo ni es el primero vacío
+				formula.append(enlaceDeOrden(enlaces_libres_anterior - 1)); // Como CH=CH-CH2-C≡
 		}
-
-		// Se escribe los enlaces libres del último:
-		if(enlaces_libres_anterior > 0 && enlaces_libres_anterior < 4) // Ni está completo ni es el primero vacío
-			formula.append(enlaceDeOrden(enlaces_libres_anterior - 1)); // Como CH=CH-CH2-C≡
 
 		return formula.toString();
 	}

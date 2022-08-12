@@ -72,18 +72,23 @@ public class Carbono extends Organica {
 
     @Override
     public boolean equals(Object otro) {
-        boolean es_igual = false;
+        boolean es_igual;
 
         if(otro != null && otro.getClass() == this.getClass()) {
             Carbono nuevo = (Carbono) otro;
 
-            if(enlaces_libres == nuevo.enlaces_libres && sustituyentes.size() == nuevo.sustituyentes.size())
+            if(enlaces_libres == nuevo.enlaces_libres && sustituyentes.size() == nuevo.sustituyentes.size()) {
+                es_igual = true;
+
                 for(int i = 0; i < sustituyentes.size(); i++)
-                    if(sustituyentes.get(i).equals(nuevo.sustituyentes.get(i))) {
-                        es_igual = true;
+                    if(!sustituyentes.get(i).equals(nuevo.sustituyentes.get(i))) {
+                        es_igual = false;
                         break;
                     }
+            }
+            else es_igual = false;
         }
+        else es_igual = false;
 
         return es_igual;
     }

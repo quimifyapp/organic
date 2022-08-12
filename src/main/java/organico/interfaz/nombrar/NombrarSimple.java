@@ -30,6 +30,7 @@ public class NombrarSimple {
 
 	private static Simple getSimple() {
 		Simple simple = new organico.tipos.Simple();
+		simple.enlazarCarbono();
 
 		List<Integer> elecciones = new ArrayList<>();
 		boolean primer_carbono = true;
