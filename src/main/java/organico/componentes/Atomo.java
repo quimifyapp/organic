@@ -14,14 +14,13 @@ public class Atomo {
 	public static final Atomo H = new Atomo(Atomos.H);
 	public static final Atomo N = new Atomo(Atomos.N);
 	public static final Atomo O = new Atomo(Atomos.O);
+	public static final Atomo OH = new Atomo(Atomos.O, List.of(H));
+	public static final Atomo NH2 = new Atomo(Atomos.N, List.of(H, H));
+	public static final Atomo NO2 = new Atomo(Atomos.N, List.of(O, O));
 	public static final Atomo Br = new Atomo(Atomos.Br);
 	public static final Atomo Cl = new Atomo(Atomos.Cl);
 	public static final Atomo F = new Atomo(Atomos.F);
 	public static final Atomo I = new Atomo(Atomos.I);
-
-	public static final Atomo NH2 = new Atomo(Atomos.N, List.of(H, H));
-	public static final Atomo OH = new Atomo(Atomos.O, List.of(H));
-	public static final Atomo NO2 = new Atomo(Atomos.N, List.of(O, O));
 
 	// Constructor:
 
@@ -176,32 +175,43 @@ public class Atomo {
 		return getEnlazadosSeparados(getEnlazadosCarbonos());
 	}
 
-	public Optional<Funciones> toFuncion() {
-		Optional<Funciones> funcion;
+	public List<Sustituyente> getSustituyentes() {
+		List<Sustituyente> sustituyentes = new ArrayList<>();
 
-		if(equals(N))
-			funcion = Optional.of(Funciones.nitrilo);
-		else if(equals(O))
-			funcion = Optional.of(Funciones.cetona);
-		else if(equals(OH))
-			funcion = Optional.of(Funciones.alcohol);
-		else if(equals(NH2))
-			funcion = Optional.of(Funciones.amina);
-		else if(equals(NO2))
-			funcion = Optional.of(Funciones.nitro);
-		else if(equals(Br))
-			funcion = Optional.of(Funciones.bromo);
-		else if(equals(Cl))
-			funcion = Optional.of(Funciones.cloro);
-		else if(equals(F))
-			funcion = Optional.of(Funciones.fluor);
-		else if(equals(I))
-			funcion = Optional.of(Funciones.yodo);
-		else if(equals(H))
-			funcion = Optional.of(Funciones.hidrogeno);
-		else funcion = Optional.empty();
+		for(Atomo enlazado : getEnlazadosSinCarbonos())
+			enlazado.toFuncion().map(funcion -> sustituyentes.add(new Sustituyente(funcion)))
+					.orElseThrow(ClassCastException::new);
 
-		return funcion;
+		return sustituyentes;
+	}
+
+	private Optional<Funciones> toFuncion() {
+		Atomo anonimo = new Atomo(tipo, getEnlazadosSinCarbonos()); // Ej.: C-NO2 #4 -> NO2 #null
+
+		Funciones funcion;
+		if(anonimo.equals(N))
+			funcion = Funciones.nitrilo;
+		else if(anonimo.equals(O))
+			funcion = Funciones.cetona;
+		else if(anonimo.equals(OH))
+			funcion = Funciones.alcohol;
+		else if(anonimo.equals(NH2))
+			funcion = Funciones.amina;
+		else if(anonimo.equals(NO2))
+			funcion = Funciones.nitro;
+		else if(anonimo.equals(Br))
+			funcion = Funciones.bromo;
+		else if(anonimo.equals(Cl))
+			funcion = Funciones.cloro;
+		else if(anonimo.equals(F))
+			funcion = Funciones.fluor;
+		else if(anonimo.equals(I))
+			funcion = Funciones.yodo;
+		else if(anonimo.equals(H))
+			funcion = Funciones.hidrogeno;
+		else return Optional.empty(); // Es un átomo no reconocido, como: Pb, OCl2...
+
+		return Optional.of(funcion);
 	}
 
 	// Getters y setters:

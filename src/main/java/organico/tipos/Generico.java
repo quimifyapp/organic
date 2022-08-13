@@ -127,11 +127,26 @@ public class Generico extends Organica {
 			// Se busca un extremo de la molécula:
 			Optional<Atomo> extremo = getCarbonoExtremo();
 
-			if(extremo.isPresent()) { // Debe haberlo
+			if(extremo.isPresent()) { // Debería cumplirse
 				int contiguos = 1 + getCarbonosAlAlcanceDe(extremo.get());
 
 				if(contiguos == getCarbonos().size()) { // Todos los carbonos están unidos, podría ser un 'Simple'
 					Simple simple = new Simple();
+
+					try {
+						simple.enlazarCarbono();
+						extremo.get().getSustituyentes().forEach(simple::enlazar);
+
+
+						formula = Optional.of(simple.getFormula());
+					}
+					catch(ClassCastException ignore) {
+						formula = Optional.empty(); // Hay un átomo no reconocido, como: Pb, OCl2...
+					}
+					catch(Exception exception) {
+						formula = Optional.empty();
+						// Error...
+					}
 
 					// Primero: 'extremo'
 					// Segundo: [*] de los 3 posibles sustituyentes...
