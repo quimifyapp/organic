@@ -3,6 +3,7 @@ package organico.componentes;
 import organico.Organica;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Carbono extends Organica {
 
@@ -97,23 +98,13 @@ public class Carbono extends Organica {
     // Métodos get:
 
     public List<Sustituyente> getSustituyentesTipo(Funciones funcion) {
-        List<Sustituyente> resultado = new ArrayList<>();
-
-        for(Sustituyente sustituyente : sustituyentes)
-            if(sustituyente.esTipo(funcion))
-                resultado.add(sustituyente);
-
-        return resultado;
+        return sustituyentes.stream().filter(sustituyente -> sustituyente.esTipo(funcion))
+                .collect(Collectors.toList());
     }
 
     public List<Sustituyente> getSustituyentesSinHidrogeno() {
-        List<Sustituyente> sin_hidrogeno = new ArrayList<>();
-
-        for(Sustituyente sustituyente : sustituyentes)
-            if(!sustituyente.esTipo(Funciones.hidrogeno))
-                sin_hidrogeno.add(sustituyente);
-
-        return sin_hidrogeno;
+        return sustituyentes.stream().filter(sustituyente -> !sustituyente.esTipo(Funciones.hidrogeno))
+                .collect(Collectors.toList());
     }
 
     public List<Sustituyente> getUnicosSustituyentes() {

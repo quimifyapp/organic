@@ -42,8 +42,9 @@ public class Generico extends Organica {
 			Element atomo = (Element) atomos_xml.item(i);
 
 			int id = Integer.parseInt(atomo.getAttribute("id").replaceAll("a", ""));
+			String tipo = atomo.getAttribute("elementType");
 
-			molecula.add(new Atomo(id, atomo.getAttribute("elementType")));
+			molecula.add(new Atomo(id, tipo));
 		}
 
 		// Se enlazan entre sí:
@@ -51,14 +52,13 @@ public class Generico extends Organica {
 		for(int i = 0; i < enlaces_xml.getLength(); i++) {
 			Element enlace = (Element) enlaces_xml.item(i);
 
-			String[] id = enlace.getAttribute("id").replaceAll("a", "").split("_");
+			String[] ids = enlace.getAttribute("id").replaceAll("a", "").split("_");
 
-			Integer[] ids = {
-					Integer.valueOf(id[0]),
-					Integer.valueOf(id[1])};
 			Atomo[] atomos = {
-					molecula.stream().filter(atomo -> atomo.getId().equals(ids[0])).findAny().orElse(null),
-					molecula.stream().filter(atomo -> atomo.getId().equals(ids[1])).findAny().orElse(null)
+					molecula.stream().filter(atomo -> atomo.getId().equals(Integer.valueOf(ids[0]))).findAny()
+							.orElseThrow(IllegalArgumentException::new),
+					molecula.stream().filter(atomo -> atomo.getId().equals(Integer.valueOf(ids[1]))).findAny()
+							.orElseThrow(IllegalArgumentException::new)
 			};
 
 			atomos[0].enlazar(atomos[1]);
@@ -133,20 +133,11 @@ public class Generico extends Organica {
 				if(contiguos == getCarbonos().size()) { // Todos los carbonos están unidos, podría ser un 'Simple'
 					Simple simple = new Simple();
 
-					try {
-						simple.enlazarCarbono();
-						extremo.get().getSustituyentes().forEach(simple::enlazar);
+					simple.enlazarCarbono();
 
+					extremo.get().getSustituyentes().forEach(simple::enlazar); // Los no-carbonos
 
-						formula = Optional.of(simple.getFormula());
-					}
-					catch(ClassCastException ignore) {
-						formula = Optional.empty(); // Hay un átomo no reconocido, como: Pb, OCl2...
-					}
-					catch(Exception exception) {
-						formula = Optional.empty();
-						// Error...
-					}
+					formula = Optional.of(simple.getFormula());
 
 					// Primero: 'extremo'
 					// Segundo: [*] de los 3 posibles sustituyentes...
@@ -164,11 +155,10 @@ public class Generico extends Organica {
 
 					if(oxigeno_puente.isPresent()) { // Podría ser un 'Eter' o un 'Ester'
 						List<Atomo> dos_extremos = oxigeno_puente.get().getEnlazadosCarbonos();
-
 						int contiguos_izquierda = 1 + getCarbonosAlAlcanceDe(dos_extremos.get(0));
 						int contiguos_derecha = 1 + getCarbonosAlAlcanceDe(dos_extremos.get(1));
 
-						if(contiguos_izquierda + contiguos_derecha == getCarbonos().size()) { //
+						if(contiguos_izquierda + contiguos_derecha == getCarbonos().size()) { // Tiene toda la pinta
 							formula = Optional.of("Éter o éster");
 						}
 					}

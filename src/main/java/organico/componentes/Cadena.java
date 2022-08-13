@@ -344,17 +344,6 @@ public class Cadena extends Organica {
 		return unicos;
 	}
 
-	public List<Sustituyente> getSustituyentesUnicos() {
-		List<Sustituyente> unicos = new ArrayList<>();
-
-		for(Carbono carbono : carbonos)
-			for(Sustituyente sustituyente : carbono.getSustituyentes())
-				if(!unicos.contains(sustituyente))
-					unicos.add(sustituyente);
-
-		return unicos;
-	}
-
 	public List<Sustituyente> getSustituyentesSinHidrogeno() {
 		List<Sustituyente> sin_hidrogeno = new ArrayList<>();
 
