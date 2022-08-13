@@ -130,30 +130,24 @@ public class Generico extends Organica {
 			if(extremo.isPresent()) { // Debe haberlo
 				int contiguos = 1 + getCarbonosAlAlcanceDe(extremo.get());
 
-				if(contiguos == getCarbonos().size()) { // Todos los carbonos están unidos
+				if(contiguos == getCarbonos().size()) { // Todos los carbonos están unidos, podría ser un 'Simple'
 					Simple simple = new Simple();
 
-					for(Atomo atomo : getCarbonos()) {
-						simple.enlazarCarbono();
-
-						for(Atomo enlazado : atomo.getEnlazadosSinCarbonos()) {
-							Atomo aislado = new Atomo(enlazado.getTipo(), enlazado.getEnlazadosSinCarbonos());
-							Optional<Funciones> funcion = aislado.toFuncion();
-
-							if(funcion.isPresent())
-								simple.enlazar(funcion.get());
-							else return Optional.empty(); // Hay un átomo no reconocido, como plomo u oro
-						}
-					}
-
-					simple.corregir();
-
-					formula = Optional.of(simple.getFormula());
+					// Primero: 'extremo'
+					// Segundo: [*] de los 3 posibles sustituyentes...
+						// No carbonos: mirar si son reconocidos
+						// Carbonos: mirar si hay más de un camino que no sea recto o iso...
+							// Ninguno: escoger cualquiera, repetir [*]
+							// Uno: escoger ese, repetir [*]
+							// Más de uno...
+								// El camino ya recorrido sí es recto o iso...
+									// Pasa a ser sustituyente del carbono, repetir [*]
+								// No: no es posible, se aborta
 				}
 				else {
 					Optional<Atomo> oxigeno_puente = getOxigenoPuente();
 
-					if(oxigeno_puente.isPresent()) { // Podría ser éster o éter
+					if(oxigeno_puente.isPresent()) { // Podría ser un 'Eter' o un 'Ester'
 						List<Atomo> dos_extremos = oxigeno_puente.get().getEnlazadosCarbonos();
 
 						int contiguos_izquierda = 1 + getCarbonosAlAlcanceDe(dos_extremos.get(0));
@@ -165,11 +159,6 @@ public class Generico extends Organica {
 					}
 					else formula = Optional.of("PSEUDO éter o éster");
 				}
-				// TODO: es eter?
-				// TODO: los carbonos están contiguos
-				// TODO: get los carbonos contiguos
-
-				// TODO: nombre?
 			}
 			else {
 				// Error...
