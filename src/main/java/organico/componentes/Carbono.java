@@ -18,6 +18,7 @@ public class Carbono extends Organica {
 
     public Carbono(Funciones funcion, int veces) {
         sustituyentes = new ArrayList<>();
+        enlaces_libres = 4;
         enlazar(funcion, veces);
     }
 

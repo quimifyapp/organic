@@ -12,6 +12,9 @@ public class Opsin {
     public static Optional<OpsinResultado> procesarNombreES(String nombre) {
         Optional<OpsinResultado> resultado;
 
+        // La sintaxis que permite OPSIN es inglesa, donde "cloruro de sodio" es como "sodio cloruro":
+        nombre = corregirSintaxis(nombre);
+
         // Nuestra adaptación al español de la librería OPSIN rechaza el prefijo "ácido", por eso se elimina:
         nombre = nombre.replaceFirst("ácido|acido", "");
 
@@ -43,6 +46,16 @@ public class Opsin {
         else resultado = Optional.empty();
 
         return resultado;
+    }
+
+    // Ej.: "cloruro de sodio" -> "sodio cloruro"
+    private static String corregirSintaxis(String nombre) {
+        if(nombre.contains(" de ")) {
+            String[] palabras = nombre.split(" de "); // Ej.: {"cloruro", "sodio"}
+            nombre = palabras[1] + " " + palabras[0]; // Ej.: "sodio cloruro"
+        }
+
+        return nombre;
     }
 
     private static String corregirEter(String nombre) {
