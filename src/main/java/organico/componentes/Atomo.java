@@ -179,16 +179,16 @@ public class Atomo {
 		List<Sustituyente> sustituyentes = new ArrayList<>();
 
 		for(Atomo enlazado : getEnlazadosSinCarbonos())
-			enlazado.toFuncion().map(funcion -> sustituyentes.add(new Sustituyente(funcion)))
-					.orElseThrow(ClassCastException::new);
+			sustituyentes.add(new Sustituyente(enlazado.toFuncion()));
 
 		return sustituyentes;
 	}
 
-	private Optional<Funciones> toFuncion() {
+	private Funciones toFuncion() {
+		Funciones funcion;
+
 		Atomo anonimo = new Atomo(tipo, getEnlazadosSinCarbonos()); // Ej.: C-NO2 #4 -> NO2 #null
 
-		Funciones funcion;
 		if(anonimo.equals(N))
 			funcion = Funciones.nitrilo;
 		else if(anonimo.equals(O))
@@ -209,9 +209,9 @@ public class Atomo {
 			funcion = Funciones.yodo;
 		else if(anonimo.equals(H))
 			funcion = Funciones.hidrogeno;
-		else return Optional.empty(); // Es un átomo no reconocido, como: Pb, OCl2...
+		else throw new ClassCastException(); // Es un átomo no reconocido, como: Pb, OCl2...
 
-		return Optional.of(funcion);
+		return funcion;
 	}
 
 	// Getters y setters:

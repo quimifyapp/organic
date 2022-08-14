@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 // Esta clase representa una molécula cualquiera a partir de un CML en formato XML para intentar redactarle una fórmula.
 
@@ -52,13 +53,18 @@ public class Generico extends Organica {
 		for(int i = 0; i < enlaces_xml.getLength(); i++) {
 			Element enlace = (Element) enlaces_xml.item(i);
 
-			String[] ids = enlace.getAttribute("id").replaceAll("a", "").split("_");
+			String[] id_string = enlace.getAttribute("id").replaceAll("a", "").split("_");
+
+			Integer[] id_int = {
+					Integer.valueOf(id_string[0]),
+					Integer.valueOf(id_string[1])
+			};
 
 			Atomo[] atomos = {
-					molecula.stream().filter(atomo -> atomo.getId().equals(Integer.valueOf(ids[0]))).findAny()
-							.orElseThrow(IllegalArgumentException::new),
-					molecula.stream().filter(atomo -> atomo.getId().equals(Integer.valueOf(ids[1]))).findAny()
-							.orElseThrow(IllegalArgumentException::new)
+					molecula.stream().filter(atomo -> atomo.getId().equals(id_int[0])).findAny()
+							.orElseThrow(NoSuchElementException::new),
+					molecula.stream().filter(atomo -> atomo.getId().equals(id_int[1])).findAny()
+							.orElseThrow(NoSuchElementException::new)
 			};
 
 			atomos[0].enlazar(atomos[1]);
@@ -73,27 +79,11 @@ public class Generico extends Organica {
 	}
 
 	private Optional<Atomo> getCarbonoExtremo() {
-		Optional<Atomo> extremo = Optional.empty();
-
-		for(Atomo carbono : getCarbonos())
-			if(carbono.getCantidadDe(Atomos.C) < 2) {
-				extremo = Optional.of(carbono);
-				break;
-			}
-
-		return extremo;
+		return getCarbonos().stream().filter(carbono -> carbono.getCantidadDe(Atomos.C) < 2).findAny();
 	}
 
 	private Optional<Atomo> getOxigenoPuente() {
-		Optional<Atomo> extremo = Optional.empty();
-
-		for(Atomo enlazado : molecula)
-			if(enlazado.esOxigenoPuente()) {
-				extremo = Optional.of(enlazado);
-				break;
-			}
-
-		return extremo;
+		return molecula.stream().filter(Atomo::esOxigenoPuente).findAny();
 	}
 
 	private int getCarbonosAlAlcanceDe(Atomo carbono) {
@@ -106,15 +96,6 @@ public class Generico extends Organica {
 			cantidad += getCarbonosAlAlcanceDe(enlazado);
 
 		return cantidad;
-	}
-
-	private boolean esEter() {
-		for(Atomo atomo : molecula)
-			for(Atomo enlazado : atomo.getEnlazadosSinCarbonos())
-				if(enlazado.esTipo(Atomos.O) && enlazado.getCantidadDe(Atomos.C) == 2)
-					return true;
-
-		return false;
 	}
 
 	// Texto:
@@ -138,6 +119,9 @@ public class Generico extends Organica {
 					extremo.get().getSustituyentes().forEach(simple::enlazar); // Los no-carbonos
 
 					formula = Optional.of(simple.getFormula());
+
+					// TODO: método que ponga los carbonos de la cadena simple en lista
+					// TODO: Debug "1-etanol"
 
 					// Primero: 'extremo'
 					// Segundo: [*] de los 3 posibles sustituyentes...
