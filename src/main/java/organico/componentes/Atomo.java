@@ -16,6 +16,8 @@ public class Atomo {
 	public static final Atomo O = new Atomo(Atomos.O);
 	public static final Atomo OH = new Atomo(Atomos.O, List.of(H));
 	public static final Atomo NH2 = new Atomo(Atomos.N, List.of(H, H));
+
+	public static final Atomo OC = new Atomo(Atomos.O, List.of(new Atomo(Atomos.C)));
 	public static final Atomo NO2 = new Atomo(Atomos.N, List.of(O, O));
 	public static final Atomo Br = new Atomo(Atomos.Br);
 	public static final Atomo Cl = new Atomo(Atomos.Cl);
@@ -143,6 +145,12 @@ public class Atomo {
 		return enlazados_separados;
 	}
 
+	private Atomo toAnonimo() {
+		Atomo anonimo = new Atomo(tipo, getEnlazadosSeparados());
+		anonimo.enlazados.replaceAll(Atomo::toAnonimo);
+		return anonimo;
+	}
+
 	// Métodos get:
 
 	public int getCantidadDeEnlazados() {
@@ -171,14 +179,18 @@ public class Atomo {
 		return getEnlazadosSeparados(enlazados);
 	}
 
-	public List<Atomo> getEnlazadosCarbonosSeparados() {
+	public List<Atomo> getEnlazadosSeparadosCarbonos() {
 		return getEnlazadosSeparados(getEnlazadosCarbonos());
+	}
+
+	public List<Atomo> getEnlazadosSeparadosSinCarbonos() {
+		return getEnlazadosSeparados(getEnlazadosSinCarbonos());
 	}
 
 	public List<Sustituyente> getSustituyentes() {
 		List<Sustituyente> sustituyentes = new ArrayList<>();
 
-		for(Atomo enlazado : getEnlazadosSinCarbonos())
+		for(Atomo enlazado : getEnlazadosSeparadosSinCarbonos())
 			sustituyentes.add(new Sustituyente(enlazado.toFuncion()));
 
 		return sustituyentes;
@@ -187,7 +199,7 @@ public class Atomo {
 	private Funciones toFuncion() {
 		Funciones funcion;
 
-		Atomo anonimo = new Atomo(tipo, getEnlazadosSinCarbonos()); // Ej.: C-NO2 #4 -> NO2 #null
+		Atomo anonimo = toAnonimo(); // Sin 'id'
 
 		if(anonimo.equals(N))
 			funcion = Funciones.nitrilo;
@@ -197,6 +209,8 @@ public class Atomo {
 			funcion = Funciones.alcohol;
 		else if(anonimo.equals(NH2))
 			funcion = Funciones.amina;
+		else if(anonimo.equals(OC))
+			funcion = Funciones.eter;
 		else if(anonimo.equals(NO2))
 			funcion = Funciones.nitro;
 		else if(anonimo.equals(Br))

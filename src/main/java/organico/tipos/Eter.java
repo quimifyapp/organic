@@ -23,11 +23,17 @@ public final class Eter extends Organica {
 	// Constructores:
 
 	public Eter() {
-		primaria = new Cadena(0); // (C)
+		primaria = new Cadena();
 		secundaria = new Cadena(1); // (-C)
 
 		seleccionada = primaria;
 		hay_eter = false;
+	}
+
+	public Eter(Cadena primaria, Cadena secundaria) {
+		this.primaria = primaria;
+		this.secundaria = secundaria;
+		empezarCadenaSecundaria();
 	}
 
 	private void empezarCadenaSecundaria() {

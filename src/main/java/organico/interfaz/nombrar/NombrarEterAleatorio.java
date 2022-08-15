@@ -35,6 +35,7 @@ public class NombrarEterAleatorio {
 
 	private static Eter getEterAleatorio() {
 		Eter eter = new Eter();
+		eter.enlazarCarbono();
 
 		List<Integer> elecciones = new ArrayList<>();
 		boolean primer_carbono = true;

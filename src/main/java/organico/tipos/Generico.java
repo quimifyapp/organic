@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 // Esta clase representa una molécula cualquiera a partir de un CML en formato XML para intentar redactarle una fórmula.
 
@@ -78,8 +77,9 @@ public class Generico extends Organica {
 		return molecula.stream().filter(atomo -> atomo.getTipo() == Atomos.C).collect(Collectors.toList());
 	}
 
-	private Optional<Atomo> getCarbonoExtremo() {
-		return getCarbonos().stream().filter(carbono -> carbono.getCantidadDe(Atomos.C) < 2).findAny();
+	private List<Atomo> getCarbonosExtremos() {
+		List<Atomo> carbonos = getCarbonos();
+		return carbonos.stream().filter(carbono -> carbono.getCantidadDe(Atomos.C) < 2).collect(Collectors.toList());
 	}
 
 	private Optional<Atomo> getOxigenoPuente() {
@@ -89,7 +89,7 @@ public class Generico extends Organica {
 	private int getCarbonosAlAlcanceDe(Atomo carbono) {
 		int cantidad;
 
-		List<Atomo> enlazados = carbono.getEnlazadosCarbonosSeparados();
+		List<Atomo> enlazados = carbono.getEnlazadosSeparadosCarbonos();
 
 		cantidad = enlazados.size();
 		for(Atomo enlazado : enlazados)
@@ -103,26 +103,41 @@ public class Generico extends Organica {
 	public Optional<String> getFormula() {
 		Optional<String> formula = Optional.empty();
 
+		// TODO: arreglar lo de los puentes y decidir si es (eter | ester)
+
 		// Se comprueba que hay ningún ciclo:
 		if(!smiles.matches(".*[0-9].*")) {
-			// Se busca un extremo de la molécula:
-			Optional<Atomo> extremo = getCarbonoExtremo();
+			// Se buscan los extremos de la molécula:
+			List<Atomo> carbonos_extremos = getCarbonosExtremos();
 
-			if(extremo.isPresent()) { // Debería cumplirse
-				int contiguos = 1 + getCarbonosAlAlcanceDe(extremo.get());
+			if(carbonos_extremos.size() == 2) { // Debería cumplirse si no tiene radicales
+				Atomo carbono_extremo = carbonos_extremos.get(0);
+				int contiguos = 1 + getCarbonosAlAlcanceDe(carbono_extremo);
 
 				if(contiguos == getCarbonos().size()) { // Todos los carbonos están unidos, podría ser un 'Simple'
 					Simple simple = new Simple();
 
+					// Primer carbono:
 					simple.enlazarCarbono();
+					carbono_extremo.getSustituyentes().forEach(simple::enlazar); // Son solo los no-carbonos
 
-					extremo.get().getSustituyentes().forEach(simple::enlazar); // Los no-carbonos
+					// El resto:
+					List<Atomo> carbonos_separados = carbono_extremo.getEnlazadosSeparadosCarbonos();
+					while(carbonos_separados.size() > 0) {
+						simple.enlazarCarbono();
 
+						Atomo carbono = carbonos_separados.get(0);
+						carbono.getSustituyentes().forEach(simple::enlazar); // Son solo los no-carbonos
+
+						carbonos_separados = carbono.getEnlazadosSeparadosCarbonos();
+					}
+
+					// Finalmente:
+					simple.corregir();
 					formula = Optional.of(simple.getFormula());
 
+					// TODO: que no solo sirva para compuestos lineales sin radicales
 					// TODO: método que ponga los carbonos de la cadena simple en lista
-					// TODO: Debug "1-etanol"
-
 					// Primero: 'extremo'
 					// Segundo: [*] de los 3 posibles sustituyentes...
 						// No carbonos: mirar si son reconocidos
@@ -134,22 +149,65 @@ public class Generico extends Organica {
 									// Pasa a ser sustituyente del carbono, repetir [*]
 								// No: no es posible, se aborta
 				}
-				else {
-					Optional<Atomo> oxigeno_puente = getOxigenoPuente();
+			}
+			else if (carbonos_extremos.size() == 3) { // Debería cumplirse si no tiene radicales y tiene un puente
+				Optional<Atomo> oxigeno_puente = getOxigenoPuente();
 
-					if(oxigeno_puente.isPresent()) { // Podría ser un 'Eter' o un 'Ester'
-						List<Atomo> dos_extremos = oxigeno_puente.get().getEnlazadosCarbonos();
-						int contiguos_izquierda = 1 + getCarbonosAlAlcanceDe(dos_extremos.get(0));
-						int contiguos_derecha = 1 + getCarbonosAlAlcanceDe(dos_extremos.get(1));
+				if(oxigeno_puente.isPresent()) { // Podría ser un 'Eter' o un 'Ester'
+					List<Atomo> enlazados_al_oxigeno = oxigeno_puente.get().getEnlazadosCarbonos();
+					int contiguos_izquierda = 1 + getCarbonosAlAlcanceDe(enlazados_al_oxigeno.get(0));
+					int contiguos_derecha = 1 + getCarbonosAlAlcanceDe(enlazados_al_oxigeno.get(1));
 
-						if(contiguos_izquierda + contiguos_derecha == getCarbonos().size()) { // Tiene toda la pinta
-							formula = Optional.of("Éter o éster");
+					if(contiguos_izquierda + contiguos_derecha == getCarbonos().size()) { // No tiene más puentes
+						// Por un lado (C*-(...)-O-C):
+
+						Cadena primaria = new Cadena();
+						Atomo carbono_extremo = enlazados_al_oxigeno.get(0);
+
+						// Primer carbono:
+						primaria.enlazarCarbono();
+						carbono_extremo.getSustituyentes().forEach(primaria::enlazar); // Son solo los no-carbonos
+
+						// El resto:
+						List<Atomo> carbonos_separados = carbono_extremo.getEnlazadosSeparadosCarbonos();
+						while(carbonos_separados.size() > 0) {
+							primaria.enlazarCarbono();
+
+							Atomo carbono = carbonos_separados.get(0);
+							carbono.getSustituyentes().forEach(primaria::enlazar); // Son solo los no-carbonos
+
+							carbonos_separados = carbono.getEnlazadosSeparadosCarbonos();
 						}
+
+						// Por el otro lado (C-O-C*):
+
+						Cadena secundaria = new Cadena(1);
+						carbono_extremo = enlazados_al_oxigeno.get(1);
+
+						// Primer carbono:
+						carbono_extremo.getSustituyentes().stream()
+								.filter(sustituyente -> !sustituyente.esTipo(Funciones.eter)) // El éter no se duplica
+								.forEach(secundaria::enlazar); // Son solo los no-carbonos
+
+						// El resto:
+						carbonos_separados = carbono_extremo.getEnlazadosSeparadosCarbonos();
+						while(carbonos_separados.size() > 0) {
+							secundaria.enlazarCarbono();
+
+							Atomo carbono = carbonos_separados.get(0);
+							carbono.getSustituyentes().forEach(secundaria::enlazar); // Son solo los no-carbonos
+
+							carbonos_separados = carbono.getEnlazadosSeparadosCarbonos();
+						}
+
+						// Finalmente:
+						Eter eter = new Eter(primaria.getInversa(), secundaria);
+						eter.corregir();
+						formula = Optional.of(eter.getFormula());
 					}
-					else formula = Optional.of("PSEUDO éter o éster");
 				}
 			}
-			else {
+			else if (carbonos_extremos.size() == 0) {
 				// Error...
 			}
 		}

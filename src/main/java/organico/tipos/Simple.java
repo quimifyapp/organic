@@ -75,14 +75,14 @@ public final class Simple extends Organica {
 
             // Composición:
 
-            // Cetona con hidrógeno → aldehído de poder ser principal:
-            cadena.componerAldehido(); // CH(O)- → C(HO)
-
             // Cetona con alcohol → ácido:
             cadena.sustituirCetonaConPor(Funciones.alcohol, Funciones.acido); // C(O)(OH)- → COOH-
 
-            // Cetona con amina → amida:
+            // Cetona con amina → amida de poder ser principal:
             cadena.sustituirCetonaConPor(Funciones.amina, Funciones.amida); // C(O)(NH2)- → CONH2-
+
+            // Cetona con hidrógeno → aldehído de poder ser principal:
+            cadena.componerAldehido(); // CH(O)- → C(HO)
 
             // Descomposición:
 

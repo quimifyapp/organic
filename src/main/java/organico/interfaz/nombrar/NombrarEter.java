@@ -29,7 +29,8 @@ public class NombrarEter {
 	}
 
 	private static Eter getEter() {
-		Eter eter = new organico.tipos.Eter();
+		Eter eter = new Eter();
+		eter.enlazarCarbono();
 
 		List<Integer> elecciones = new ArrayList<>();
 		boolean primer_carbono = true;
