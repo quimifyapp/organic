@@ -110,6 +110,12 @@ public class Generico extends Organica {
 			// Se buscan los extremos de la molécula:
 			List<Atomo> carbonos_extremos = getCarbonosExtremos();
 
+			// Simple: 2 extremos y suman contiguos
+			// Eter: hay un puente oxígeno, suman contiguos y 2, 3 o 4 extremos
+
+			// 2 extremos -> un puente? -> suman contiguos? -> simple | (eter | ester)
+			// 3, 4 extremos -> un puente? -> suman contiguos? -> (eter | ester)
+
 			if(carbonos_extremos.size() == 2) { // Debería cumplirse si no tiene radicales
 				Atomo carbono_extremo = carbonos_extremos.get(0);
 				int contiguos = 1 + getCarbonosAlAlcanceDe(carbono_extremo);
