@@ -83,7 +83,8 @@ public class OrganicoService {
 				Optional<String> formula = generico.getFormula();
 				formula.ifPresent(organico_resultado::setFormula);
 			}
-			catch(Exception exception) {
+			catch(IllegalArgumentException ignore) {} // Es común que se produzcan errores no inesperados
+			catch (Exception exception) {
 				// Error...
 			}
 

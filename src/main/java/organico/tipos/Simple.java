@@ -8,6 +8,7 @@ import organico.componentes.Sustituyente;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 // Esta clase representa compuestos formados por una sola cadena carbonada finita con sustituyentes.
 
@@ -15,9 +16,26 @@ public final class Simple extends Organica {
 
     private final Cadena cadena;
 
-    // Constante:
+    // Constantes:
 
-    private static final Cadena CO2 = new Cadena(List.of(new Carbono(Funciones.cetona, 2)));
+    private static final Set<Funciones> disponibles = Set.of( // Los tipos de sustiuyente añadibles por la interfaz
+            Funciones.acido,
+            Funciones.amida,
+            Funciones.nitrilo,
+            Funciones.aldehido,
+            Funciones.cetona,
+            Funciones.alcohol,
+            Funciones.amina,
+            Funciones.nitro,
+            Funciones.bromo,
+            Funciones.cloro,
+            Funciones.fluor,
+            Funciones.yodo,
+            Funciones.radical,
+            Funciones.hidrogeno
+    );
+
+    private static final Cadena CO2 = new Cadena(List.of(new Carbono(Funciones.cetona, 2))); // Auxiliar
 
     // Constructores:
 
@@ -105,7 +123,9 @@ public final class Simple extends Organica {
     // Alías de interfaz:
 
     public void enlazar(Sustituyente sustituyente) {
-        cadena.enlazar(sustituyente);
+        if(disponibles.contains(sustituyente.getFuncion()))
+            cadena.enlazar(sustituyente);
+        else throw new IllegalArgumentException("No se puede enlazar " + sustituyente.getFuncion() + " a un 'Simple'");
     }
 
     public void enlazar(Funciones funcion) {

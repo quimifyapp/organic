@@ -6,7 +6,10 @@ import organico.componentes.Funciones;
 import organico.componentes.Sustituyente;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 // Esta clase representa éteres: dos cadenas con funciones de prioridad menor a la función éter unidas por un oxígeno.
 
@@ -20,6 +23,19 @@ public final class Eter extends Organica {
 
 	private Cadena seleccionada; // Apunta a la cadena que se está formando (primarios | secundarios)
 
+	// Constante:
+
+	private static final Set<Funciones> disponibles = Set.of( // Los tipos de sustiuyente añadibles por la interfaz
+			Funciones.eter,
+			Funciones.nitro,
+			Funciones.bromo,
+			Funciones.cloro,
+			Funciones.fluor,
+			Funciones.yodo,
+			Funciones.radical,
+			Funciones.hidrogeno
+	);
+
 	// Constructores:
 
 	public Eter() {
@@ -31,6 +47,13 @@ public final class Eter extends Organica {
 	}
 
 	public Eter(Cadena primaria, Cadena secundaria) {
+		Set<Funciones> funciones = new HashSet<>(primaria.getFuncionesOrdenadas());
+		funciones.addAll(secundaria.getFuncionesOrdenadas());
+
+		for(Funciones funcion : funciones)
+			if(!disponibles.contains(funcion))
+				throw new IllegalArgumentException("No se puede enlazar " + funcion + " a un 'Eter'");
+
 		this.primaria = primaria;
 		this.secundaria = secundaria;
 		empezarCadenaSecundaria();
@@ -73,10 +96,13 @@ public final class Eter extends Organica {
 	}
 
 	public void enlazar(Sustituyente sustituyente) {
-		seleccionada.enlazar(sustituyente);
+		if(disponibles.contains(sustituyente.getFuncion())) {
+			seleccionada.enlazar(sustituyente);
 
-		if(sustituyente.esTipo(Funciones.eter))
-			empezarCadenaSecundaria();
+			if (sustituyente.esTipo(Funciones.eter))
+				empezarCadenaSecundaria();
+		}
+		else throw new IllegalArgumentException("No se puede enlazar " + sustituyente.getFuncion() + " a un 'Eter'");
 	}
 
 	public void enlazar(Funciones funcion) {
