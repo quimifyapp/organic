@@ -84,12 +84,9 @@ public final class Simple extends Organica {
 
     public void corregir() {
         if(estaCompleta() && hayFunciones()) {
-            // Se corrigen los radicales que podrían formar parte de la cadena principal:
-            cadena.corregirRadicalesPorLaIzquierda(); // Comprobará internamente si hay radicales
-            if(contiene(Funciones.radical)) { // Para ahorrar el invertir la cadena
-                invertirOrden(); // En lugar de corregirlos por la derecha
-                cadena.corregirRadicalesPorLaIzquierda(); // CHF(CH3)(CH2CH3) → CH3-CH2-CHF-CH3
-            }
+            // Estructura de carbonos:
+
+            corregirRadicales();
 
             // Composición:
 
@@ -112,6 +109,10 @@ public final class Simple extends Organica {
 
             // Nitrilos no principal → cianuro del anterior:
             cadena.sustituirTerminalPor(Funciones.nitrilo, Funciones.cianuro); // CN-COOH → C(OOH)(CN)
+
+            // De nuevo (la estructura puede haber cambiado):
+
+            corregirRadicales();
 
             // Orden:
 
@@ -137,6 +138,15 @@ public final class Simple extends Organica {
     }
 
     // Modificadores:
+
+    private void corregirRadicales() {
+        // Se corrigen los radicales que podrían formar parte de la cadena principal:
+        cadena.corregirRadicalesPorLaIzquierda(); // Comprobará internamente si hay radicales
+        if(contiene(Funciones.radical)) { // Para ahorrar el invertir la cadena
+            invertirOrden(); // En lugar de corregirlos por la derecha
+            cadena.corregirRadicalesPorLaIzquierda(); // CHF(CH3)(CH2CH3) → CH3-CH2-CHF-CH3
+        }
+    }
 
     private void corregirOrden() {
         boolean corregido = false;
@@ -206,9 +216,8 @@ public final class Simple extends Organica {
         return es_redundante;
     }
 
-    // Texto:
+    // Texto: TODO: poner en común en Cadena
 
-    ////////////////////////////////////
     private Localizador getPrefijoPara(Funciones funcion) {
         Localizador prefijo;
 
@@ -329,7 +338,6 @@ public final class Simple extends Organica {
 
         return prefijo + cuantificador + enlaces + sufijo;
     }
-    ////////////////////////////////////
 
     public String getFormula() {
         return cadena.getFormula();

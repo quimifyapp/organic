@@ -22,9 +22,12 @@ public class NombrarEterAleatorio {
 			eter.corregir(); // Es necesario
 			String nombre = eter.getNombre();
 
+			eter.corregir(); // No debería alterar nada esta vez
+			String nombre2 = eter.getNombre();
+
 			Optional<OpsinResultado> opsin_resultado = Opsin.procesarNombreES(nombre);
 
-			if(opsin_resultado.isEmpty()) {
+			if(opsin_resultado.isEmpty() || !nombre.equals(nombre2)) {
 				System.out.print("Secuencia BUG:");
 				for(int eleccion : secuencia)
 					System.out.print(" " + eleccion);

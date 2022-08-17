@@ -162,9 +162,8 @@ public final class Eter extends Organica {
 		return es_igual;
 	}
 
-	// Texto:
+	// Texto: TODO: poner en común en Cadena
 
-	////////////////////////////////////
 	private Localizador getPrefijoParaEn(Funciones funcion, Cadena cadena) {
 		Localizador prefijo;
 
@@ -290,7 +289,6 @@ public final class Eter extends Organica {
 
 		return formula;
 	}
-	////////////////////////////////////
 
 	// Alias:
 
