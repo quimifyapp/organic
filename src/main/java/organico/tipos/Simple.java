@@ -288,23 +288,15 @@ public final class Simple extends Organica {
         List<Localizador> prefijos = new ArrayList<>();
 
         while(funcion < funciones.size()) {
-            if(!esAlquenoOAlquino(funciones.get(funcion)) && funciones.get(funcion) != Funciones.radical) {
-                Localizador localizador = getPrefijoPara(funciones.get(funcion));
-
-                if(!localizador.getLexema().equals("")) // TODO: else?
-                    prefijos.add(localizador);
-            }
+            if(!esAlquenoOAlquino(funciones.get(funcion)) && funciones.get(funcion) != Funciones.radical)
+                prefijos.add(getPrefijoPara(funciones.get(funcion)));
 
             funcion++;
         }
 
         List<Sustituyente> radicales = getRadicalesUnicos();
-        for(Sustituyente radical : radicales) {
-            Localizador localizador = new Localizador(getPosicionesDe(radical), nombreDeRadical(radical));
-
-            if(!localizador.getLexema().equals("")) // TODO: else?
-                prefijos.add(localizador);
-        }
+        for(Sustituyente radical : radicales)
+            prefijos.add(new Localizador(getPosicionesDe(radical), nombreDeRadical(radical)));
 
         StringBuilder prefijo = new StringBuilder(contiene(Funciones.acido) ? "ácido " : "");
         if(prefijos.size() > 0) {

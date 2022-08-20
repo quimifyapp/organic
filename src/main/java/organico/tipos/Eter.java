@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 // Esta clase representa éteres: dos cadenas con funciones de prioridad menor a la función éter unidas por un oxígeno.
 
@@ -204,9 +203,9 @@ public final class Eter extends Organica {
 	private String getNombreCadena(Cadena cadena) {
 		// Se anticipan los casos excepcionales:
 		if(cadena.getFuncionesOrdenadas().size() == 1 && cadena.getRadicales().size() == 1) {
-			if(cadena.getSize() > 1 && cadena.get(cadena.getSize() - 2).estaEnlazadoA(Sustituyente.CH3))
+			if(cadena.getSize() > 1 && cadena.get(cadena.getSize() - 2).contiene(Sustituyente.CH3))
 				return "iso" + cuantificadorDe(cadena.getSize() + 1) + "il";
-			else if(cadena.getSize() > 2 && cadena.get(cadena.getSize() - 3).estaEnlazadoA(Sustituyente.CH3))
+			else if(cadena.getSize() > 2 && cadena.get(cadena.getSize() - 3).contiene(Sustituyente.CH3))
 				return "sec" + cuantificadorDe(cadena.getSize() + 1) + "il";
 		}
 
@@ -215,26 +214,17 @@ public final class Eter extends Organica {
 
 		// Se procesan los prefijos:
 		List<Localizador> prefijos = new ArrayList<>();
-		Localizador localizador;
 
 		while(funcion < funciones.size()) {
-			if(!esAlquenoOAlquino(funciones.get(funcion)) && funciones.get(funcion) != Funciones.radical) {
-				localizador = getPrefijoParaEn(funciones.get(funcion), cadena);
-
-				if(!localizador.getLexema().equals("")) // TODO: else?
-					prefijos.add(localizador);
-			}
+			if(!esAlquenoOAlquino(funciones.get(funcion)) && funciones.get(funcion) != Funciones.radical)
+				prefijos.add(getPrefijoParaEn(funciones.get(funcion), cadena));
 
 			funcion++;
 		}
 
 		List<Sustituyente> radicales = cadena.getRadicalesUnicos();
-		for(Sustituyente radical : radicales) {
-			localizador = new Localizador(cadena.getPosicionesDe(radical), nombreDeRadical(radical));
-
-			if(!localizador.getLexema().equals("")) // TODO: else?
-				prefijos.add(localizador);
-		}
+		for(Sustituyente radical : radicales)
+			prefijos.add(new Localizador(cadena.getPosicionesDe(radical), nombreDeRadical(radical)));
 
 		StringBuilder prefijo = new StringBuilder(cadena.contiene(Funciones.acido) ? "ácido " : "");
 		if(prefijos.size() > 0) {

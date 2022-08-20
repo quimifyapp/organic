@@ -45,7 +45,7 @@ public class Carbono extends Organica {
         }
     }
 
-    public boolean estaEnlazadoA(Sustituyente sustituyente) {
+    public boolean contiene(Sustituyente sustituyente) {
         for(Sustituyente otro_sustituyente : sustituyentes)
             if(otro_sustituyente.equals(sustituyente))
                 return true;
@@ -53,7 +53,7 @@ public class Carbono extends Organica {
         return false;
     }
 
-    private int getCantidadDe(Sustituyente sustituyente) {
+    public int getCantidadDe(Sustituyente sustituyente) {
         return Collections.frequency(sustituyentes, sustituyente);
     }
 

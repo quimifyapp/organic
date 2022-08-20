@@ -307,9 +307,12 @@ public class Cadena extends Organica {
 	public List<Integer> getPosicionesDe(Funciones funcion) {
 		List<Integer> posiciones = new ArrayList<>(); // Posiciones de los carbonos con la función
 
-		for(int i = 0; i < carbonos.size(); i++)
-			if(carbonos.get(i).contiene(funcion))
+		for(int i = 0; i < carbonos.size(); i++) {
+			int cantidad = carbonos.get(i).getCantidadDe(funcion);
+
+			for(int j = 0; j < cantidad; j++)
 				posiciones.add(i);
+		}
 
 		return posiciones;
 	}
@@ -317,9 +320,12 @@ public class Cadena extends Organica {
 	public List<Integer> getPosicionesDe(Sustituyente sustituyente) {
 		List<Integer> posiciones = new ArrayList<>(); // Posiciones de los carbonos enlazados al sustituyente
 
-		for(int i = 0; i < carbonos.size(); i++)
-			if(carbonos.get(i).estaEnlazadoA(sustituyente))
+		for(int i = 0; i < carbonos.size(); i++) {
+			int cantidad = carbonos.get(i).getCantidadDe(sustituyente);
+
+			for(int j = 0; j < cantidad; j++)
 				posiciones.add(i);
+		}
 
 		return posiciones;
 	}
