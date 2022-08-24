@@ -56,7 +56,7 @@ public class Atomo {
 				tipo = Atomos.I;
 				break;
 			default:
-				throw new IllegalArgumentException("No se contempla el átomo: " + simbolo);
+				throw new IllegalArgumentException("No se contempla el átomo \"" + simbolo + "\".");
 		}
 	}
 

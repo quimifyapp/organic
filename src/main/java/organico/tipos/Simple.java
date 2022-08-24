@@ -126,7 +126,7 @@ public final class Simple extends Organica {
     public void enlazar(Sustituyente sustituyente) {
         if(disponibles.contains(sustituyente.getFuncion()))
             cadena.enlazar(sustituyente);
-        else throw new IllegalArgumentException("No se puede enlazar " + sustituyente.getFuncion() + " a un 'Simple'");
+        else throw new IllegalArgumentException("No se puede enlazar " + sustituyente.getFuncion() + " a un 'Simple'.");
     }
 
     public void enlazar(Funciones funcion) {

@@ -41,7 +41,7 @@ public class Generico extends Organica {
 		for(int i = 0; i < atomos_xml.getLength(); i++) {
 			Element atomo = (Element) atomos_xml.item(i);
 
-			int id = Integer.parseInt(atomo.getAttribute("id").replaceAll("a", ""));
+			int id = Integer.parseInt(atomo.getAttribute("id").replace("a", ""));
 			String tipo = atomo.getAttribute("elementType");
 
 			molecula.add(new Atomo(id, tipo));
@@ -52,7 +52,7 @@ public class Generico extends Organica {
 		for(int i = 0; i < enlaces_xml.getLength(); i++) {
 			Element enlace = (Element) enlaces_xml.item(i);
 
-			String[] id_string = enlace.getAttribute("id").replaceAll("a", "").split("_");
+			String[] id_string = enlace.getAttribute("id").replace("a", "").split("_");
 
 			Integer[] id_int = {
 					Integer.valueOf(id_string[0]),

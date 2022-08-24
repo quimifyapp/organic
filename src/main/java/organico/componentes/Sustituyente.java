@@ -32,11 +32,11 @@ public class Sustituyente extends Organica {
         if(iso) {
             switch(carbonos) {
                 case 0:
-                    throw new IllegalArgumentException("No existen radicales con 0 carbonos");
+                    throw new IllegalArgumentException("No existen radicales con 0 carbonos.");
                 case 1:
-                    throw new IllegalArgumentException("No existe el \"isometil\"");
+                    throw new IllegalArgumentException("No existe el \"isometil\".");
                 case 2:
-                    throw new IllegalArgumentException("No existe el \"isoetil\"");
+                    throw new IllegalArgumentException("No existe el \"isoetil\".");
                 default:
                     construir(carbonos, true);
                     break;
@@ -77,9 +77,9 @@ public class Sustituyente extends Organica {
                 // Hasta aquí
                 break;
             case radical:
-                throw new IllegalArgumentException("No existe un único sustituyente con función de radical");
+                throw new IllegalArgumentException("No existe un único sustituyente con función de radical.");
             default: // Id.alqueno, Id.alquino
-                throw new IllegalArgumentException("No existen sustituyentes con función de " + funcion);
+                throw new IllegalArgumentException("No existen sustituyentes con función de " + funcion + ".");
         }
     }
 
@@ -101,7 +101,7 @@ public class Sustituyente extends Organica {
     private void construir(int carbonos) {
         if(carbonos > 0)
             construir(carbonos, false);
-        else throw new IllegalArgumentException("No existen radicales con 0 carbonos");
+        else throw new IllegalArgumentException("No existen radicales con 0 carbonos.");
     }
 
     // Consultas particulares:

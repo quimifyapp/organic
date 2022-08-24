@@ -51,7 +51,7 @@ public final class Eter extends Organica {
 
 		for(Funciones funcion : funciones)
 			if(!disponibles.contains(funcion))
-				throw new IllegalArgumentException("No se puede enlazar " + funcion + " a un 'Eter'");
+				throw new IllegalArgumentException("No se puede enlazar " + funcion + " a un 'Eter'.");
 
 		this.primaria = primaria;
 		this.secundaria = secundaria;
@@ -101,7 +101,7 @@ public final class Eter extends Organica {
 			if (sustituyente.esTipo(Funciones.eter))
 				empezarCadenaSecundaria();
 		}
-		else throw new IllegalArgumentException("No se puede enlazar " + sustituyente.getFuncion() + " a un 'Eter'");
+		else throw new IllegalArgumentException("No se puede enlazar " + sustituyente.getFuncion() + " a un 'Eter'.");
 	}
 
 	public void enlazar(Funciones funcion) {

@@ -291,7 +291,7 @@ public class Organica {
                 nombre_prefijo = "yodo";
                 break;
             default:
-                throw new IllegalArgumentException("No existen prefijos para la función " + funcion);
+                throw new IllegalArgumentException("No existen prefijos para la función " + funcion + ".");
         }
 
         return nombre_prefijo;
@@ -340,7 +340,7 @@ public class Organica {
                 nombre_sufijo = "amina";
                 break;
             default:
-                throw new IllegalArgumentException("No existen sufijos para la función " + funcion);
+                throw new IllegalArgumentException("No existen sufijos para la función " + funcion + ".");
         }
 
         return nombre_sufijo;
@@ -355,7 +355,7 @@ public class Organica {
             case 2:
                 return "≡";
             default:
-                throw new IllegalArgumentException("No existen enlaces de orden " + orden);
+                throw new IllegalArgumentException("No existen enlaces de orden " + orden + ".");
         }
     }
 
