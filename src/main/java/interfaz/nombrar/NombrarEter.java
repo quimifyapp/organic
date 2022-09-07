@@ -1,23 +1,23 @@
-package organico.interfaz.nombrar;
+package interfaz.nombrar;
 
 import organico.OrganicoResultado;
 import organico.OrganicoService;
 import organico.componentes.Funciones;
 import organico.componentes.Sustituyente;
-import organico.tipos.Simple;
+import organico.tipos.Eter;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-public class NombrarSimple {
+public class NombrarEter {
 
 	private static final Scanner scanner = new Scanner(System.in);
 
 	public static void main(String[] args) {
 		while(true) {
-			Simple simple = getSimple();
-			OrganicoResultado resultado = OrganicoService.nombrar(simple);
+			Eter eter = getEter();
+			OrganicoResultado resultado = OrganicoService.nombrar(eter);
 			resultado.mostrar();
 
 			try {
@@ -28,19 +28,20 @@ public class NombrarSimple {
 		}
 	}
 
-	private static Simple getSimple() {
-		Simple simple = new organico.tipos.Simple();
-		simple.enlazarCarbono();
+	private static Eter getEter() {
+		Eter eter = new Eter();
+		eter.enlazarCarbono();
 
 		List<Integer> elecciones = new ArrayList<>();
 		boolean primer_carbono = true;
-		while(!simple.estaCompleta()) {
-			System.out.println("Fórmula: " + simple);
+
+		while(!eter.estaCompleta()) {
+			System.out.println("Fórmula: " + eter);
 
 			if(!primer_carbono)
 				System.out.println("0: C");
 
-			List<Funciones> disponibles = simple.getSustituyentesDisponibles();
+			List<Funciones> disponibles = eter.getSustituyentesDisponibles();
 			for(int i = 0; i < disponibles.size(); i++) {
 				if(disponibles.get(i) != Funciones.radical)
 					System.out.println((i + 1) + ": " + new Sustituyente(disponibles.get(i)));
@@ -52,9 +53,9 @@ public class NombrarSimple {
 			elecciones.add(eleccion);
 
 			if(eleccion == 0 && !primer_carbono)
-				simple.enlazarCarbono();
+				eter.enlazarCarbono();
 			else if(disponibles.get(eleccion - 1) != Funciones.radical)
-				simple.enlazar(disponibles.get(eleccion - 1));
+				eter.enlazar(disponibles.get(eleccion - 1));
 			else {
 				System.out.println();
 				System.out.println("0: -CH2(...)CH3");
@@ -68,7 +69,7 @@ public class NombrarSimple {
 				int carbonos = scanner.nextInt();
 				elecciones.add(carbonos);
 
-				simple.enlazar(new Sustituyente(carbonos, eleccion == 1));
+				eter.enlazar(new Sustituyente(carbonos, eleccion == 1));
 			}
 			System.out.println();
 
@@ -83,7 +84,7 @@ public class NombrarSimple {
 			System.out.print(" " + eleccion);
 		System.out.println();
 
-		return simple;
+		return eter;
 	}
 
 }

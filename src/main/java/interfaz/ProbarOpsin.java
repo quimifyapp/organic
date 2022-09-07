@@ -1,4 +1,4 @@
-package organico.interfaz;
+package interfaz;
 
 import organico.intermediarios.opsin.OpsinResultado;
 

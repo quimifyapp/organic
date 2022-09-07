@@ -342,7 +342,7 @@ ASALocalRun/
 
 # BeatPulse healthcheck temp database
 healthchecksdb
-/out/production/organica/organico.main.Main.class
+/out/production/organica/organico.main.interfaz.Main.class
 /organica.iml
 /target/
 !/doc/organica.drawio

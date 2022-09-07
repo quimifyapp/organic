@@ -1,4 +1,4 @@
-package organico.interfaz.formula;
+package interfaz.formula;
 
 import organico.OrganicoResultado;
 import organico.OrganicoService;

@@ -1,3 +1,5 @@
+package interfaz;
+
 import organico.componentes.Carbono;
 import organico.componentes.Funciones;
 
