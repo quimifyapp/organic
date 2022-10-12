@@ -6,7 +6,7 @@
 
     <groupId>com.quimify.organica</groupId>
     <artifactId>organica</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1</version>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
@@ -14,6 +14,7 @@
     </properties>
 
     <dependencies>
+
         <dependency>
             <groupId>opsin-es</groupId>
             <artifactId>opsin-es</artifactId>
@@ -23,12 +24,17 @@
        </dependency>
 
         <dependency>
-            <groupId>opsin-en</groupId>
-            <artifactId>opsin-en</artifactId>
-            <scope>system</scope>
-            <version>2.6.0</version>
-            <systemPath>${project.basedir}/lib/opsin-en.jar</systemPath>
-       </dependency>
+            <groupId>uk.ac.cam.ch.opsin</groupId>
+            <artifactId>opsin-core</artifactId>
+            <version>2.7.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>2.0.3</version>
+        </dependency>
+
     </dependencies>
 
-    </project>
+</project>
