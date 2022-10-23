@@ -34,6 +34,7 @@ public class Opsin {
 
         return resultado;
     }
+
     public static Optional<OpsinResult> procesarNombreEN(String nombre) {
         Optional<OpsinResult> resultado;
 

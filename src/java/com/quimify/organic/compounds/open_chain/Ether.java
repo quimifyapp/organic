@@ -5,7 +5,9 @@ import com.quimify.organic.components.Chain;
 import com.quimify.organic.components.FunctionalGroup;
 import com.quimify.organic.components.Substituent;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 // Esta clase representa éteres: dos cadenas con funciones de prioridad menor a la función éter unidas por un oxígeno.
 
@@ -20,17 +22,17 @@ public final class Ether extends Organic implements OpenChain {
 	);
 
 	public Ether(Simple firstChain) {
-		this.firstChain = firstChain.getChain(); // R -
-		this.firstChain.enlazar(FunctionalGroup.ether); // R - O -
+		this.firstChain = firstChain.getChain(); // R - O
 
 		if(firstChain.isDone())
-			startSecondChain(); // - C
+			startSecondChain(); // R - O - C≡
 		else currentChain = this.firstChain;
 	}
 
 	private Ether(Chain firstChain, Chain secondChain) {
-		this.firstChain = firstChain; // R - O -
-		this.secondChain = secondChain; // - C
+		this.firstChain = firstChain; // [R - O] - R'
+		this.secondChain = secondChain; // R - O [- R']
+		currentChain = this.firstChain;
 	}
 
 	// OPEN CHAIN --------------------------------------------------------------------
@@ -55,11 +57,9 @@ public final class Ether extends Organic implements OpenChain {
 		if (orderedBondableGroups.contains(substituent.getGroup())) {
 			currentChain.enlazar(substituent);
 
-			if (currentChain == firstChain && firstChain.isDone()) {
-				if (currentChain.isDone()) {
+			if (currentChain == firstChain && firstChain.isDone())
+				if (currentChain.isDone())
 					startSecondChain();
-				}
-			}
 		}
 		else throw new IllegalArgumentException("No se puede enlazar [" + substituent.getGroup() + "] a un Ether.");
 	}
@@ -138,18 +138,18 @@ public final class Ether extends Organic implements OpenChain {
 	// Text: TODO: poner en común en Cadena
 
 	private boolean isRedundantInName(FunctionalGroup functionalGroup, Chain chain) {
-		boolean es_redundante;
+		boolean isRedundant;
 
 		// Derivados del propil:
 		if (chain.getSize() == 3)
-			es_redundante = functionalGroup == FunctionalGroup.alkene && chain.getNumberOf(FunctionalGroup.alkene) == 2; // Es propadienil
+			isRedundant = functionalGroup == FunctionalGroup.alkene && chain.getNumberOf(FunctionalGroup.alkene) == 2; // Es propadienil
 			// Derivados del etil:
 		else if (chain.getSize() == 2)
-			es_redundante = esAlquenoOAlquino(functionalGroup); // Solo hay una posición posible para el enlace
+			isRedundant = esAlquenoOAlquino(functionalGroup); // Solo hay una posición posible para el enlace
 			// Derivados del metil:
-		else es_redundante = chain.getSize() == 1;
+		else isRedundant = chain.getSize() == 1;
 
-		return es_redundante;
+		return isRedundant;
 	}
 
 	private Localizador getPrefixFor(FunctionalGroup functionalGroup, Chain chain) {

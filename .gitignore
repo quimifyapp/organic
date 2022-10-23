@@ -346,3 +346,6 @@ healthchecksdb
 /organica.iml
 /target/
 !/doc/organica.drawio
+/quimify-organic.iml
+/organic.iml
+/out/

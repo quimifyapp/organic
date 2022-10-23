@@ -6,20 +6,18 @@ import com.quimify.organic.bridges.pubchem.PubChem;
 import com.quimify.organic.bridges.pubchem.PubChemResult;
 import com.quimify.organic.compounds.Molecule;
 import com.quimify.organic.compounds.open_chain.OpenChain;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class OrganicFactory {
 
-    private static final Logger logger = LoggerFactory.getLogger(OrganicFactory.class);
+    private static final Logger logger = Logger.getLogger(OrganicFactory.class.getName());
 
     public static final OrganicResult organicNotFound = new OrganicResult(false); // Constante auxiliar
 
     // PUBLIC ------------------------------------------------------------------------
-
-    // TODO: LAS MAPSAS
 
     public static OrganicResult getFromName(String name) {
         OrganicResult organicResult;
@@ -34,18 +32,16 @@ public class OrganicFactory {
 
             // Structure:
             try {
-                Molecule molecule = new Molecule(opsinResult.get().getCml(), opsinResult.get().getSmiles());
+                Molecule molecule = new Molecule(opsinResult.get().getChemicalMarkupLanguage(), opsinResult.get().getSmiles());
 
                 Optional<String> formula = molecule.getStructure();
-                if(formula.isPresent())
-                    organicResult.setFormula(formula.get());
-                else logger.warn("No se pudo generar la fórmula para \"" + name + "\".");
+                formula.ifPresent(organicResult::setFormula);
             }
             catch(IllegalArgumentException exception) {
-                logger.warn("Excepción al generar la fórmula de \"" + name + "\": " + exception); // It happens often
+                logger.warning("Excepción al generar la fórmula de \"" + name + "\": " + exception); // It happens often
             }
             catch (Exception exception) {
-                logger.error("Excepción al generar la fórmula de \"" + name + "\": " + exception);
+                logger.log(Level.SEVERE, "Excepción al generar la fórmula de \"" + name + "\": " + exception);
             }
         }
         else organicResult = organicNotFound;
@@ -56,7 +52,7 @@ public class OrganicFactory {
     // TODO: handle exceptions
     public static OrganicResult getFromOpenChain(OpenChain openChain) {
         if(!openChain.isDone()) {
-            logger.error("OpenChain incompleta: \"" + openChain.getStructure() + "\".");
+            logger.log(Level.SEVERE, "OpenChain incompleta: \"" + openChain.getStructure() + "\".");
             return organicNotFound;
         }
 
@@ -81,7 +77,7 @@ public class OrganicFactory {
     // PRIVATE -----------------------------------------------------------------------
 
     private static void complementViaPubChem(OrganicResult organicResult, String smiles) {
-        PubChemResult pubChemResult = new PubChem(smiles).procesar();
+        PubChemResult pubChemResult = new PubChem(smiles).getResult();
 
         if(pubChemResult.getMasa() != null)
             organicResult.setMasa(Float.valueOf(pubChemResult.getMasa()));

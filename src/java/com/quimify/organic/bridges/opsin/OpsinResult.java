@@ -3,18 +3,18 @@ package com.quimify.organic.bridges.opsin;
 public class OpsinResult {
 
     private final String smiles; // Especie de fórmula más técnica
-    private final String cml; // Chemical Markup Language
+    private final String chemicalMarkupLanguage; // Chemical Markup Language
 
     // Constructores:
 
-    public OpsinResult(es.opsin.OpsinResult opsin_result) {
-        smiles = opsin_result.getSmiles();
-        cml = opsin_result.getCml();
+    public OpsinResult(es.opsin.OpsinResult opsinResult) {
+        smiles = opsinResult.getSmiles();
+        chemicalMarkupLanguage = opsinResult.getCml();
     }
 
-    public OpsinResult(uk.ac.cam.ch.wwmm.opsin.OpsinResult opsin_result) {
-        smiles = opsin_result.getSmiles();
-        cml = opsin_result.getCml();
+    public OpsinResult(uk.ac.cam.ch.wwmm.opsin.OpsinResult opsinResult) {
+        smiles = opsinResult.getSmiles();
+        chemicalMarkupLanguage = opsinResult.getCml();
     }
 
     // Métodos get:
@@ -23,8 +23,8 @@ public class OpsinResult {
         return smiles;
     }
 
-    public String getCml() {
-        return cml;
+    public String getChemicalMarkupLanguage() {
+        return chemicalMarkupLanguage;
     }
 
 }

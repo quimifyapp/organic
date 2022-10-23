@@ -2,7 +2,9 @@ package com.quimify.organic.components;
 
 import com.quimify.organic.Organic;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class Chain extends Organic {
 

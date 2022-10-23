@@ -3,7 +3,9 @@ package com.quimify.organic;
 import com.quimify.organic.components.FunctionalGroup;
 import com.quimify.organic.components.Substituent;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 
 import static java.util.Collections.swap;
 

@@ -6,8 +6,6 @@ import com.quimify.organic.components.Element;
 import com.quimify.organic.compounds.open_chain.Ether;
 import com.quimify.organic.compounds.open_chain.OpenChain;
 import com.quimify.organic.compounds.open_chain.Simple;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
@@ -19,6 +17,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 // Esta clase representa una molécula cualquiera a partir de un CML en formato XML para intentar redactarle una fórmula.
@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 
 public class Molecule extends Organic {
 
-	private final Logger logger = LoggerFactory.getLogger(this.getClass());
+	private static final Logger logger = Logger.getLogger(Molecule.class.getName());
 
 	private final Set<Atom> molecula;
 	private final String smiles;
@@ -133,16 +133,15 @@ public class Molecule extends Organic {
 
 	private Ether buildEther(List<Atom> bondedToTheOxygen) {
 		// First chain: [R - O -] R'
-		Atom firstCarbon = bondedToTheOxygen.get(0); // [C] - O - C'
-		firstCarbon.removeEther(); // Ether class will bond it
+		Atom firstCarbon = bondedToTheOxygen.get(0); // [C - O] - C'
 
-		Simple firstChain = new Simple(1);
-		buildOpenChainStartingFrom(firstChain, firstCarbon); // - O - R
+		Simple firstChain = new Simple(0);
+		buildOpenChainStartingFrom(firstChain, firstCarbon); // R - O -
 
 		Ether ether = new Ether(firstChain.getReversed()); // R - O - C ≡
 
-		// Second chain: R - O - [R']
-		firstCarbon = bondedToTheOxygen.get(1); // C - O - [C']
+		// Second chain: R - O [- R']
+		firstCarbon = bondedToTheOxygen.get(1); // C - O [- C']
 		firstCarbon.removeEther(); // It's already bonded
 		buildOpenChainStartingFrom(ether, firstCarbon); // R - O - R'
 
@@ -203,7 +202,7 @@ public class Molecule extends Organic {
 							}
 						}
 					} else if (carbonos_extremos.size() == 0) {
-						logger.error("Hay un puente de oxigeno y 0 carbonos extremos.");
+						logger.log(Level.SEVERE, "Hay un puente de oxigeno y 0 carbonos extremos.");
 
 						return Optional.empty();
 					}
