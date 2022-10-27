@@ -13,12 +13,12 @@ import static java.util.Collections.swap;
 
 public class Organic {
 
-    private static final List<FunctionalGroup> halogenos = Arrays.asList(FunctionalGroup.bromine, FunctionalGroup.chlorine, FunctionalGroup.fluorine, FunctionalGroup.iodine);
+    private static final List<FunctionalGroup> halogens = Arrays.asList(FunctionalGroup.bromine, FunctionalGroup.chlorine, FunctionalGroup.fluorine, FunctionalGroup.iodine);
 
     // Consultas:
 
     protected static boolean esHalogeno(FunctionalGroup functionalGroup) {
-        return halogenos.contains(functionalGroup);
+        return halogens.contains(functionalGroup);
     }
 
     protected static boolean esAlquenoOAlquino(FunctionalGroup functionalGroup) {

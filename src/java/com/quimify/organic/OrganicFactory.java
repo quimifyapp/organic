@@ -22,7 +22,7 @@ public class OrganicFactory {
     public static OrganicResult getFromName(String name) {
         OrganicResult organicResult;
 
-        Optional<OpsinResult> opsinResult = Opsin.procesarNombreES(name);
+        Optional<OpsinResult> opsinResult = Opsin.parseSpanishName(name);
         if(opsinResult.isPresent()) {
             organicResult = new OrganicResult(true);
 
@@ -32,7 +32,7 @@ public class OrganicFactory {
 
             // Structure:
             try {
-                Molecule molecule = new Molecule(opsinResult.get().getChemicalMarkupLanguage(), opsinResult.get().getSmiles());
+                Molecule molecule = new Molecule(opsinResult.get().getCml(), opsinResult.get().getSmiles());
 
                 Optional<String> formula = molecule.getStructure();
                 formula.ifPresent(organicResult::setFormula);
@@ -65,7 +65,7 @@ public class OrganicFactory {
         organicResult.setNombre(name);
 
         // Properties:
-        Optional<OpsinResult> opsinResult = Opsin.procesarNombreES(name);
+        Optional<OpsinResult> opsinResult = Opsin.parseSpanishName(name);
         opsinResult.ifPresent(result -> complementViaPubChem(organicResult, result.getSmiles()));
 
         // Structure:

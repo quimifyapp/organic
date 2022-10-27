@@ -2,29 +2,24 @@ package com.quimify.organic.bridges.opsin;
 
 public class OpsinResult {
 
-    private final String smiles; // Especie de fórmula más técnica
-    private final String chemicalMarkupLanguage; // Chemical Markup Language
+    // Scientific ways to describe a structure using text:
+    private final String smiles; // Simplified Molecular Input Line Entry Specification
+    private final String cml; // Chemical Markup Language
 
-    // Constructores:
+    // Constructor:
 
-    public OpsinResult(es.opsin.OpsinResult opsinResult) {
-        smiles = opsinResult.getSmiles();
-        chemicalMarkupLanguage = opsinResult.getCml();
+    public OpsinResult(String smiles, String cml) {
+        this.smiles = smiles;
+        this.cml = cml;
     }
 
-    public OpsinResult(uk.ac.cam.ch.wwmm.opsin.OpsinResult opsinResult) {
-        smiles = opsinResult.getSmiles();
-        chemicalMarkupLanguage = opsinResult.getCml();
-    }
-
-    // Métodos get:
+    // Getters:
 
     public String getSmiles() {
         return smiles;
     }
-
-    public String getChemicalMarkupLanguage() {
-        return chemicalMarkupLanguage;
+    public String getCml() {
+        return cml;
     }
 
 }
