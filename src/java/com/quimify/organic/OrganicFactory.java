@@ -26,7 +26,7 @@ public class OrganicFactory {
         if(opsinResult.isPresent()) {
             organicResult = new OrganicResult(true);
 
-            organicResult.setNombre(name); // El input del usuario (puede estar mal escrito)
+            organicResult.setName(name); // El input del usuario (puede estar mal escrito)
 
             complementViaPubChem(organicResult, opsinResult.get().getSmiles()); // Características
 
@@ -35,7 +35,7 @@ public class OrganicFactory {
                 Molecule molecule = new Molecule(opsinResult.get().getCml(), opsinResult.get().getSmiles());
 
                 Optional<String> formula = molecule.getStructure();
-                formula.ifPresent(organicResult::setFormula);
+                formula.ifPresent(organicResult::setStructure);
             }
             catch(IllegalArgumentException exception) {
                 logger.warning("Excepción al generar la fórmula de \"" + name + "\": " + exception); // It happens often
@@ -62,14 +62,14 @@ public class OrganicFactory {
 
         // Name:
         String name = openChain.getName();
-        organicResult.setNombre(name);
+        organicResult.setName(name);
 
         // Properties:
         Optional<OpsinResult> opsinResult = Opsin.parseSpanishName(name);
         opsinResult.ifPresent(result -> complementViaPubChem(organicResult, result.getSmiles()));
 
         // Structure:
-        organicResult.setFormula(openChain.getStructure());
+        organicResult.setStructure(openChain.getStructure());
 
         return organicResult;
     }
@@ -80,9 +80,9 @@ public class OrganicFactory {
         PubChemResult pubChemResult = new PubChem(smiles).getResult();
 
         if(pubChemResult.getMasa() != null)
-            organicResult.setMasa(Float.valueOf(pubChemResult.getMasa()));
+            organicResult.setMolecularMass(Float.valueOf(pubChemResult.getMasa()));
 
-        organicResult.setUrl_2d(pubChemResult.getUrl_2d());
+        organicResult.setUrl2D(pubChemResult.getUrl_2d());
     }
 
 }

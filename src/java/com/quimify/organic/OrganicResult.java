@@ -2,73 +2,60 @@ package com.quimify.organic;
 
 public class OrganicResult {
 
-    private Boolean encontrado;
-    private String nombre;
-    private String formula;
-    private Float masa;
-    private String url_2d;
-
-    // Si 'encontrado' = false:
-
-    private Boolean es_inorganico_sugerencia;
+    private Boolean present;
+    private String name;
+    private String structure;
+    private Float molecularMass;
+    private String url2D;
 
     // --------------------------------------------------------------------------------
 
     // Constructor:
 
-    public OrganicResult(boolean encontrado) {
-        this.encontrado = encontrado;
-        this.es_inorganico_sugerencia = false;
+    public OrganicResult(boolean present) {
+        this.present = present;
     }
 
     // Getters y setters:
 
-    public Boolean getEncontrado() {
-        return encontrado;
+    public Boolean getPresent() {
+        return present;
     }
 
-    public void setEncontrado(Boolean encontrado) {
-        this.encontrado = encontrado;
+    public void setPresent(Boolean present) {
+        this.present = present;
     }
 
-    public String getFormula() {
-        return formula;
+    public String getStructure() {
+        return structure;
     }
 
-    public void setFormula(String formula) {
-        this.formula = formula;
+    public void setStructure(String structure) {
+        this.structure = structure;
     }
 
-    public String getNombre() {
-        return nombre;
+    public String getName() {
+        return name;
     }
 
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public Float getMasa() {
-        return masa;
+    public Float getMolecularMass() {
+        return molecularMass;
     }
 
-    public void setMasa(Float masa) {
-        this.masa = masa;
+    public void setMolecularMass(Float molecularMass) {
+        this.molecularMass = molecularMass;
     }
 
-    public String getUrl_2d() {
-        return url_2d;
+    public String getUrl2D() {
+        return url2D;
     }
 
-    public void setUrl_2d(String url_2d) {
-        this.url_2d = url_2d;
-    }
-
-    public Boolean getEs_inorganico_sugerencia() {
-        return es_inorganico_sugerencia;
-    }
-
-    public void setEs_inorganico_sugerencia(Boolean es_inorganico_sugerencia) {
-        this.es_inorganico_sugerencia = es_inorganico_sugerencia;
+    public void setUrl2D(String url2D) {
+        this.url2D = url2D;
     }
 
 }
