@@ -28,27 +28,28 @@ public class PubChem {
 	}
 
 	public PubChemResult getResult() {
-		PubChemResult resultado = new PubChemResult();
+		PubChemResult pubChemResult = new PubChemResult();
 
-		smiles = Download.formatForHTTP(smiles);
+		smiles = smiles.replaceAll("[/\\\\]", ""); // Isomeric (uses dashes) -> canonical
+		smiles = Download.formatForUrl(smiles); //
 
 		String url = REST + SMILES + smiles + "/cids/TXT";
 		try {
 			String cid = new Download(url).getText();
 
 			if(!cid.equals("0")) {
-				resultado.setUrl_2d(PNG_2D + cid); // Este es de buena calidad (500 x 500 px) :)
+				pubChemResult.setUrl2D(PNG_2D + cid); // Este es de buena calidad (500 x 500 px) :)
 
 				String base = REST + "cid/" + cid + "/property/";
 				try {
-					resultado.setMasa(new Download(base + "molecularweight/TXT").getText());
+					pubChemResult.setMass(new Download(base + "molecularweight/TXT").getText());
 				}
 				catch(IOException ex) {
 					logger.log(Level.SEVERE, "Excepción al descargar \"" + base + "molecularweight/TXT" + "\": " + ex);
 				}
 
 				try {
-					resultado.setNombre_ingles(new Download(base + "iupacname/TXT").getText());
+					pubChemResult.setEnglishName(new Download(base + "iupacname/TXT").getText());
 				}
 				catch(IOException ex) {
 					logger.log(Level.SEVERE, "Excepción al descargar \"" + base + "iupacname/TXT" + "\": " + ex);
@@ -59,10 +60,10 @@ public class PubChem {
 			logger.log(Level.SEVERE, "Excepción al descargar \"" + url + "\": " + ex);
 		}
 
-		if(resultado.getUrl_2d() == null)
-			resultado.setUrl_2d(REST + SMILES + smiles + PNG); // Este es de mala calidad (300 x 300) px :(
+		if(pubChemResult.getUrl2D() == null)
+			pubChemResult.setUrl2D(REST + SMILES + smiles + PNG); // Este es de mala calidad (300 x 300) px :(
 
-		return resultado;
+		return pubChemResult;
 	}
 
 }

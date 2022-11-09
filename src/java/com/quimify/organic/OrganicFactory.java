@@ -79,10 +79,10 @@ public class OrganicFactory {
     private static void complementViaPubChem(OrganicResult organicResult, String smiles) {
         PubChemResult pubChemResult = new PubChem(smiles).getResult();
 
-        if(pubChemResult.getMasa() != null)
-            organicResult.setMolecularMass(Float.valueOf(pubChemResult.getMasa()));
+        if(pubChemResult.getMass() != null)
+            organicResult.setMolecularMass(Float.valueOf(pubChemResult.getMass()));
 
-        organicResult.setUrl2D(pubChemResult.getUrl_2d());
+        organicResult.setUrl2D(pubChemResult.getUrl2D());
     }
 
 }
