@@ -28,11 +28,11 @@ public class Atom {
 
 	// Constructor:
 
-	public Atom(int id, String simbolo) {
+	public Atom(int id, String symbol) {
 		this.id = id;
 		bondedAtoms = new ArrayList<>();
 
-		switch (simbolo) {
+		switch (symbol) {
 			case "C":
 				element = Element.C;
 				break;
@@ -58,14 +58,14 @@ public class Atom {
 				element = Element.I;
 				break;
 			default:
-				throw new IllegalArgumentException("No se contempla el átomo \"" + simbolo + "\".");
+				throw new IllegalArgumentException("No se contempla el átomo \"" + symbol + "\".");
 		}
 	}
 
-	public Atom(Element element, List<Atom> enlazados) {
+	public Atom(Element element, List<Atom> bondedAtoms) { // TODO set?
 		id = null;
 		this.element = element;
-		this.bondedAtoms = enlazados;
+		this.bondedAtoms = bondedAtoms;
 	}
 
 	private Atom(Element element) {
@@ -74,10 +74,10 @@ public class Atom {
 		bondedAtoms = new ArrayList<>();
 	}
 
-	private Atom(Atom otro) {
-		id = otro.id;
-		element = otro.element;
-		bondedAtoms = new ArrayList<>(otro.bondedAtoms);
+	private Atom(Atom other) {
+		id = other.id;
+		element = other.element;
+		bondedAtoms = new ArrayList<>(other.bondedAtoms);
 	}
 
 	// Modificadores:

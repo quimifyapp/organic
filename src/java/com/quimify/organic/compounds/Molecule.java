@@ -30,34 +30,34 @@ public class Molecule extends Organic {
 
 	private static final Logger logger = Logger.getLogger(Molecule.class.getName());
 
-	private final Set<Atom> molecula;
 	private final String smiles;
+	private final Set<Atom> molecule;
 
 	// Constructor:
 
 	public Molecule(String cml, String smiles) throws ParserConfigurationException, IOException, SAXException {
-		molecula = new HashSet<>();
+		molecule = new HashSet<>();
 		this.smiles = smiles;
 
 		// Se procesa el Chemical Markup Language:
-		DocumentBuilder constructor = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-		Document xml = constructor.parse(new InputSource(new StringReader(cml)));
+		DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+		Document xml = documentBuilder.parse(new InputSource(new StringReader(cml)));
 
 		// Se recogen los átomos:
-		NodeList atomos_xml = xml.getElementsByTagName("atom");
-		for(int i = 0; i < atomos_xml.getLength(); i++) {
-			org.w3c.dom.Element atomo = (org.w3c.dom.Element) atomos_xml.item(i);
+		NodeList xmlAtoms = xml.getElementsByTagName("atom");
+		for(int i = 0; i < xmlAtoms.getLength(); i++) {
+			org.w3c.dom.Element atom = (org.w3c.dom.Element) xmlAtoms.item(i);
 
-			int id = Integer.parseInt(atomo.getAttribute("id").replace("a", ""));
-			String tipo = atomo.getAttribute("elementType");
+			int id = Integer.parseInt(atom.getAttribute("id").replace("a", ""));
+			String elementType = atom.getAttribute("elementType");
 
-			molecula.add(new Atom(id, tipo));
+			molecule.add(new Atom(id, elementType));
 		}
 
 		// Se enlazan entre sí:
-		NodeList enlaces_xml = xml.getElementsByTagName("bond");
-		for(int i = 0; i < enlaces_xml.getLength(); i++) {
-			org.w3c.dom.Element enlace = (org.w3c.dom.Element) enlaces_xml.item(i);
+		NodeList xmlBonds = xml.getElementsByTagName("bond");
+		for(int i = 0; i < xmlBonds.getLength(); i++) {
+			org.w3c.dom.Element enlace = (org.w3c.dom.Element) xmlBonds.item(i);
 
 			String[] id_string = enlace.getAttribute("id").replace("a", "").split("_");
 
@@ -67,9 +67,9 @@ public class Molecule extends Organic {
 			};
 
 			Atom[] atoms = {
-					molecula.stream().filter(atom -> atom.getId().equals(id_int[0])).findAny()
+					molecule.stream().filter(atom -> atom.getId().equals(id_int[0])).findAny()
 							.orElseThrow(NoSuchElementException::new),
-					molecula.stream().filter(atom -> atom.getId().equals(id_int[1])).findAny()
+					molecule.stream().filter(atom -> atom.getId().equals(id_int[1])).findAny()
 							.orElseThrow(NoSuchElementException::new)
 			};
 
@@ -81,7 +81,7 @@ public class Molecule extends Organic {
 	// Consultas internas:
 
 	private List<Atom> getCarbonos() {
-		return molecula.stream().filter(atom -> atom.getElement() == Element.C).collect(Collectors.toList());
+		return molecule.stream().filter(atom -> atom.getElement() == Element.C).collect(Collectors.toList());
 	}
 
 	private List<Atom> getCarbonosExtremos() {
@@ -91,7 +91,7 @@ public class Molecule extends Organic {
 	}
 
 	private List<Atom> getOxigenosPuente() {
-		return molecula.stream().filter(Atom::esOxigenoPuente).collect(Collectors.toList());
+		return molecule.stream().filter(Atom::esOxigenoPuente).collect(Collectors.toList());
 	}
 
 	private int getCarbonosAlAlcanceDe(Atom carbono) {
