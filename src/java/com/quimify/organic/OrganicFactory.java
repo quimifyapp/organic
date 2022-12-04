@@ -26,16 +26,14 @@ public class OrganicFactory {
         if(opsinResult.isPresent()) {
             organicResult = new OrganicResult(true);
 
-            organicResult.setName(name); // El input del usuario (puede estar mal escrito)
-
-            complementViaPubChem(organicResult, opsinResult.get().getSmiles()); // Características
+            organicResult.setName(name); // User's input (might be wrong)
 
             // Structure:
             try {
                 Molecule molecule = new Molecule(opsinResult.get().getCml(), opsinResult.get().getSmiles());
 
-                Optional<String> formula = molecule.getStructure();
-                formula.ifPresent(organicResult::setStructure);
+                Optional<String> structure = molecule.getStructure();
+                structure.ifPresent(organicResult::setStructure);
             }
             catch(IllegalArgumentException exception) {
                 logger.warning("Excepción al generar la fórmula de \"" + name + "\": " + exception); // It happens often
@@ -43,6 +41,8 @@ public class OrganicFactory {
             catch (Exception exception) {
                 logger.log(Level.SEVERE, "Excepción al generar la fórmula de \"" + name + "\": " + exception);
             }
+
+            complementViaPubChem(organicResult, opsinResult.get().getSmiles()); // Características
         }
         else organicResult = organicNotFound;
 

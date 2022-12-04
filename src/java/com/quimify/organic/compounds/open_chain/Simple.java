@@ -1,10 +1,7 @@
 package com.quimify.organic.compounds.open_chain;
 
 import com.quimify.organic.Organic;
-import com.quimify.organic.components.Carbon;
-import com.quimify.organic.components.Chain;
-import com.quimify.organic.components.FunctionalGroup;
-import com.quimify.organic.components.Substituent;
+import com.quimify.organic.components.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +13,15 @@ public final class Simple extends Organic implements OpenChain {
 
     private final Chain chain;
 
-    private static final Chain CO2 = new Chain(List.of(new Carbon(FunctionalGroup.ketone, 2))); // Auxiliar
+    // Constants:
+
+    public static final Set<Atom> bondableAtoms = Set.of(
+            new Atom(Element.H), new Atom(Element.N), new Atom(Element.O),
+            new Atom(Element.O, List.of(new Atom(Element.H))), // OH
+            new Atom(Element.N, List.of(new Atom(Element.H), new Atom(Element.H))), // NH2
+            new Atom(Element.N, List.of(new Atom(Element.O), new Atom(Element.O))), // NO2
+            new Atom(Element.Br), new Atom(Element.Cl), new Atom(Element.F), new Atom(Element.I)
+    );
 
     private static final Set<FunctionalGroup> bondableGroups = Set.of(
             FunctionalGroup.acid, FunctionalGroup.amide, FunctionalGroup.nitrile, FunctionalGroup.aldehyde,
@@ -24,6 +29,10 @@ public final class Simple extends Organic implements OpenChain {
             FunctionalGroup.nitro, FunctionalGroup.bromine, FunctionalGroup.chlorine, FunctionalGroup.fluorine,
             FunctionalGroup.iodine, FunctionalGroup.radical, FunctionalGroup.hydrogen
     );
+
+    private static final Chain CO2 = new Chain(List.of(new Carbon(FunctionalGroup.ketone, 2))); // Auxiliar
+
+    // Constructors:
 
     public Simple() {
         this.chain = new Chain(0);
@@ -66,7 +75,7 @@ public final class Simple extends Organic implements OpenChain {
     }
 
     public void correctSubstituents() {
-        if(isDone() && chain.hasGroupsWithoutHydrogenNorEther()) {
+        if (isDone() && chain.hasGroupsWithoutHydrogenNorEther()) {
             // Estructura de la cadena:
             correctRadicalSubstituents();
 
@@ -128,7 +137,7 @@ public final class Simple extends Organic implements OpenChain {
 
     public String getName() {
         // Se anticipan los casos excepcionales:
-        if(chain.equals(CO2))
+        if (chain.equals(CO2))
             return "dióxido de carbono";
 
         List<FunctionalGroup> funciones = chain.getOrderedGroupsWithoutHydrogenNorEther(); // Sin hidrógeno
@@ -136,7 +145,7 @@ public final class Simple extends Organic implements OpenChain {
 
         // Se procesa el sufijo:
         String sufijo;
-        if(funciones.size() > 0 && funciones.get(0) != FunctionalGroup.nitro && funciones.get(0) != FunctionalGroup.radical // Not suffixes
+        if (funciones.size() > 0 && funciones.get(0) != FunctionalGroup.nitro && funciones.get(0) != FunctionalGroup.radical // Not suffixes
                 && !esHalogeno(funciones.get(0)) && !esAlquenoOAlquino(funciones.get(0)))
             sufijo = getSuffixNameFor(funciones.get(functionalGroup++));
         else sufijo = "";
@@ -144,25 +153,25 @@ public final class Simple extends Organic implements OpenChain {
         // Se procesan los prefijos:
         List<Localizador> prefijos = new ArrayList<>();
 
-        while(functionalGroup < funciones.size()) {
-            if(!esAlquenoOAlquino(funciones.get(functionalGroup)) && funciones.get(functionalGroup) != FunctionalGroup.radical)
+        while (functionalGroup < funciones.size()) {
+            if (!esAlquenoOAlquino(funciones.get(functionalGroup)) && funciones.get(functionalGroup) != FunctionalGroup.radical)
                 prefijos.add(getPrefixFor(funciones.get(functionalGroup)));
 
             functionalGroup++;
         }
 
         List<Substituent> radicales = chain.getUniqueRadicals();
-        for(Substituent radical : radicales)
+        for (Substituent radical : radicales)
             prefijos.add(new Localizador(chain.getIndexesOfAll(radical), getRadicalNameParticle(radical)));
 
         StringBuilder prefijo = new StringBuilder(chain.hasFunctionalGroup(FunctionalGroup.acid) ? "ácido " : "");
-        if(prefijos.size() > 0) {
+        if (prefijos.size() > 0) {
             Localizador.ordenarAlfabeticamente(prefijos);
 
-            for(int i = 0; i < prefijos.size() - 1; i++) {
+            for (int i = 0; i < prefijos.size() - 1; i++) {
                 prefijo.append(prefijos.get(i).toString());
 
-                if(doesNotStartWithLetter(prefijos.get(i + 1).toString()))
+                if (doesNotStartWithLetter(prefijos.get(i + 1).toString()))
                     prefijo.append("-");
             }
 
@@ -172,17 +181,17 @@ public final class Simple extends Organic implements OpenChain {
         // Se procesan los enlaces:
         String enlaces = getBondNameFor(FunctionalGroup.alkene) + getBondNameFor(FunctionalGroup.alkyne);
 
-        if(enlaces.equals(""))
+        if (enlaces.equals(""))
             enlaces = "an";
-        if(sufijo.equals("") || Organic.doesNotStartWithVowel(sufijo))
+        if (sufijo.equals("") || Organic.doesNotStartWithVowel(sufijo))
             enlaces += "o";
-        if(!sufijo.equals("") && Organic.startsWithDigit(sufijo))
+        if (!sufijo.equals("") && Organic.startsWithDigit(sufijo))
             enlaces += "-";
 
         // Se procesa el cuantificador:
         String cuantificador = cuantificadorDe(chain.getSize());
 
-        if(Organic.doesNotStartWithVowel(enlaces))
+        if (Organic.doesNotStartWithVowel(enlaces))
             cuantificador += "a";
 
         return prefijo + cuantificador + enlaces + sufijo;
@@ -216,7 +225,7 @@ public final class Simple extends Organic implements OpenChain {
     private void correctRadicalSubstituents() {
         // Se corrigen los radicales que podrían formar parte de la cadena principal:
         chain.corregirRadicalesPorLaIzquierda(); // Comprobará internamente si hay radicales
-        if(chain.hasFunctionalGroup(FunctionalGroup.radical)) { // Para ahorrar el invertir la cadena
+        if (chain.hasFunctionalGroup(FunctionalGroup.radical)) { // Para ahorrar el invertir la cadena
             reverse(); // En lugar de corregirlos por la derecha
             chain.corregirRadicalesPorLaIzquierda(); // CHF(CH3)(CH2CH3) → CH3-CH2-CHF-CH3
         }
@@ -225,13 +234,12 @@ public final class Simple extends Organic implements OpenChain {
     private boolean correctOrderBasedOn(int comparaison) {
         boolean corrected;
 
-        if(comparaison != 0) { // No son iguales
-            if(comparaison > 0) // El inverso va antes alfabéticamente
+        if (comparaison != 0) { // No son iguales
+            if (comparaison > 0) // El inverso va antes alfabéticamente
                 reverse();
 
             corrected = true; // Ya se ha corregido el orden según los radicales alfabéticamente
-        }
-        else corrected = false; // Indecidible
+        } else corrected = false; // Indecidible
 
         return corrected;
     }
@@ -242,7 +250,7 @@ public final class Simple extends Organic implements OpenChain {
         Simple reversed = getReversed();
 
         List<FunctionalGroup> funciones = chain.getOrderedGroupsWithoutHydrogenNorEther();
-        for(int i = 0; i < funciones.size() && !corrected; i++) {
+        for (int i = 0; i < funciones.size() && !corrected; i++) {
             // Se calculan las sumas de sus posiciones:
             int suma_normal = chain.getIndexesOfAll(funciones.get(i))
                     .stream().mapToInt(Integer::intValue).sum();
@@ -254,7 +262,7 @@ public final class Simple extends Organic implements OpenChain {
         }
 
         // Los radicales determinan el orden alfabéticamente como última instancia, solo cuando lo demás es indiferente.
-        if(!corrected && chain.hasFunctionalGroup(FunctionalGroup.radical)) {
+        if (!corrected && chain.hasFunctionalGroup(FunctionalGroup.radical)) {
             // Se obtienen los radicales de ambas versiones, ordenados por sus carbonos:
             List<String> normales = new ArrayList<>();
             chain.getRadicalSubstituents().forEach(radical -> normales.add(Organic.getRadicalNameParticle(radical)));
@@ -263,11 +271,11 @@ public final class Simple extends Organic implements OpenChain {
             reversed.chain.getRadicalSubstituents().forEach(radical -> inversos.add(Organic.getRadicalNameParticle(radical)));
 
             // Se comparan los radicales dos a dos desde ambos extremos alfabéticamente:
-            for(int i = 0; i < normales.size() && !corrected; i++)
+            for (int i = 0; i < normales.size() && !corrected; i++)
                 corrected = correctOrderBasedOn(normales.get(i).compareTo(inversos.get(i)));
         }
     }
-    
+
     // Text: TODO: poner en común en Cadena
 
     private boolean isRedundantInName(FunctionalGroup group) {
@@ -281,8 +289,7 @@ public final class Simple extends Organic implements OpenChain {
             if (esAlquenoOAlquino(group) || chain.hasFunctionalGroup(FunctionalGroup.alkyne)) // Hay una posición posible
                 isRedundant = true;
             else isRedundant = chain.getSubstituentsWithoutHydrogen().size() == 1; // Hay uno, como cloroetino o etanol
-        }
-        else isRedundant = chain.getSize() == 1; // Derivados del metano
+        } else isRedundant = chain.getSize() == 1; // Derivados del metano
 
         return isRedundant;
     }
@@ -293,7 +300,7 @@ public final class Simple extends Organic implements OpenChain {
         List<Integer> posiciones = chain.getIndexesOfAll(functionalGroup);
         String nombre = getPrefixNameParticle(functionalGroup);
 
-        if(isRedundantInName(functionalGroup)) // Sobran los localizadores porque son evidentes
+        if (isRedundantInName(functionalGroup)) // Sobran los localizadores porque son evidentes
             preffix = new Localizador(multiplicadorDe(posiciones.size()), nombre); // Como "difluoro"
         else preffix = new Localizador(posiciones, nombre); // Como "1,2-difluoro"
 
@@ -306,16 +313,16 @@ public final class Simple extends Organic implements OpenChain {
         List<Integer> posiciones = chain.getIndexesOfAll(bond);
         String nombre = getBondNameParticle(bond);
 
-        if(posiciones.size() > 0) {
+        if (posiciones.size() > 0) {
             Localizador localizador;
 
-            if(isRedundantInName(bond)) // Sobran los localizadores porque son evidentes
+            if (isRedundantInName(bond)) // Sobran los localizadores porque son evidentes
                 localizador = new Localizador(multiplicadorDe(posiciones.size()), nombre); // Como "dien"
             else localizador = new Localizador(posiciones, nombre); // Como "1,2-dien"
 
             String localizador_to_string = localizador.toString();
 
-            if(startsWithDigit(localizador_to_string))
+            if (startsWithDigit(localizador_to_string))
                 bondName += "-"; // Guion antes de los localizadores
 
             bondName += localizador_to_string;
@@ -330,7 +337,7 @@ public final class Simple extends Organic implements OpenChain {
         List<Integer> posiciones = chain.getIndexesOfAll(bond);
         String nombre = getSuffixNameParticle(bond);
 
-        if(isRedundantInName(bond)) // Sobran los localizadores porque son evidentes
+        if (isRedundantInName(bond)) // Sobran los localizadores porque son evidentes
             suffixName = multiplicadorDe(posiciones.size()) + nombre; // Como "dioico"
         else suffixName = new Localizador(posiciones, nombre).toString(); // Como "2-3-diona"
 

@@ -3,8 +3,6 @@ package com.quimify.organic.compounds;
 import com.quimify.organic.Organic;
 import com.quimify.organic.components.Atom;
 import com.quimify.organic.components.Element;
-import com.quimify.organic.compounds.open_chain.Ether;
-import com.quimify.organic.compounds.open_chain.OpenChain;
 import com.quimify.organic.compounds.open_chain.Simple;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
@@ -17,9 +15,9 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.*;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 // Esta clase representa una molécula cualquiera a partir de un CML en formato XML para intentar redactarle una fórmula.
 
@@ -73,144 +71,94 @@ public class Molecule extends Organic {
 							.orElseThrow(NoSuchElementException::new)
 			};
 
-			atoms[0].enlazar(atoms[1]);
-			atoms[1].enlazar(atoms[0]);
+			atoms[0].bond(atoms[1]);
+			atoms[1].bond(atoms[0]);
 		}
 	}
 
-	// Consultas internas:
+	public Optional<String> getStructure() {
+		if(isSimpleOpenChain())
+			return Optional.of("It's simple!");
 
-	private List<Atom> getCarbonos() {
+		return Optional.empty();
+	}
+
+	// Private methods:
+
+	private boolean isSimpleOpenChain() {
+		if(isOpenChain())
+			return getExtremeCarbons().stream().anyMatch(this::isSimpleCarbon);
+		else return false;
+	}
+
+	private boolean isOpenChain() {
+		return !isCycle(); // By definition
+	}
+
+	private boolean isCycle() {
+		return smiles.matches(".*[0-9].*"); // SMILES uses digits only for cycles
+	}
+
+	private List<Atom> getExtremeCarbons() {
+		List<Atom> carbons = getCarbons();
+		return carbons.stream().filter(carbon -> carbon.getBonded(Element.C).size() == 1).collect(Collectors.toList());
+	}
+
+	private List<Atom> getCarbons() {
 		return molecule.stream().filter(atom -> atom.getElement() == Element.C).collect(Collectors.toList());
 	}
 
-	private List<Atom> getCarbonosExtremos() {
-		List<Atom> carbonos = getCarbonos();
-		return carbonos.stream().filter(carbono -> carbono.getNumberOf(Element.C) < 2 || carbono.isBondedToEther())
-				.collect(Collectors.toList());
-	}
+	private boolean isSimpleCarbon(Atom carbon) {
+		boolean isSimpleCarbon;
 
-	private List<Atom> getOxigenosPuente() {
-		return molecule.stream().filter(Atom::esOxigenoPuente).collect(Collectors.toList());
-	}
+		Set<Atom> nonSubstituentBondedAtoms = new HashSet<>();
+		for(Atom bondedAtom : carbon.getBondedAtomsCutOff()) {
+			Atom anonymousBondedAtom = bondedAtom.toAnonymous();
 
-	private int getCarbonosAlAlcanceDe(Atom carbono) {
-		int cantidad;
-
-		List<Atom> enlazados = carbono.getBondedCarbonsSeparated();
-
-		cantidad = enlazados.size();
-		for(Atom enlazado : enlazados)
-			cantidad += getCarbonosAlAlcanceDe(enlazado);
-
-		return cantidad;
-	}
-
-	private void buildOpenChainStartingFrom(OpenChain openChain, Atom startingCarbon) {
-		// First carbon:
-		startingCarbon.getSubstituentsWithoutRadicals().forEach(openChain::bond);
-
-		// The rest of them:
-		List<Atom> bondedCarbonsSeparated = startingCarbon.getBondedCarbonsSeparated();
-
-		while(bondedCarbonsSeparated.size() > 0) {
-			openChain.bondCarbon();
-
-			Atom carbon = bondedCarbonsSeparated.get(0); // A path of multiple possible
-			carbon.getSubstituentsWithoutRadicals().forEach(openChain::bond);
-
-			bondedCarbonsSeparated = carbon.getBondedCarbonsSeparated();
+			if (Simple.bondableAtoms.stream().noneMatch(anonymousBondedAtom::equals))
+				if(!(bondedAtom.isElement(Element.C) && isRadicalCarbon(bondedAtom)))
+					nonSubstituentBondedAtoms.add(bondedAtom);
 		}
+
+		if(nonSubstituentBondedAtoms.stream().allMatch(bondedAtom -> bondedAtom.isElement(Element.C))) {
+			if (nonSubstituentBondedAtoms.size() == 1)
+				isSimpleCarbon = isSimpleCarbon(nonSubstituentBondedAtoms.stream().findAny().get());
+			else isSimpleCarbon = nonSubstituentBondedAtoms.size() == 0;
+		}
+		else isSimpleCarbon = false; // There are bonded atoms that are not substituents nor carbons
+
+		return isSimpleCarbon;
 	}
 
-	private Simple buildSimple(Atom startingCarbon) {
-		Simple simple = new Simple();
+	private boolean isRadicalCarbon(Atom carbon) {
+		boolean isRadicalCarbon;
 
-		buildOpenChainStartingFrom(simple, startingCarbon);
+		// It must be one of the following: CH2-C..., CH3, CH(CH3)2
+		if(carbon.getBondedAtoms().size() == 3) {
+			switch (carbon.getBonded(Element.H).size()) {
+				case 3:
+					isRadicalCarbon = true; // CH3
+					break;
+				case 2:
+					Stream<Atom> bondedCarbons = carbon.getBondedAtomsCutOff().stream()
+							.filter(bondedAtom -> bondedAtom.isElement(Element.C));
 
-		return simple;
-	}
+					isRadicalCarbon = carbon.getBonded(Element.C).size() == 1
+							&& bondedCarbons.allMatch(this::isRadicalCarbon); // CH2-C...
+					break;
+				case 1:
+					Stream<Atom> bondedCH3 = carbon.getBondedAtomsCutOff().stream().filter(bondedAtom ->
+							bondedAtom.getBondedAtoms().size() == 3 && bondedAtom.getBonded(Element.H).size() == 3);
 
-	private Ether buildEther(List<Atom> bondedToTheOxygen) {
-		// First chain: [R - O -] R'
-		Atom firstCarbon = bondedToTheOxygen.get(0); // [C - O] - C'
-
-		Simple firstChain = new Simple(0);
-		buildOpenChainStartingFrom(firstChain, firstCarbon); // R - O -
-
-		Ether ether = new Ether(firstChain.getReversed()); // R - O - C ≡
-
-		// Second chain: R - O [- R']
-		firstCarbon = bondedToTheOxygen.get(1); // C - O [- C']
-		firstCarbon.removeEther(); // It's already bonded
-		buildOpenChainStartingFrom(ether, firstCarbon); // R - O - R'
-
-		return ether;
-	}
-
-	private boolean soloHayUnaRama() {
-		for(Atom atom : getCarbonos())
-			if(atom.getNumberOf(Element.C) > 2)
-				return false;
-
-		return true;
-	}
-
-	// Texto:
-
-	public Optional<String> getStructure() {
-		Optional<String> formula = Optional.empty();
-
-		// Se comprueba que hay ningún ciclo:
-		if (!smiles.matches(".*[0-9].*")) {
-			// Se buscan los extremos de la molécula:
-			List<Atom> carbonos_extremos = getCarbonosExtremos();
-
-			// Se buscan oxígenos que unan cadenas (R-O-R'):
-			List<Atom> oxigenos_puente = getOxigenosPuente();
-
-			if (soloHayUnaRama()) {
-				if (oxigenos_puente.size() == 0) {
-					Atom carbono_extremo = carbonos_extremos.get(0);
-					int contiguos = 1 + getCarbonosAlAlcanceDe(carbono_extremo);
-
-					if (contiguos == getCarbonos().size()) { // No tiene otros puentes
-						// Podría ser un 'Simple':
-						Simple simple = buildSimple(carbono_extremo);
-						simple.correctSubstituents();
-						formula = Optional.of(simple.getStructure());
-					}
-				} else if (oxigenos_puente.size() == 1) { // No tiene más que un puente de oxígeno
-					if (carbonos_extremos.size() >= 2 && carbonos_extremos.size() <= 4) {
-						List<Atom> enlazados_al_oxigeno = oxigenos_puente.get(0).getBondedCarbons();
-
-						int contiguos_izquierda = 1 + getCarbonosAlAlcanceDe(enlazados_al_oxigeno.get(0));
-						int contiguos_derecha = 1 + getCarbonosAlAlcanceDe(enlazados_al_oxigeno.get(1));
-
-						int extremosPosibles = 4;
-						if (contiguos_izquierda == 1)
-							extremosPosibles--;
-						if (contiguos_derecha == 1)
-							extremosPosibles--;
-
-						if (contiguos_izquierda + contiguos_derecha == getCarbonos().size()) { // No tiene otros puentes
-							if (carbonos_extremos.size() == extremosPosibles) { // No tiene radicales
-								// Podría ser un 'Eter':
-								Ether ether = buildEther(enlazados_al_oxigeno);
-								ether.correctSubstituents();
-								formula = Optional.of(ether.getStructure());
-							}
-						}
-					} else if (carbonos_extremos.size() == 0) {
-						logger.log(Level.SEVERE, "Hay un puente de oxigeno y 0 carbonos extremos.");
-
-						return Optional.empty();
-					}
-				}
+					isRadicalCarbon = bondedCH3.count() == 2; // CH(CH3)2
+					break;
+				default:
+					isRadicalCarbon = false; // No hydrogen
 			}
 		}
+		else isRadicalCarbon = false;
 
-		return formula;
+		return isRadicalCarbon;
 	}
 
 }
