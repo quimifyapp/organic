@@ -54,20 +54,16 @@ public class Molecule extends Organic {
 
 		// Se enlazan entre sí:
 		NodeList xmlBonds = xml.getElementsByTagName("bond");
-		for(int i = 0; i < xmlBonds.getLength(); i++) {
-			org.w3c.dom.Element enlace = (org.w3c.dom.Element) xmlBonds.item(i);
+		for(int i = 0; i < xmlBonds.getLength(); i++) { // TODO for each
+			org.w3c.dom.Element bond = (org.w3c.dom.Element) xmlBonds.item(i);
 
-			String[] id_string = enlace.getAttribute("id").replace("a", "").split("_");
-
-			Integer[] id_int = {
-					Integer.valueOf(id_string[0]),
-					Integer.valueOf(id_string[1])
-			};
+			int[] ids = Arrays.stream(bond.getAttribute("id").replace("a", "").split("_"))
+					.mapToInt(Integer::valueOf).toArray();
 
 			Atom[] atoms = {
-					molecule.stream().filter(atom -> atom.getId().equals(id_int[0])).findAny()
+					molecule.stream().filter(atom -> atom.getId().equals(ids[0])).findAny()
 							.orElseThrow(NoSuchElementException::new),
-					molecule.stream().filter(atom -> atom.getId().equals(id_int[1])).findAny()
+					molecule.stream().filter(atom -> atom.getId().equals(ids[1])).findAny()
 							.orElseThrow(NoSuchElementException::new)
 			};
 
