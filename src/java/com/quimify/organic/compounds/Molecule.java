@@ -87,7 +87,7 @@ public class Molecule extends Organic {
 
 	private boolean isSimpleOpenChain() {
 		if(isOpenChain())
-			return getExtremeCarbons().stream().anyMatch(this::isSimpleCarbon);
+			return getEndingCarbons().stream().anyMatch(this::isSimpleCarbon);
 		else return false;
 	}
 
@@ -99,9 +99,9 @@ public class Molecule extends Organic {
 		return smiles.matches(".*[0-9].*"); // SMILES uses digits only for cycles
 	}
 
-	private List<Atom> getExtremeCarbons() {
+	private List<Atom> getEndingCarbons() {
 		List<Atom> carbons = getCarbons();
-		return carbons.stream().filter(carbon -> carbon.getBonded(Element.C).size() == 1).collect(Collectors.toList());
+		return carbons.stream().filter(carbon -> carbon.getBonded(Element.C).size() < 2).collect(Collectors.toList());
 	}
 
 	private List<Atom> getCarbons() {
