@@ -216,7 +216,7 @@ public class Molecule extends Organic {
 			case 2:
 				Atom nextCarbon = carbon.toAnonymous().getBonded(Element.C).get(0); // There must be one
 				Substituent subRadical = buildRadical(nextCarbon); // Recursive
-				radical = new Substituent(subRadical.getCarbonCount() + 1, subRadical.isIso());
+				radical = new Substituent(1 + subRadical.getCarbonCount(), subRadical.isIso());
 				break;
 			case 1:
 				radical = new Substituent(3, true); // -CH(CH3)2
