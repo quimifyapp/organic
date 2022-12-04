@@ -77,19 +77,18 @@ public class Molecule extends Organic {
 	}
 
 	public Optional<String> getStructure() {
-		if(isSimpleOpenChain())
-			return Optional.of("It's simple!");
+		if(isOpenChain()) {
+			Optional<Atom> simpleEndingCarbon =  getSimpleEndingCarbon();
+
+			if(simpleEndingCarbon.isPresent()) {
+				return Optional.of("It's simple!");
+			}
+		}
 
 		return Optional.empty();
 	}
 
 	// Private methods:
-
-	private boolean isSimpleOpenChain() {
-		if(isOpenChain())
-			return getEndingCarbons().stream().anyMatch(this::isSimpleCarbon);
-		else return false;
-	}
 
 	private boolean isOpenChain() {
 		return !isCycle(); // By definition
@@ -97,6 +96,10 @@ public class Molecule extends Organic {
 
 	private boolean isCycle() {
 		return smiles.matches(".*[0-9].*"); // SMILES uses digits only for cycles
+	}
+
+	private Optional<Atom> getSimpleEndingCarbon() {
+		return getEndingCarbons().stream().filter(this::isSimpleCarbon).findAny();
 	}
 
 	private List<Atom> getEndingCarbons() {
@@ -112,13 +115,10 @@ public class Molecule extends Organic {
 		boolean isSimpleCarbon;
 
 		Set<Atom> nonSubstituentBondedAtoms = new HashSet<>();
-		for(Atom bondedAtom : carbon.getBondedAtomsCutOff()) {
-			Atom anonymousBondedAtom = bondedAtom.toAnonymous();
-
-			if (Simple.bondableAtoms.stream().noneMatch(anonymousBondedAtom::equals))
+		for(Atom bondedAtom : carbon.getBondedAtomsCutOff())
+			if (Simple.bondableAtoms.stream().noneMatch(bondedAtom.toAnonymous()::equals))
 				if(!(bondedAtom.isElement(Element.C) && isRadicalCarbon(bondedAtom)))
 					nonSubstituentBondedAtoms.add(bondedAtom);
-		}
 
 		if(nonSubstituentBondedAtoms.stream().allMatch(bondedAtom -> bondedAtom.isElement(Element.C))) {
 			if (nonSubstituentBondedAtoms.size() == 1)
@@ -140,8 +140,8 @@ public class Molecule extends Organic {
 					isRadicalCarbon = true; // CH3
 					break;
 				case 2:
-					Stream<Atom> bondedCarbons = carbon.getBondedAtomsCutOff().stream()
-							.filter(bondedAtom -> bondedAtom.isElement(Element.C));
+					Stream<Atom> bondedCarbons = carbon.getBondedAtomsCutOff().stream().filter(bondedAtom ->
+							bondedAtom.isElement(Element.C));
 
 					isRadicalCarbon = carbon.getBonded(Element.C).size() == 1
 							&& bondedCarbons.allMatch(this::isRadicalCarbon); // CH2-C...
