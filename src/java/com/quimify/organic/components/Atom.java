@@ -9,6 +9,20 @@ public class Atom {
 	private final Element element;
 	private final List<Atom> bondedAtoms;
 
+	// Constants:
+
+	public static final Atom H = new Atom(Element.H);
+	public static final Atom N = new Atom(Element.N);
+	public static final Atom O = new Atom(Element.O);
+	public static final Atom OH = new Atom(Element.O, List.of(H));
+	public static final Atom NH2 = new Atom(Element.N, List.of(H, H));
+	public static final Atom OC = new Atom(Element.O, List.of(new Atom(Element.C)));
+	public static final Atom NO2 = new Atom(Element.N, List.of(O, O));
+	public static final Atom Br = new Atom(Element.Br);
+	public static final Atom Cl = new Atom(Element.Cl);
+	public static final Atom F = new Atom(Element.F);
+	public static final Atom I = new Atom(Element.I);
+
 	// Constructor:
 
 	public Atom(int id, String symbol) {

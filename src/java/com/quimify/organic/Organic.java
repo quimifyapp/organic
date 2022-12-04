@@ -17,7 +17,7 @@ public class Organic {
 
     // Consultas:
 
-    protected static boolean esHalogeno(FunctionalGroup functionalGroup) {
+    protected static boolean isHalogen(FunctionalGroup functionalGroup) {
         return halogens.contains(functionalGroup);
     }
 
@@ -248,7 +248,7 @@ public class Organic {
     protected static String getRadicalNameParticle(Substituent radical) {
         String nameParticle;
 
-        if(radical.getIso())
+        if(radical.isIso())
             nameParticle = "iso";
         else nameParticle = "";
 

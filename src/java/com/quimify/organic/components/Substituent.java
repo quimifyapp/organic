@@ -38,15 +38,15 @@ public class Substituent extends Organic {
                 case 2:
                     throw new IllegalArgumentException("No existe el \"isoetil\".");
                 default:
-                    construir(carbonCount, true);
+                    build(carbonCount, true);
                     break;
             }
         }
-        else construir(carbonCount);
+        else build(carbonCount);
     }
 
     public Substituent(int carbonCount) {
-        construir(carbonCount);
+        build(carbonCount);
     }
 
     public Substituent(FunctionalGroup functionalGroup) {
@@ -55,11 +55,11 @@ public class Substituent extends Organic {
             case amide:
             case nitrile:
             case aldehyde:
-                construir(functionalGroup, 3);
+                build(functionalGroup, 3);
                 // Hasta aquí
                 break;
             case ketone:
-                construir(functionalGroup, 2);
+                build(functionalGroup, 2);
                 break;
             case carboxyl:
             case carbamoyl:
@@ -73,7 +73,7 @@ public class Substituent extends Organic {
             case fluorine:
             case iodine:
             case hydrogen:
-                construir(functionalGroup, 1);
+                build(functionalGroup, 1);
                 // Hasta aquí
                 break;
             case radical:
@@ -83,24 +83,24 @@ public class Substituent extends Organic {
         }
     }
 
-    private void construir(FunctionalGroup functionalGroup, int enlaces, int carbonos, boolean iso) {
+    private void build(FunctionalGroup functionalGroup, int bonds, int carbonos, boolean iso) {
         this.functionalGroup = functionalGroup;
-        this.bondCount = enlaces;
+        this.bondCount = bonds;
         this.carbonCount = carbonos;
         this.isIso = iso;
     }
 
-    private void construir(FunctionalGroup functionalGroup, int enlaces) {
-        construir(functionalGroup, enlaces, 0, false);
+    private void build(FunctionalGroup functionalGroup, int bonds) {
+        build(functionalGroup, bonds, 0, false);
     }
 
-    private void construir(int carbonos, boolean iso) {
-        construir(FunctionalGroup.radical, 1, carbonos, iso);
+    private void build(int carbons, boolean isIso) {
+        build(FunctionalGroup.radical, 1, carbons, isIso);
     }
 
-    private void construir(int carbonos) {
+    private void build(int carbonos) {
         if(carbonos > 0)
-            construir(carbonos, false);
+            build(carbonos, false);
         else throw new IllegalArgumentException("No existen radicales con 0 carbonos.");
     }
 
@@ -110,8 +110,8 @@ public class Substituent extends Organic {
         return this.functionalGroup == functionalGroup;
     }
 
-    public boolean esHalogeno() {
-        return Organic.esHalogeno(functionalGroup);
+    public boolean isHalogen() {
+        return Organic.isHalogen(functionalGroup);
     }
 
     @Override
@@ -160,7 +160,7 @@ public class Substituent extends Organic {
     }
 
 
-    public boolean getIso() {
+    public boolean isIso() {
         return isIso;
     }
 

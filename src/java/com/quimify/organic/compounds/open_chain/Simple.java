@@ -3,9 +3,7 @@ package com.quimify.organic.compounds.open_chain;
 import com.quimify.organic.Organic;
 import com.quimify.organic.components.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 // Esta clase representa compuestos formados por una sola cadena carbonada finita con sustituyentes.
 
@@ -16,11 +14,7 @@ public final class Simple extends Organic implements OpenChain {
     // Constants:
 
     public static final Set<Atom> bondableAtoms = Set.of(
-            new Atom(Element.H), new Atom(Element.N), new Atom(Element.O),
-            new Atom(Element.O, List.of(new Atom(Element.H))), // OH
-            new Atom(Element.N, List.of(new Atom(Element.H), new Atom(Element.H))), // NH2
-            new Atom(Element.N, List.of(new Atom(Element.O), new Atom(Element.O))), // NO2
-            new Atom(Element.Br), new Atom(Element.Cl), new Atom(Element.F), new Atom(Element.I)
+            Atom.H, Atom.N, Atom.O, Atom.OH, Atom.NH2, Atom.NO2, Atom.Br, Atom.Cl, Atom.F, Atom.I
     );
 
     private static final Set<FunctionalGroup> bondableGroups = Set.of(
@@ -146,7 +140,7 @@ public final class Simple extends Organic implements OpenChain {
         // Se procesa el sufijo:
         String sufijo;
         if (funciones.size() > 0 && funciones.get(0) != FunctionalGroup.nitro && funciones.get(0) != FunctionalGroup.radical // Not suffixes
-                && !esHalogeno(funciones.get(0)) && !esAlquenoOAlquino(funciones.get(0)))
+                && !isHalogen(funciones.get(0)) && !esAlquenoOAlquino(funciones.get(0)))
             sufijo = getSuffixNameFor(funciones.get(functionalGroup++));
         else sufijo = "";
 

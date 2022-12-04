@@ -1,8 +1,7 @@
 package com.quimify.organic.compounds;
 
 import com.quimify.organic.Organic;
-import com.quimify.organic.components.Atom;
-import com.quimify.organic.components.Element;
+import com.quimify.organic.components.*;
 import com.quimify.organic.compounds.open_chain.Simple;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
@@ -77,7 +76,10 @@ public class Molecule extends Organic {
 			Optional<Atom> simpleEndingCarbon =  getSimpleEndingCarbon();
 
 			if(simpleEndingCarbon.isPresent()) {
-				return Optional.of("It's simple!");
+				Simple simple = new Simple();
+				buildSimple(simpleEndingCarbon.get(), simple);
+				simple.correctSubstituents();
+				return Optional.of(simple.getStructure());
 			}
 		}
 
@@ -123,7 +125,11 @@ public class Molecule extends Organic {
 	}
 
 	private boolean isSubstituent(Atom atom, Set<Atom> bondableAtoms) {
-		return bondableAtoms.stream().anyMatch(atom.toAnonymous()::equals) || isRadicalCarbon(atom);
+		return isBondableAtom(atom, bondableAtoms) || isRadicalCarbon(atom);
+	}
+
+	private boolean isBondableAtom(Atom atom, Set<Atom> bondableAtoms) {
+		return bondableAtoms.stream().anyMatch(atom.toAnonymous()::equals);
 	}
 
 	private boolean isRadicalCarbon(Atom atom) {
@@ -159,6 +165,67 @@ public class Molecule extends Organic {
 		else isRadicalCarbon = false;
 
 		return isRadicalCarbon;
+	}
+
+	private void buildSimple(Atom carbon, Simple simple) {
+		Optional<Atom> nextCarbon = Optional.empty();
+
+		for(Atom bondedAtom : carbon.getBondedAtomsCutOff()) {
+			if (isBondableAtom(bondedAtom, Simple.bondableAtoms)) {
+				Atom anonymousBondedAtom = bondedAtom.toAnonymous();
+				if (anonymousBondedAtom.equals(Atom.H))
+					simple.bond(FunctionalGroup.hydrogen);
+				if (anonymousBondedAtom.equals(Atom.N))
+					simple.bond(FunctionalGroup.nitrile);
+				if (anonymousBondedAtom.equals(Atom.O))
+					simple.bond(FunctionalGroup.ketone);
+				if (anonymousBondedAtom.equals(Atom.OH))
+					simple.bond(FunctionalGroup.alcohol);
+				if (anonymousBondedAtom.equals(Atom.NH2))
+					simple.bond(FunctionalGroup.amine);
+				if (anonymousBondedAtom.equals(Atom.NO2))
+					simple.bond(FunctionalGroup.nitro);
+				if (anonymousBondedAtom.equals(Atom.Br))
+					simple.bond(FunctionalGroup.bromine);
+				if (anonymousBondedAtom.equals(Atom.Cl))
+					simple.bond(FunctionalGroup.chlorine);
+				if (anonymousBondedAtom.equals(Atom.F))
+					simple.bond(FunctionalGroup.fluorine);
+				if (anonymousBondedAtom.equals(Atom.I))
+					simple.bond(FunctionalGroup.iodine);
+			}
+			else if(isRadicalCarbon(bondedAtom)) {
+				simple.bond(buildRadical(bondedAtom));
+			}
+			else nextCarbon = Optional.of(bondedAtom);
+		}
+
+		if(nextCarbon.isPresent()) {
+			simple.bondCarbon();
+			buildSimple(nextCarbon.get(), simple);
+		}
+	}
+
+	private Substituent buildRadical(Atom carbon) {
+		Substituent radical;
+
+		switch (carbon.getBonded(Element.H).size()) {
+			case 3:
+				radical = new Substituent(1); // -CH3
+				break;
+			case 2:
+				Atom nextCarbon = carbon.toAnonymous().getBonded(Element.C).get(0); // There must be one
+				Substituent subRadical = buildRadical(nextCarbon); // Recursive
+				radical = new Substituent(subRadical.getCarbonCount() + 1, subRadical.isIso());
+				break;
+			case 1:
+				radical = new Substituent(3, true); // -CH(CH3)2
+				break;
+			default:
+				radical = null;
+		}
+
+		return radical;
 	}
 
 }

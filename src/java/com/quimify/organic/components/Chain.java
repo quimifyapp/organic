@@ -92,7 +92,7 @@ public class Chain extends Organic {
 				// Se calcula si el "camino" por este radical es preferible a la cadena principal:
 				int comparacion = Integer.compare(mayor_radical.getStraightCarbonCount(), i);
 
-				if(comparacion == 1 || (comparacion == 0 && mayor_radical.getIso())) {
+				if(comparacion == 1 || (comparacion == 0 && mayor_radical.isIso())) {
 					// Se corrige la cadena por la izquierda:
 					if(i != 0) {
 						// Se convierte el camino antiguo de la cadena principal en radical:
