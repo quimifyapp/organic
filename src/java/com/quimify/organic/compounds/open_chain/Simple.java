@@ -32,10 +32,6 @@ public final class Simple extends Organic implements OpenChain {
         this.chain = new Chain(0);
     }
 
-    public Simple(int previousBonds) {
-        this.chain = new Chain(previousBonds);
-    }
-
     private Simple(Chain chain) {
         this.chain = new Chain(chain);
     }
