@@ -35,16 +35,19 @@ public class TestMoleculeToStructure {
 
             String generatedStructure = OrganicFactory.getFromName(simple.getName()).getStructure();
 
-            System.out.println("Tested: " + count++);
             System.out.println(simple.getStructure());
+
             if(!simple.getStructure().equals(generatedStructure)) {
                 if(!simple.getStructure().replace("(CH3)", "")
                         .equals(generatedStructure.replace("(CH3)", ""))) {
                     System.out.println("=/=");
                     System.out.println(generatedStructure);
+                    System.out.println("Tested: " + count);
                     System.out.println();
                 }
             }
+
+            count++;
         }
     }
 
