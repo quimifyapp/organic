@@ -3,21 +3,26 @@ import com.quimify.organic.components.FunctionalGroup;
 import com.quimify.organic.components.Substituent;
 import com.quimify.organic.compounds.open_chain.Simple;
 
-import java.util.Optional;
-import java.util.Random;
-import java.util.Scanner;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class TestMoleculeToStructure {
 
     public static void main(String[] args) {
+        int count = 0;
+
         while(true) {
             Simple simple = new Simple();
 
             while(!simple.isDone()) {
                 if(new Random().nextBoolean() || simple.getFreeBonds() == 4) {
                     if(new Random().nextBoolean()) {
-                        simple.bond(simple.getOrderedBondableGroups().stream().filter(functionalGroup ->
-                                functionalGroup != FunctionalGroup.ether).findAny().get());
+                        List<FunctionalGroup> bondableGroups = simple.getOrderedBondableGroups().stream()
+                                .filter(group ->
+                                        !Set.of(FunctionalGroup.ether, FunctionalGroup.radical).contains(group))
+                                .collect(Collectors.toList());
+
+                        simple.bond(bondableGroups.get(new Random().nextInt(bondableGroups.size())));
                     }
                     else simple.bond(new Random().nextBoolean()
                                 ? new Substituent(new Random().nextInt(1) + 1)
@@ -34,8 +39,11 @@ public class TestMoleculeToStructure {
                 System.out.println(simple.getStructure());
                 System.out.println("=/=");
                 System.out.println(generatedStructure);
+                System.out.println("Tested: " + count);
                 System.out.println();
             }
+
+            count++;
         }
     }
 
