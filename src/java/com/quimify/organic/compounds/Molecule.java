@@ -114,43 +114,47 @@ public class Molecule extends Organic {
 	private boolean isSimpleCarbon(Atom carbon) {
 		boolean isSimpleCarbon;
 
-		Set<Atom> nonSubstituentBondedAtoms = new HashSet<>();
-		for(Atom bondedAtom : carbon.getBondedAtomsCutOff())
-			if (Simple.bondableAtoms.stream().noneMatch(bondedAtom.toAnonymous()::equals))
-				if(!(bondedAtom.isElement(Element.C) && isRadicalCarbon(bondedAtom)))
-					nonSubstituentBondedAtoms.add(bondedAtom);
+		Set<Atom> nonSubstituentBondedAtoms = carbon.getBondedAtomsCutOff().stream().filter(bondedAtom ->
+				!isSubstituent(bondedAtom, Simple.bondableAtoms)).collect(Collectors.toSet());
 
-		if(nonSubstituentBondedAtoms.stream().allMatch(bondedAtom -> bondedAtom.isElement(Element.C))) {
+		if (nonSubstituentBondedAtoms.stream().allMatch(bondedAtom -> bondedAtom.isElement(Element.C))) {
 			if (nonSubstituentBondedAtoms.size() == 1)
 				isSimpleCarbon = isSimpleCarbon(nonSubstituentBondedAtoms.stream().findAny().get());
 			else isSimpleCarbon = nonSubstituentBondedAtoms.size() == 0;
-		}
-		else isSimpleCarbon = false; // There are bonded atoms that are not substituents nor carbons
+		} else isSimpleCarbon = false; // There are bonded atoms that are not substituents nor carbons
 
 		return isSimpleCarbon;
 	}
 
-	private boolean isRadicalCarbon(Atom carbon) {
+	private boolean isSubstituent(Atom atom, Set<Atom> bondableAtoms) {
+		return bondableAtoms.stream().anyMatch(atom.toAnonymous()::equals) || isRadicalCarbon(atom);
+	}
+
+	private boolean isRadicalCarbon(Atom atom) {
+		if(!atom.isElement(Element.C))
+			return false;
+
 		boolean isRadicalCarbon;
 
 		// It must be one of the following: CH2-C..., CH3, CH(CH3)2
-		if(carbon.getBondedAtoms().size() == 3) {
-			switch (carbon.getBonded(Element.H).size()) {
+		List<Atom> bondedAtomsCutOff = atom.getBondedAtomsCutOff();
+		if(bondedAtomsCutOff.size() == 3) {
+			switch (atom.getBonded(Element.H).size()) {
 				case 3:
 					isRadicalCarbon = true; // CH3
 					break;
 				case 2:
-					Stream<Atom> bondedCarbons = carbon.getBondedAtomsCutOff().stream().filter(bondedAtom ->
+					Stream<Atom> bondedCarbons = bondedAtomsCutOff.stream().filter(bondedAtom ->
 							bondedAtom.isElement(Element.C));
 
-					isRadicalCarbon = carbon.getBonded(Element.C).size() == 1
-							&& bondedCarbons.allMatch(this::isRadicalCarbon); // CH2-C...
+					isRadicalCarbon = atom.getBonded(Element.C).size() == 1 // CH2-C...
+							&& bondedCarbons.allMatch(this::isRadicalCarbon); // CH2-CH2-C... (recursive)
 					break;
 				case 1:
-					Stream<Atom> bondedCH3 = carbon.getBondedAtomsCutOff().stream().filter(bondedAtom ->
+					Stream<Atom> bondedCH3s = bondedAtomsCutOff.stream().filter(bondedAtom ->
 							bondedAtom.getBondedAtoms().size() == 3 && bondedAtom.getBonded(Element.H).size() == 3);
 
-					isRadicalCarbon = bondedCH3.count() == 2; // CH(CH3)2
+					isRadicalCarbon = bondedCH3s.count() == 2; // CH(CH3)2
 					break;
 				default:
 					isRadicalCarbon = false; // No hydrogen
