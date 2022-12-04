@@ -99,7 +99,7 @@ public class Chain extends Organic {
 						Substituent antiguo;
 
 						// Aquí se tiene en cuenta que, de haber un radical, solo podría ser metil
-						if(i > 1 && carbons.get(1).contiene(FunctionalGroup.radical) // Hay un metil en el segundo carbono
+						if(i > 1 && carbons.get(1).isBondedTo(FunctionalGroup.radical) // Hay un metil en el segundo carbono
 								&& carbons.get(1).getSubstituentsWithoutHydrogen().get(0).equals(Substituent.CH3))
 							antiguo = new Substituent(i + 1, true);
 						else antiguo = new Substituent(i);
@@ -153,7 +153,7 @@ public class Chain extends Organic {
 	}
 
 	private void sustituirCetonaConPorEn(FunctionalGroup complementaria, FunctionalGroup sustituta, Carbon terminal) { // C(O)(A)- → C(B)-
-		if(terminal.contiene(FunctionalGroup.ketone) && terminal.contiene(complementaria)) {
+		if(terminal.isBondedTo(FunctionalGroup.ketone) && terminal.isBondedTo(complementaria)) {
 			terminal.eliminarConEnlaces(FunctionalGroup.ketone);
 			terminal.eliminarConEnlaces(complementaria);
 			terminal.enlazar(sustituta);
@@ -170,7 +170,7 @@ public class Chain extends Organic {
 	}
 
 	private void sustituirTerminalDePorEn(FunctionalGroup terminal, Carbon carbon, FunctionalGroup functionalGroup, Carbon otro) { // CX-C≡ → C(CX)≡
-		if(carbon.contiene(terminal)) {
+		if(carbon.isBondedTo(terminal)) {
 			carbons.remove(carbon);
 			otro.eliminarEnlace();
 			otro.enlazar(functionalGroup);
@@ -178,14 +178,12 @@ public class Chain extends Organic {
 	}
 
 	public void descomponerAldehido() { // COOH-CHO → COOH-CH(O)
-		if(getFuncionPrioritaria() != FunctionalGroup.aldehyde) { // Hay otra de mayor prioridad, se debe descomponer el aldehído
-			descomponerAldehidoEn(carbons.get(0));
-			descomponerAldehidoEn(getUltimo());
-		}
+		descomponerAldehidoEn(carbons.get(0));
+		descomponerAldehidoEn(getUltimo());
 	}
 
 	private void descomponerAldehidoEn(Carbon carbon) { // COOH-CHO → COOH-CH(O)
-		if(carbon.contiene(FunctionalGroup.aldehyde)) {
+		if(carbon.isBondedTo(FunctionalGroup.aldehyde)) {
 			carbon.eliminarConEnlaces(FunctionalGroup.aldehyde);
 			carbon.enlazar(FunctionalGroup.ketone);
 			carbon.enlazar(FunctionalGroup.hydrogen);
@@ -204,7 +202,7 @@ public class Chain extends Organic {
 
 	public boolean hasFunctionalGroup(FunctionalGroup functionalGroup) {
 		for(Carbon carbon : carbons)
-			if(carbon.contiene(functionalGroup))
+			if(carbon.isBondedTo(functionalGroup))
 				return true;
 
 		return false;
@@ -214,7 +212,7 @@ public class Chain extends Organic {
 		for(FunctionalGroup functionalGroup : FunctionalGroup.values()) // Todas las funciones recogidas en Group
 			if(functionalGroup != FunctionalGroup.hydrogen && functionalGroup != FunctionalGroup.ether)
 				for(Carbon carbon : carbons)
-					if(carbon.contiene(functionalGroup))
+					if(carbon.isBondedTo(functionalGroup))
 						return true;
 
 		return false;
@@ -275,7 +273,7 @@ public class Chain extends Organic {
 	public FunctionalGroup getFuncionPrioritaria() { // Con hidrógeno
 		for(FunctionalGroup functionalGroup : FunctionalGroup.values()) // Todas las funciones recogidas en Id
 			for(Carbon carbon : carbons)
-				if(carbon.contiene(functionalGroup))
+				if(carbon.isBondedTo(functionalGroup))
 					return functionalGroup;
 
 		return null;
@@ -287,7 +285,7 @@ public class Chain extends Organic {
 		for(FunctionalGroup functionalGroup : FunctionalGroup.values()) // Todas las funciones recogidas en Id
 			if(functionalGroup != FunctionalGroup.hydrogen && functionalGroup != FunctionalGroup.ether) // Excepto hidrógeno y éter
 				for(Carbon carbon : carbons)
-					if(carbon.contiene(functionalGroup)) {
+					if(carbon.isBondedTo(functionalGroup)) {
 						funciones.add(functionalGroup);
 						break;
 					}
@@ -351,7 +349,7 @@ public class Chain extends Organic {
 	}
 	
 	public boolean hasMethylAt(int index) {
-		return getSize() > index && carbons.get(getSize() - index - 1).contiene(Substituent.CH3);
+		return getSize() > index && carbons.get(getSize() - index - 1).isBondedTo(Substituent.CH3);
 	}
 
 	// Texto:

@@ -71,6 +71,9 @@ public final class Simple extends Organic implements OpenChain {
 
             // Composición:
 
+            // Primero descompone aldehído → cetona con hidrógeno, por si es ácido o amida:
+            chain.descomponerAldehido(); // COOH-CHO → COOH-CH(O)
+
             // Cetona con alcohol → ácido:
             chain.sustituirCetonaConPor(FunctionalGroup.alcohol, FunctionalGroup.acid); // C(O)(OH)- → COOH-
 
@@ -81,9 +84,6 @@ public final class Simple extends Organic implements OpenChain {
             chain.componerAldehido(); // CH(O)- → C(HO)
 
             // Descomposición:
-
-            // Aldehído no principal → cetona con hidrógeno:
-            chain.descomponerAldehido(); // COOH-CHO → COOH-CH(O)
 
             // Amida no principal → carbamoil del anterior:
             chain.sustituirTerminalPor(FunctionalGroup.amide, FunctionalGroup.carbamoyl); // CONH2-COOH → C(OOH)(CONH2)

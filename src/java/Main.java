@@ -1,24 +1,21 @@
 import com.quimify.organic.OrganicFactory;
+import com.quimify.organic.components.FunctionalGroup;
+import com.quimify.organic.compounds.open_chain.Simple;
 
 import java.util.Scanner;
 
 public class Main {
 
     public static void main(String[] args) {
-        while(true) {
-            String name;
+        Simple simple = new Simple();
 
-            //name = "etil metil eter";
-            //name = "ácido 4-fluoro-2-oxobutanoico";
-            //name = "ácido 3-butil-4-fluoro-2-oxobutanoico";
-            //name = "ácido 3-isobutil-4-fluoro-2-oxobutanoico";
-            //name = "ácido 3-terbutil-4-fluoro-2-oxobutanoico";
-            //name = "ciclopentano";
+        simple.bond(FunctionalGroup.hydrogen);
+        simple.bond(FunctionalGroup.ketone);
+        simple.bond(FunctionalGroup.amine);
 
-            name = new Scanner(System.in).nextLine();
+        simple.correctSubstituents();
 
-            System.out.println(OrganicFactory.getFromName(name).getStructure());
-        }
+        System.out.println(simple.getName());
     }
 
 }

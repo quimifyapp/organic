@@ -30,7 +30,7 @@ public class Carbon extends Organic {
 
     // Consultas:
 
-    public boolean contiene(FunctionalGroup functionalGroup) {
+    public boolean isBondedTo(FunctionalGroup functionalGroup) {
         switch(functionalGroup) {
             case alkene:
                 return enlaces_libres == 1; // Como en -CO=
@@ -45,7 +45,7 @@ public class Carbon extends Organic {
         }
     }
 
-    public boolean contiene(Substituent substituent) {
+    public boolean isBondedTo(Substituent substituent) {
         for(Substituent otro_substituent : substituents)
             if(otro_substituent.equals(substituent))
                 return true;
@@ -60,7 +60,7 @@ public class Carbon extends Organic {
     public int getCantidadDe(FunctionalGroup functionalGroup) {
         int cantidad = 0;
 
-        if(contiene(functionalGroup)) {
+        if(isBondedTo(functionalGroup)) {
             if(functionalGroup != FunctionalGroup.alkene && functionalGroup != FunctionalGroup.alkyne) {
                 for(Substituent substituent : substituents)
                     if(substituent.esTipo(functionalGroup))
@@ -182,7 +182,7 @@ public class Carbon extends Organic {
         }
 
         // Se escribe el éter:
-        if(contiene(FunctionalGroup.ether))
+        if(isBondedTo(FunctionalGroup.ether))
             resultado.append(new Substituent(FunctionalGroup.ether));
 
         return resultado.toString();
