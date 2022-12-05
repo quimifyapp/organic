@@ -81,8 +81,7 @@ public class Chain extends Organic {
 	}
 
 	public void correctChainStructureToTheLeft() { // CH2(CH3)-CH2- → CH3-CH2-CH2-
-		boolean corrected; // Para actualizar el iterador tras iteración // TODO initialize
-
+		boolean corrected; // Para actualizar el iterador tras iteración
 		for (int i = 0; i < carbons.size(); i = corrected ? 0 : i + 1) { // Sin incremento
 			if(carbons.get(i).getSubstituentsOf(FunctionalGroup.radical).size() > 0) { // Este carbono tiene radicales
 				// Se obtiene el mayor radical de este carbono:

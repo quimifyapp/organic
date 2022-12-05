@@ -11,8 +11,6 @@ import com.quimify.organic.components.Substituent;
 import java.util.List;
 
 public interface OpenChain {
-    OpenChain getReversed();
-
     int getFreeBonds();
 
     boolean isDone();

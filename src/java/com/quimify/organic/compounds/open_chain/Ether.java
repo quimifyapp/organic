@@ -1,6 +1,7 @@
 package com.quimify.organic.compounds.open_chain;
 
 import com.quimify.organic.Organic;
+import com.quimify.organic.components.Atom;
 import com.quimify.organic.components.Chain;
 import com.quimify.organic.components.FunctionalGroup;
 import com.quimify.organic.components.Substituent;
@@ -8,6 +9,7 @@ import com.quimify.organic.components.Substituent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 // Esta clase representa éteres: dos cadenas con funciones de prioridad menor a la función éter unidas por un oxígeno.
 
@@ -16,14 +18,37 @@ public final class Ether extends Organic implements OpenChain {
 	private final Chain firstChain; // R
 	private Chain secondChain, currentChain; // R', ->
 
-	private static final List<FunctionalGroup> orderedBondableGroups = List.of(
-			FunctionalGroup.nitro, FunctionalGroup.bromine, FunctionalGroup.chlorine, FunctionalGroup.fluorine,
-			FunctionalGroup.iodine, FunctionalGroup.radical, FunctionalGroup.hydrogen
+	// Constants:
+
+	public static final Set<Atom> bondableAtoms = Set.of(
+			Atom.NO2,
+			Atom.Br,
+			Atom.Cl,
+			Atom.F,
+			Atom.I,
+			Atom.H
 	);
+
+	private static final Set<FunctionalGroup> bondableFunctionalGroups = Set.of(
+			FunctionalGroup.ether,
+			FunctionalGroup.nitro,
+			FunctionalGroup.bromine,
+			FunctionalGroup.chlorine,
+			FunctionalGroup.fluorine,
+			FunctionalGroup.iodine,
+			FunctionalGroup.radical,
+			FunctionalGroup.hydrogen
+	);
+
+	// Constructors:
+
+	public Ether() {
+		firstChain = new Chain(0); // R - O
+		currentChain = this.firstChain;
+	}
 
 	public Ether(Simple firstChain) {
 		this.firstChain = firstChain.getChain(); // R - O
-
 		if(firstChain.isDone())
 			startSecondChain(); // R - O - C≡
 		else currentChain = this.firstChain;
@@ -32,14 +57,10 @@ public final class Ether extends Organic implements OpenChain {
 	private Ether(Chain firstChain, Chain secondChain) {
 		this.firstChain = firstChain; // [R - O] - R'
 		this.secondChain = secondChain; // R - O [- R']
-		currentChain = this.firstChain;
+		currentChain = this.firstChain; // It has been rotated
 	}
 
 	// OPEN CHAIN --------------------------------------------------------------------
-
-	public Ether getReversed() {
-		return new Ether(secondChain.getInverseOriented(), firstChain.getInverseOriented());
-	}
 
 	public int getFreeBonds() {
 		return currentChain.getEnlacesLibres();
@@ -50,18 +71,18 @@ public final class Ether extends Organic implements OpenChain {
 	}
 
 	public void bondCarbon() {
-		secondChain.bondCarbon();
+		currentChain.bondCarbon();
 	}
 
 	public void bond(Substituent substituent) {
-		if (orderedBondableGroups.contains(substituent.getFunctionalGroup())) {
+		if (bondableFunctionalGroups.contains(substituent.getFunctionalGroup())) {
 			currentChain.bond(substituent);
 
 			if (currentChain == firstChain && firstChain.isDone())
 				if (currentChain.isDone())
 					startSecondChain();
 		}
-		else throw new IllegalArgumentException("No se puede enlazar [" + substituent.getFunctionalGroup() + "] a un Ether.");
+		else throw new IllegalArgumentException("Couldn't bond " + substituent.getFunctionalGroup() + " to an Ether.");
 	}
 
 	public void bond(FunctionalGroup functionalGroup) {
@@ -73,7 +94,25 @@ public final class Ether extends Organic implements OpenChain {
 	}
 
 	public List<FunctionalGroup> getOrderedBondableGroups() {
-		return getFreeBonds() > 0 ? orderedBondableGroups : Collections.emptyList();
+		if(getFreeBonds() == 0)
+			return Collections.emptyList();
+
+		List<FunctionalGroup> result = new ArrayList<>();
+
+		if(currentChain == firstChain)
+			result.add(FunctionalGroup.ether);
+
+		result.addAll(List.of(
+				FunctionalGroup.nitro,
+				FunctionalGroup.bromine,
+				FunctionalGroup.chlorine,
+				FunctionalGroup.fluorine,
+				FunctionalGroup.iodine,
+				FunctionalGroup.radical,
+				FunctionalGroup.hydrogen
+		));
+
+		return result;
 	}
 
 	public String getName() {

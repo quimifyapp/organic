@@ -2,6 +2,7 @@ package com.quimify.organic.compounds;
 
 import com.quimify.organic.Organic;
 import com.quimify.organic.components.*;
+import com.quimify.organic.compounds.open_chain.Ether;
 import com.quimify.organic.compounds.open_chain.Simple;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
@@ -72,32 +73,31 @@ public class Molecule extends Organic {
 	}
 
 	public Optional<String> getStructure() {
+		Optional<String> structure;
+
 		if(isOpenChain()) {
-			Optional<Atom> simpleEndingCarbon =  getSimpleEndingCarbon();
+			structure = getSimpleStructure();
 
-			if(simpleEndingCarbon.isPresent()) {
-				Simple simple = new Simple();
-				buildSimple(simpleEndingCarbon.get(), simple);
-				simple.correct();
-				return Optional.of(simple.getStructure());
-			}
+			if(structure.isEmpty())
+				structure = getEtherStructure();
 		}
+		else structure = Optional.empty();
 
-		return Optional.empty();
+		return structure;
 	}
 
 	// Private methods:
-
-	private boolean isOpenChain() {
-		return !isCycle(); // By definition
-	}
 
 	private boolean isCycle() {
 		return smiles.matches(".*[0-9].*"); // SMILES uses digits only for cycles
 	}
 
-	private Optional<Atom> getSimpleEndingCarbon() {
-		return getEndingCarbons().stream().filter(this::isSimpleCarbon).findAny();
+	private boolean isOpenChain() {
+		return !isCycle(); // By definition
+	}
+
+	private List<Atom> getCarbons() {
+		return molecule.stream().filter(atom -> atom.getElement() == Element.C).collect(Collectors.toList());
 	}
 
 	private List<Atom> getEndingCarbons() {
@@ -105,8 +105,26 @@ public class Molecule extends Organic {
 		return carbons.stream().filter(carbon -> carbon.getBonded(Element.C).size() < 2).collect(Collectors.toList());
 	}
 
-	private List<Atom> getCarbons() {
-		return molecule.stream().filter(atom -> atom.getElement() == Element.C).collect(Collectors.toList());
+	// Simple structure:
+
+	private Optional<String> getSimpleStructure() {
+		Optional<String> simpleStructure;
+
+		Optional<Atom> endingCarbon = getSimpleEndingCarbon();
+		if(endingCarbon.isPresent()) {
+			Simple simple = new Simple();
+			buildSimpleFrom(simple, endingCarbon.get());
+			simple.correct();
+
+			simpleStructure = Optional.of(simple.getStructure());
+		}
+		else simpleStructure = Optional.empty();
+
+		return simpleStructure;
+	}
+
+	private Optional<Atom> getSimpleEndingCarbon() {
+		return getEndingCarbons().stream().filter(this::isSimpleCarbon).findAny();
 	}
 
 	private boolean isSimpleCarbon(Atom carbon) {
@@ -117,12 +135,101 @@ public class Molecule extends Organic {
 
 		if(nonSubstituentBondedAtoms.size() == 1) {
 			Atom nonSubstituent = nonSubstituentBondedAtoms.stream().findAny().get();
-			isSimpleCarbon = nonSubstituent.isElement(Element.C) && isSimpleCarbon(nonSubstituent); // Recursion
+			isSimpleCarbon = nonSubstituent.getElement() == Element.C && isSimpleCarbon(nonSubstituent); // Recursion
 		}
 		else isSimpleCarbon = nonSubstituentBondedAtoms.size() == 0;
 
 		return isSimpleCarbon;
 	}
+
+	private void buildSimpleFrom(Simple simple, Atom simpleCarbon) {
+		Optional<Atom> nextCarbon = Optional.empty();
+
+		for(Atom bondedAtom : simpleCarbon.getBondedAtomsCutOff()) {
+			if (isBondableAtom(bondedAtom, Simple.bondableAtoms))
+				simple.bond(bondedAtom.toFunctionalGroup());
+			else if(isRadicalCarbon(bondedAtom))
+				simple.bond(buildRadicalFrom(bondedAtom));
+			else nextCarbon = Optional.of(bondedAtom);
+		}
+
+		if(nextCarbon.isPresent()) {
+			simple.bondCarbon();
+			buildSimpleFrom(simple, nextCarbon.get()); // Recursion
+		}
+	}
+
+	// Ether structure:
+
+	private Optional<String> getEtherStructure() {
+		Optional<String> etherStructure;
+
+		Optional<Atom> endingCarbon = getEtherEndingCarbon();
+		if(endingCarbon.isPresent()) {
+			Ether ether = new Ether();
+			buildEtherFrom(ether, endingCarbon.get());
+			ether.correct();
+
+			etherStructure = Optional.of(ether.getStructure());
+		}
+		else etherStructure = Optional.empty();
+
+		return etherStructure;
+	}
+
+	private Optional<Atom> getEtherEndingCarbon() {
+		List<Atom> endingCarbons = getEndingCarbons();
+
+		if(endingCarbons.size() > 2) // -C-O-C- minimum
+			endingCarbons = endingCarbons.stream().filter(endingCarbon ->
+					endingCarbon.getBondedAtomsCutOff().stream().noneMatch(bonded ->
+							bonded.getElement() == Element.O)).collect(Collectors.toList());
+
+		return endingCarbons.stream().filter(endingCarbon -> isEtherCarbon(endingCarbon, false)).findAny();
+	}
+
+	private boolean isEtherCarbon(Atom carbon, boolean hasFoundEther) {
+		boolean isEtherCarbon;
+
+		Set<Atom> nonSubstituentBondedAtoms = carbon.getBondedAtomsCutOff().stream().filter(bondedAtom ->
+				!isSubstituent(bondedAtom, Ether.bondableAtoms)).collect(Collectors.toSet());
+
+		if (nonSubstituentBondedAtoms.size() == 1) {
+			Atom nonSubstituent = nonSubstituentBondedAtoms.stream().findAny().get();
+
+			if (nonSubstituent.getElement() == Element.C)
+				isEtherCarbon = isEtherCarbon(nonSubstituent, hasFoundEther); // Recursion
+			else if (nonSubstituent.getElement() == Element.O)
+				isEtherCarbon = !hasFoundEther && isEtherCarbon(nonSubstituent, true); // Recursion
+			else isEtherCarbon = false;
+		} else isEtherCarbon = nonSubstituentBondedAtoms.size() == 0;
+
+		return isEtherCarbon;
+	}
+
+	private void buildEtherFrom(Ether ether, Atom etherCarbon) {
+		Optional<Atom> nextAtom = Optional.empty();
+
+		for(Atom bondedAtom : etherCarbon.getBondedAtomsCutOff()) {
+			if (isBondableAtom(bondedAtom, Ether.bondableAtoms))
+				ether.bond(bondedAtom.toFunctionalGroup());
+			else if(isRadicalCarbon(bondedAtom))
+				ether.bond(buildRadicalFrom(bondedAtom));
+			else nextAtom = Optional.of(bondedAtom);
+		}
+
+		if(nextAtom.isPresent()) {
+			if(nextAtom.get().getElement() == Element.O)  {
+				ether.bond(FunctionalGroup.ether);
+				nextAtom = Optional.of(nextAtom.get().getBondedAtomsCutOff().get(0));
+			}
+			else ether.bondCarbon(); // It's a carbon
+
+			buildEtherFrom(ether, nextAtom.get()); // Recursion
+		}
+	}
+
+	// Simple or ether structure:
 
 	private boolean isSubstituent(Atom atom, Set<Atom> bondableAtoms) {
 		return isBondableAtom(atom, bondableAtoms) || isRadicalCarbon(atom);
@@ -133,7 +240,7 @@ public class Molecule extends Organic {
 	}
 
 	private boolean isRadicalCarbon(Atom atom) {
-		if(!atom.isElement(Element.C))
+		if(atom.getElement() != Element.C)
 			return false;
 
 		boolean isRadicalCarbon;
@@ -147,7 +254,7 @@ public class Molecule extends Organic {
 					break;
 				case 2:
 					Stream<Atom> bondedCarbons = bondedAtomsCutOff.stream().filter(bondedAtom ->
-							bondedAtom.isElement(Element.C));
+							bondedAtom.getElement() == Element.C);
 
 					isRadicalCarbon = atom.getBonded(Element.C).size() == 1 // CH2-C...
 							&& bondedCarbons.allMatch(this::isRadicalCarbon); // CH2-CH2-C... (recursive)
@@ -167,32 +274,16 @@ public class Molecule extends Organic {
 		return isRadicalCarbon;
 	}
 
-	private void buildSimple(Atom carbon, Simple simple) {
-		Optional<Atom> nextCarbon = Optional.empty();
-		for(Atom bondedAtom : carbon.getBondedAtomsCutOff()) {
-			if (isBondableAtom(bondedAtom, Simple.bondableAtoms))
-				simple.bond(bondedAtom.toFunctionalGroup());
-			else if(isRadicalCarbon(bondedAtom))
-				simple.bond(buildRadical(bondedAtom));
-			else nextCarbon = Optional.of(bondedAtom);
-		}
-
-		if(nextCarbon.isPresent()) {
-			simple.bondCarbon();
-			buildSimple(nextCarbon.get(), simple);
-		}
-	}
-
-	private Substituent buildRadical(Atom carbon) {
+	private Substituent buildRadicalFrom(Atom radicalCarbon) {
 		Substituent radical;
 
-		switch (carbon.getBonded(Element.H).size()) {
+		switch (radicalCarbon.getBonded(Element.H).size()) {
 			case 3: // -CH3
 				radical = new Substituent(1);
 				break;
 			case 2: // -CH2-
-				Atom nextCarbon = carbon.toAnonymous().getBonded(Element.C).get(0); // There must be one
-				Substituent radicalEnd = buildRadical(nextCarbon); // Recursive
+				Atom nextCarbon = radicalCarbon.toAnonymous().getBonded(Element.C).get(0); // There must be one
+				Substituent radicalEnd = buildRadicalFrom(nextCarbon); // Recursive
 				radical = new Substituent(1 + radicalEnd.getCarbonCount(), radicalEnd.isIso()); // Appended
 				break;
 			case 1: // -CH(CH3)2

@@ -12,8 +12,8 @@ public final class Simple extends Organic implements OpenChain {
     private final Chain chain;
 
     // Constants:
+
     public static final Set<Atom> bondableAtoms = Set.of(
-            Atom.H,
             Atom.N,
             Atom.O,
             Atom.OH,
@@ -22,10 +22,11 @@ public final class Simple extends Organic implements OpenChain {
             Atom.Br,
             Atom.Cl,
             Atom.F,
-            Atom.I
+            Atom.I,
+            Atom.H
     );
 
-    private static final Set<FunctionalGroup> bondableGroups = Set.of(
+    private static final Set<FunctionalGroup> bondableFunctionalGroups = Set.of(
             FunctionalGroup.acid,
             FunctionalGroup.amide,
             FunctionalGroup.nitrile,
@@ -71,7 +72,7 @@ public final class Simple extends Organic implements OpenChain {
     }
 
     public void bond(Substituent substituent) {
-        if (bondableGroups.contains(substituent.getFunctionalGroup()))
+        if (bondableFunctionalGroups.contains(substituent.getFunctionalGroup()))
             chain.bond(substituent);
         else throw new IllegalArgumentException("No se puede enlazar [" + substituent.getFunctionalGroup() + "] a un Simple.");
     }

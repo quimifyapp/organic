@@ -16,7 +16,6 @@ public class Atom {
 	public static final Atom O = new Atom(Element.O);
 	public static final Atom OH = new Atom(Element.O, List.of(H));
 	public static final Atom NH2 = new Atom(Element.N, List.of(H, H));
-	public static final Atom OC = new Atom(Element.O, List.of(new Atom(Element.C)));
 	public static final Atom NO2 = new Atom(Element.N, List.of(O, O));
 	public static final Atom Br = new Atom(Element.Br);
 	public static final Atom Cl = new Atom(Element.Cl);
@@ -105,10 +104,6 @@ public class Atom {
 				otherBondedAtomsCutOff.stream().anyMatch(bondedAtomCutOff::equals));
 	}
 
-	public boolean isElement(Element element) {
-		return this.element == element;
-	}
-
 	public Atom toAnonymous() {
 		Atom anonymousAtom = new Atom(element, getBondedAtomsCutOff());
 		anonymousAtom.bondedAtoms.replaceAll(Atom::toAnonymous);
@@ -118,26 +113,26 @@ public class Atom {
 	public FunctionalGroup toFunctionalGroup() {
 		FunctionalGroup functionalGroup;
 
-		Atom anonymousBondedAtom = toAnonymous();
-		if (anonymousBondedAtom.equals(Atom.H))
+		Atom anonymousAtom = toAnonymous();
+		if (anonymousAtom.equals(Atom.H))
 			functionalGroup = FunctionalGroup.hydrogen;
-		else if (anonymousBondedAtom.equals(Atom.N))
+		else if (anonymousAtom.equals(Atom.N))
 			functionalGroup = FunctionalGroup.nitrile;
-		else if (anonymousBondedAtom.equals(Atom.O))
+		else if (anonymousAtom.equals(Atom.O))
 			functionalGroup = FunctionalGroup.ketone;
-		else if (anonymousBondedAtom.equals(Atom.OH))
+		else if (anonymousAtom.equals(Atom.OH))
 			functionalGroup = FunctionalGroup.alcohol;
-		else if (anonymousBondedAtom.equals(Atom.NH2))
+		else if (anonymousAtom.equals(Atom.NH2))
 			functionalGroup = FunctionalGroup.amine;
-		else if (anonymousBondedAtom.equals(Atom.NO2))
+		else if (anonymousAtom.equals(Atom.NO2))
 			functionalGroup = FunctionalGroup.nitro;
-		else if (anonymousBondedAtom.equals(Atom.Br))
+		else if (anonymousAtom.equals(Atom.Br))
 			functionalGroup = FunctionalGroup.bromine;
-		else if (anonymousBondedAtom.equals(Atom.Cl))
+		else if (anonymousAtom.equals(Atom.Cl))
 			functionalGroup = FunctionalGroup.chlorine;
-		else if (anonymousBondedAtom.equals(Atom.F))
+		else if (anonymousAtom.equals(Atom.F))
 			functionalGroup = FunctionalGroup.fluorine;
-		else if (anonymousBondedAtom.equals(Atom.I))
+		else if (anonymousAtom.equals(Atom.I))
 			functionalGroup = FunctionalGroup.iodine;
 		else throw new IllegalArgumentException("Couldn't find FunctionalGroup of Atom: " + element + ".");
 
@@ -159,7 +154,7 @@ public class Atom {
 	}
 
 	public List<Atom> getBonded(Element element) {
-		return bondedAtoms.stream().filter(bondedAtom -> bondedAtom.isElement(element)).collect(Collectors.toList());
+		return bondedAtoms.stream().filter(bondedAtom -> bondedAtom.getElement() == element).collect(Collectors.toList());
 	}
 
 	// Getters:
