@@ -58,7 +58,7 @@ public class OrganicFactory {
 
         OrganicResult organicResult = new OrganicResult(true);
 
-        openChain.correctSubstituents(); // It´s necessary
+        openChain.correct(); // It´s necessary
 
         // Name:
         String name = openChain.getName();

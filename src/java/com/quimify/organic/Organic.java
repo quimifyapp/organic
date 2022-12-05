@@ -27,7 +27,7 @@ public class Organic {
 
     protected static void ordenarPorFunciones(List<Substituent> substituents) {
         for(int i = 0; i < substituents.size() - 1;) // Sin incremento
-            if(substituents.get(i).getGroup().compareTo(substituents.get(i + 1).getGroup()) > 0) {
+            if(substituents.get(i).getFunctionalGroup().compareTo(substituents.get(i + 1).getFunctionalGroup()) > 0) {
                 swap(substituents, i, i + 1); // get(i) > get(i + 1)
                 i = 0;
             }

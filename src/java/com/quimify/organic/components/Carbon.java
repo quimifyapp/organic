@@ -8,24 +8,18 @@ import java.util.stream.Collectors;
 public class Carbon extends Organic {
 
     private final List<Substituent> substituents;
-    private int enlaces_libres;
+    private int freeBondCount;
 
     // Constructor:
 
     public Carbon(int enlaces_previos) {
         substituents = new ArrayList<>();
-        enlaces_libres = 4 - enlaces_previos;
-    }
-
-    public Carbon(FunctionalGroup functionalGroup, int veces) {
-        substituents = new ArrayList<>();
-        enlaces_libres = 4;
-        enlazar(functionalGroup, veces);
+        freeBondCount = 4 - enlaces_previos;
     }
 
     public Carbon(Carbon otro) {
         substituents = new ArrayList<>(otro.substituents);
-        enlaces_libres = otro.enlaces_libres;
+        freeBondCount = otro.freeBondCount;
     }
 
     // Consultas:
@@ -33,12 +27,12 @@ public class Carbon extends Organic {
     public boolean isBondedTo(FunctionalGroup functionalGroup) {
         switch(functionalGroup) {
             case alkene:
-                return enlaces_libres == 1; // Como en -CO=
+                return freeBondCount == 1; // Como en -CO=
             case alkyne:
-                return enlaces_libres == 2; // Como en -CH#
+                return freeBondCount == 2; // Como en -CH#
             default:
                 for(Substituent substituent : substituents)
-                    if(substituent.esTipo(functionalGroup))
+                    if(substituent.getFunctionalGroup() == functionalGroup)
                         return true;
 
                 return false;
@@ -63,7 +57,7 @@ public class Carbon extends Organic {
         if(isBondedTo(functionalGroup)) {
             if(functionalGroup != FunctionalGroup.alkene && functionalGroup != FunctionalGroup.alkyne) {
                 for(Substituent substituent : substituents)
-                    if(substituent.esTipo(functionalGroup))
+                    if(substituent.getFunctionalGroup() == functionalGroup)
                         cantidad += 1;
             }
             else cantidad = 1;
@@ -79,7 +73,7 @@ public class Carbon extends Organic {
         if(otro != null && otro.getClass() == this.getClass()) {
             Carbon nuevo = (Carbon) otro;
 
-            if(enlaces_libres == nuevo.enlaces_libres && substituents.size() == nuevo.substituents.size()) {
+            if(freeBondCount == nuevo.freeBondCount && substituents.size() == nuevo.substituents.size()) {
                 es_igual = true;
 
                 for(int i = 0; i < substituents.size(); i++)
@@ -97,17 +91,17 @@ public class Carbon extends Organic {
 
     // Métodos get:
 
-    public List<Substituent> getSustituyentesTipo(FunctionalGroup functionalGroup) {
-        return substituents.stream().filter(sustituyente -> sustituyente.esTipo(functionalGroup))
-                .collect(Collectors.toList());
+    public List<Substituent> getSubstituentsOf(FunctionalGroup functionalGroup) {
+        return substituents.stream().filter(substituent ->
+                        substituent.getFunctionalGroup() == functionalGroup).collect(Collectors.toList());
     }
 
     public List<Substituent> getSubstituentsWithoutHydrogen() {
-        return substituents.stream().filter(sustituyente -> !sustituyente.esTipo(FunctionalGroup.hydrogen))
-                .collect(Collectors.toList());
+        return substituents.stream().filter(substituent ->
+                        substituent.getFunctionalGroup() != FunctionalGroup.hydrogen).collect(Collectors.toList());
     }
 
-    public List<Substituent> getUnicosSustituyentes() {
+    public List<Substituent> getUniqueSubstituents() {
         List<Substituent> unicos = new ArrayList<>();
 
         for(Substituent substituent : substituents)
@@ -117,117 +111,119 @@ public class Carbon extends Organic {
         return unicos;
     }
 
-    public Substituent getMayorRadical() {
-        Substituent mayor_radical;
+    public Substituent getGreatesRadical() {
+        Substituent greatestRadical;
 
-        List<Substituent> radicales = getSustituyentesTipo(FunctionalGroup.radical);
-        mayor_radical = radicales.get(0); // Se asume que tiene radicales
+        List<Substituent> radicales = getSubstituentsOf(FunctionalGroup.radical);
+        greatestRadical = radicales.get(0); // Se asume que tiene radicales
 
         for(int i = 1; i < radicales.size(); i++)
-            if(radicales.get(i).esMayorRadicalQue(mayor_radical))
-                mayor_radical = radicales.get(i);
+            if(radicales.get(i).isLongerThan(greatestRadical))
+                greatestRadical = radicales.get(i);
 
-        return mayor_radical;
+        return greatestRadical;
     }
 
     public int getEnlacesLibres() {
-        return enlaces_libres;
+        return freeBondCount;
     }
 
     // Métodos set:
 
     public void setEnlacesLibres(int enlaces_libres) {
-        this.enlaces_libres = enlaces_libres;
+        this.freeBondCount = enlaces_libres;
     }
 
     // Texto:
 
     @Override
     public String toString() {
-        StringBuilder resultado = new StringBuilder("C");
+        StringBuilder result = new StringBuilder("C");
 
         // Se recogen los tipos de sustituyente:
-        List<Substituent> unicos = getUnicosSustituyentes(); // Sin repetirse
+        List<Substituent> uniques = getUniqueSubstituents(); // Sin repetirse
 
         // Se ordenan según la prioridad de su función:
-        Organic.ordenarPorFunciones(unicos);
+        Organic.ordenarPorFunciones(uniques);
 
         // Se escribe los hidrógenos:
-        Substituent hidrogeno = new Substituent(FunctionalGroup.hydrogen);
-        final int hydrogenCount = getCantidadDe(hidrogeno);
+
+        final int hydrogenCount = getCantidadDe(FunctionalGroup.hydrogen);
+
         if(hydrogenCount > 0) {
-            resultado.append(hidrogeno).append(getMolecularQuantifier(hydrogenCount));
-            unicos.remove(unicos.size() - 1); // Se borra el hidrógeno de la lista
+            Substituent hydrogen = new Substituent(FunctionalGroup.hydrogen);
+            result.append(hydrogen).append(getMolecularQuantifier(hydrogenCount));
+            uniques.remove(uniques.size() - 1); // Se borra el hidrógeno de la lista
         }
 
         // Se escribe el resto de sustituyentes excepto el éter:
-        unicos.removeIf(sustituyente -> sustituyente.esTipo(FunctionalGroup.ether));
+        uniques.removeIf(substituent -> substituent.getFunctionalGroup() == FunctionalGroup.ether);
 
-        if(unicos.size() == 1) { // Solo hay un tipo además del hidrógeno y éter
-            Substituent unique = unicos.get(0);
+        if(uniques.size() == 1) { // Solo hay un tipo además del hidrógeno y éter
+            Substituent unique = uniques.get(0);
             String text = unique.toString();
 
-            if (unique.getEnlaces() == 3 && !(unique.esTipo(FunctionalGroup.aldehyde) && hydrogenCount > 0))
-                resultado.append(text); // COOH, CHO...
-            else if (unique.esTipo(FunctionalGroup.ketone) || unique.isHalogen())
-                resultado.append(text); // CO, CCl...
-            else resultado.append("(").append(text).append(")"); // CH(HO), CH(OH)3, CH3(CH2CH3)...
+            if (unique.getBondCount() == 3 && !(unique.getFunctionalGroup() == FunctionalGroup.aldehyde && hydrogenCount > 0))
+                result.append(text); // COOH, CHO...
+            else if (unique.isHalogen() || (unique.getFunctionalGroup() == FunctionalGroup.ketone && hydrogenCount == 0))
+                result.append(text); // CO, CCl...
+            else result.append("(").append(text).append(")"); // CH(HO), CH(OH)3, CH3(CH2CH3)...
 
-            resultado.append((getMolecularQuantifier(getCantidadDe(unique))));
+            result.append((getMolecularQuantifier(getCantidadDe(unique))));
         }
-        else if(unicos.size() > 1) { // Hay más de un tipo además del hidrógeno y éter
-            for (Substituent substituent : unicos)
-                resultado.append("(").append(substituent).append(")") // C(OH)3(Cl), CH2(NO2)(CH3)...
+        else if(uniques.size() > 1) { // Hay más de un tipo además del hidrógeno y éter
+            for (Substituent substituent : uniques)
+                result.append("(").append(substituent).append(")") // C(OH)3(Cl), CH2(NO2)(CH3)...
                         .append(getMolecularQuantifier(getCantidadDe(substituent)));
         }
 
         // Se escribe el éter:
         if(isBondedTo(FunctionalGroup.ether))
-            resultado.append(new Substituent(FunctionalGroup.ether));
+            result.append(new Substituent(FunctionalGroup.ether));
 
-        return resultado.toString();
+        return result.toString();
     }
 
     // Modificadores:
 
-    public void enlazar(Substituent substituent) {
+    public void bond(Substituent substituent) {
         substituents.add(substituent);
-        enlaces_libres -= substituent.getEnlaces();
+        freeBondCount -= substituent.getBondCount();
     }
 
-    public void enlazar(FunctionalGroup functionalGroup) {
-        enlazar(new Substituent(functionalGroup));
+    public void bond(FunctionalGroup functionalGroup) {
+        bond(new Substituent(functionalGroup));
     }
 
-    public void enlazar(Substituent substituent, int veces) {
-        for(int i = 0; i < veces; i++)
-            enlazar(substituent);
+    public void bond(Substituent substituent, int times) {
+        for(int i = 0; i < times; i++)
+            bond(substituent);
     }
 
-    public void enlazar(FunctionalGroup functionalGroup, int veces) {
-        for(int i = 0; i < veces; i++)
-            enlazar(functionalGroup);
+    public void bond(FunctionalGroup functionalGroup, int times) {
+        for(int i = 0; i < times; i++)
+            bond(functionalGroup);
     }
 
-    public void eliminar(Substituent substituent) {
+    public void remove(Substituent substituent) {
         substituents.remove(substituent); // No se ha eliminado su enlace
     }
 
-    public void eliminarConEnlaces(Substituent substituent) {
-        eliminar(substituent);
-        enlaces_libres += substituent.getEnlaces();
+    public void removeWithBonds(Substituent substituent) {
+        remove(substituent);
+        freeBondCount += substituent.getBondCount();
     }
 
-    public void eliminarConEnlaces(FunctionalGroup functionalGroup) {
-        eliminarConEnlaces(new Substituent(functionalGroup));
+    public void removeWithBonds(FunctionalGroup functionalGroup) {
+        removeWithBonds(new Substituent(functionalGroup));
     }
 
-    public void enlazarCarbono() {
-        enlaces_libres--;
+    public void useBond() {
+        freeBondCount--;
     }
 
-    public void eliminarEnlace() {
-        enlaces_libres++;
+    public void freeBond() {
+        freeBondCount++;
     }
 
 }

@@ -104,11 +104,7 @@ public class Substituent extends Organic {
         else throw new IllegalArgumentException("No existen radicales con 0 carbonos.");
     }
 
-    // Consultas particulares:
-
-    public boolean esTipo(FunctionalGroup functionalGroup) {
-        return this.functionalGroup == functionalGroup;
-    }
+    // Queries:
 
     public boolean isHalogen() {
         return Organic.isHalogen(functionalGroup);
@@ -132,7 +128,11 @@ public class Substituent extends Organic {
 
     // Para radicales:
 
-    public boolean esMayorRadicalQue(Substituent radical) {
+    public int getStraightCarbonCount() {
+        return carbonCount - (isIso ? 1 : 0);
+    }
+
+    public boolean isLongerThan(Substituent radical) {
         switch(Integer.compare(getStraightCarbonCount(), radical.getStraightCarbonCount())) {
             case 1: // Lo supera
                 return true;
@@ -143,54 +143,27 @@ public class Substituent extends Organic {
         }
     }
 
-    // Métodos get:
-
-    public FunctionalGroup getGroup() {
-        return functionalGroup;
-    }
-
-
-    public int getEnlaces() {
-        return bondCount;
-    }
-
-
-    public int getCarbonCount() {
-        return carbonCount;
-    }
-
-
-    public boolean isIso() {
-        return isIso;
-    }
-
-    // Para radicales:
-
-    public int getStraightCarbonCount() {
-        return carbonCount - (isIso ? 1 : 0);
-    }
-
-    public Chain getChain() {
+    public Chain toChain() {
         if (carbonCount == 0)
             return new Chain(); // Empty
 
         Chain chain = new Chain(0); // (C)
 
-        chain.enlazar(FunctionalGroup.hydrogen, 3); // CH3-
+        chain.bond(FunctionalGroup.hydrogen, 3); // CH3-
 
         int previous = 1; // CH3-
 
         if (isIso) {
-            chain.enlazarCarbono(); // CH3-C≡
-            chain.enlazar(FunctionalGroup.hydrogen); // CH3-CH=
-            chain.enlazar(CH3); // CH3-CH(CH3)-
+            chain.bondCarbon(); // CH3-C≡
+            chain.bond(FunctionalGroup.hydrogen); // CH3-CH=
+            chain.bond(CH3); // CH3-CH(CH3)-
 
             previous += 2; // CH3-CH(CH3)-
         }
 
         for (int i = previous; i < carbonCount; i++) {
-            chain.enlazarCarbono(); // CH3-CH(CH3)-C≡
-            chain.enlazar(FunctionalGroup.hydrogen, 2); // CH3-CH(CH3)-CH2-
+            chain.bondCarbon(); // CH3-CH(CH3)-C≡
+            chain.bond(FunctionalGroup.hydrogen, 2); // CH3-CH(CH3)-CH2-
         }
 
         return chain; // CH3-CH(CH3)-CH2-
@@ -262,6 +235,27 @@ public class Substituent extends Organic {
         }
 
         return resultado.toString();
+    }
+
+    // Getters:
+
+    public FunctionalGroup getFunctionalGroup() {
+        return functionalGroup;
+    }
+
+
+    public int getBondCount() {
+        return bondCount;
+    }
+
+
+    public int getCarbonCount() {
+        return carbonCount;
+    }
+
+
+    public boolean isIso() {
+        return isIso;
     }
 
 }

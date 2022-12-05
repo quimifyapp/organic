@@ -78,7 +78,7 @@ public class Molecule extends Organic {
 			if(simpleEndingCarbon.isPresent()) {
 				Simple simple = new Simple();
 				buildSimple(simpleEndingCarbon.get(), simple);
-				simple.correctSubstituents();
+				simple.correct();
 				return Optional.of(simple.getStructure());
 			}
 		}
@@ -115,11 +115,11 @@ public class Molecule extends Organic {
 		Set<Atom> nonSubstituentBondedAtoms = carbon.getBondedAtomsCutOff().stream().filter(bondedAtom ->
 				!isSubstituent(bondedAtom, Simple.bondableAtoms)).collect(Collectors.toSet());
 
-		if (nonSubstituentBondedAtoms.stream().allMatch(bondedAtom -> bondedAtom.isElement(Element.C))) {
-			if (nonSubstituentBondedAtoms.size() == 1)
-				isSimpleCarbon = isSimpleCarbon(nonSubstituentBondedAtoms.stream().findAny().get());
-			else isSimpleCarbon = nonSubstituentBondedAtoms.size() == 0;
-		} else isSimpleCarbon = false; // There are bonded atoms that are not substituents nor carbons
+		if(nonSubstituentBondedAtoms.size() == 1) {
+			Atom nonSubstituent = nonSubstituentBondedAtoms.stream().findAny().get();
+			isSimpleCarbon = nonSubstituent.isElement(Element.C) && isSimpleCarbon(nonSubstituent); // Recursion
+		}
+		else isSimpleCarbon = nonSubstituentBondedAtoms.size() == 0;
 
 		return isSimpleCarbon;
 	}
@@ -169,34 +169,11 @@ public class Molecule extends Organic {
 
 	private void buildSimple(Atom carbon, Simple simple) {
 		Optional<Atom> nextCarbon = Optional.empty();
-
 		for(Atom bondedAtom : carbon.getBondedAtomsCutOff()) {
-			if (isBondableAtom(bondedAtom, Simple.bondableAtoms)) {
-				Atom anonymousBondedAtom = bondedAtom.toAnonymous();
-				if (anonymousBondedAtom.equals(Atom.H))
-					simple.bond(FunctionalGroup.hydrogen);
-				if (anonymousBondedAtom.equals(Atom.N))
-					simple.bond(FunctionalGroup.nitrile);
-				if (anonymousBondedAtom.equals(Atom.O))
-					simple.bond(FunctionalGroup.ketone);
-				if (anonymousBondedAtom.equals(Atom.OH))
-					simple.bond(FunctionalGroup.alcohol);
-				if (anonymousBondedAtom.equals(Atom.NH2))
-					simple.bond(FunctionalGroup.amine);
-				if (anonymousBondedAtom.equals(Atom.NO2))
-					simple.bond(FunctionalGroup.nitro);
-				if (anonymousBondedAtom.equals(Atom.Br))
-					simple.bond(FunctionalGroup.bromine);
-				if (anonymousBondedAtom.equals(Atom.Cl))
-					simple.bond(FunctionalGroup.chlorine);
-				if (anonymousBondedAtom.equals(Atom.F))
-					simple.bond(FunctionalGroup.fluorine);
-				if (anonymousBondedAtom.equals(Atom.I))
-					simple.bond(FunctionalGroup.iodine);
-			}
-			else if(isRadicalCarbon(bondedAtom)) {
+			if (isBondableAtom(bondedAtom, Simple.bondableAtoms))
+				simple.bond(bondedAtom.toFunctionalGroup());
+			else if(isRadicalCarbon(bondedAtom))
 				simple.bond(buildRadical(bondedAtom));
-			}
 			else nextCarbon = Optional.of(bondedAtom);
 		}
 
@@ -210,19 +187,20 @@ public class Molecule extends Organic {
 		Substituent radical;
 
 		switch (carbon.getBonded(Element.H).size()) {
-			case 3:
-				radical = new Substituent(1); // -CH3
+			case 3: // -CH3
+				radical = new Substituent(1);
 				break;
-			case 2:
+			case 2: // -CH2-
 				Atom nextCarbon = carbon.toAnonymous().getBonded(Element.C).get(0); // There must be one
-				Substituent subRadical = buildRadical(nextCarbon); // Recursive
-				radical = new Substituent(1 + subRadical.getCarbonCount(), subRadical.isIso());
+				Substituent radicalEnd = buildRadical(nextCarbon); // Recursive
+				radical = new Substituent(1 + radicalEnd.getCarbonCount(), radicalEnd.isIso()); // Appended
 				break;
-			case 1:
-				radical = new Substituent(3, true); // -CH(CH3)2
+			case 1: // -CH(CH3)2
+				radical = new Substituent(3, true);
 				break;
 			default:
 				radical = null;
+				break;
 		}
 
 		return radical;

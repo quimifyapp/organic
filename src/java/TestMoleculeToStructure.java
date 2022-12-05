@@ -31,7 +31,7 @@ public class TestMoleculeToStructure {
                 else simple.bondCarbon();
             }
 
-            simple.correctSubstituents();
+            simple.correct();
 
             String generatedStructure = OrganicFactory.getFromName(simple.getName()).getStructure();
 

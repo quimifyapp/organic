@@ -12,19 +12,35 @@ public final class Simple extends Organic implements OpenChain {
     private final Chain chain;
 
     // Constants:
-
     public static final Set<Atom> bondableAtoms = Set.of(
-            Atom.H, Atom.N, Atom.O, Atom.OH, Atom.NH2, Atom.NO2, Atom.Br, Atom.Cl, Atom.F, Atom.I
+            Atom.H,
+            Atom.N,
+            Atom.O,
+            Atom.OH,
+            Atom.NH2,
+            Atom.NO2,
+            Atom.Br,
+            Atom.Cl,
+            Atom.F,
+            Atom.I
     );
 
     private static final Set<FunctionalGroup> bondableGroups = Set.of(
-            FunctionalGroup.acid, FunctionalGroup.amide, FunctionalGroup.nitrile, FunctionalGroup.aldehyde,
-            FunctionalGroup.ketone, FunctionalGroup.alcohol, FunctionalGroup.amine, FunctionalGroup.ether,
-            FunctionalGroup.nitro, FunctionalGroup.bromine, FunctionalGroup.chlorine, FunctionalGroup.fluorine,
-            FunctionalGroup.iodine, FunctionalGroup.radical, FunctionalGroup.hydrogen
+            FunctionalGroup.acid,
+            FunctionalGroup.amide,
+            FunctionalGroup.nitrile,
+            FunctionalGroup.aldehyde,
+            FunctionalGroup.ketone,
+            FunctionalGroup.alcohol,
+            FunctionalGroup.amine,
+            FunctionalGroup.nitro,
+            FunctionalGroup.bromine,
+            FunctionalGroup.chlorine,
+            FunctionalGroup.fluorine,
+            FunctionalGroup.iodine,
+            FunctionalGroup.radical,
+            FunctionalGroup.hydrogen
     );
-
-    private static final Chain CO2 = new Chain(List.of(new Carbon(FunctionalGroup.ketone, 2))); // Auxiliar
 
     // Constructors:
 
@@ -39,7 +55,7 @@ public final class Simple extends Organic implements OpenChain {
     // OPEN CHAIN --------------------------------------------------------------------
 
     public Simple getReversed() {
-        return new Simple(chain.getInversa());
+        return new Simple(chain.getInverseOriented());
     }
 
     public int getFreeBonds() {
@@ -51,52 +67,23 @@ public final class Simple extends Organic implements OpenChain {
     }
 
     public void bondCarbon() {
-        chain.enlazarCarbono();
+        chain.bondCarbon();
     }
 
     public void bond(Substituent substituent) {
-        if (bondableGroups.contains(substituent.getGroup()))
-            chain.enlazar(substituent);
-        else throw new IllegalArgumentException("No se puede enlazar [" + substituent.getGroup() + "] a un Simple.");
+        if (bondableGroups.contains(substituent.getFunctionalGroup()))
+            chain.bond(substituent);
+        else throw new IllegalArgumentException("No se puede enlazar [" + substituent.getFunctionalGroup() + "] a un Simple.");
     }
 
     public void bond(FunctionalGroup functionalGroup) {
         bond(new Substituent(functionalGroup));
     }
 
-    public void correctSubstituents() {
-        if (isDone() && chain.hasGroupsWithoutHydrogenNorEther()) {
-            // Estructura de la cadena:
-            correctRadicalSubstituents();
-
-            // Composición:
-
-            // Primero descompone aldehído → cetona con hidrógeno, por si es ácido o amida:
-            chain.descomponerAldehido(); // COOH-CHO → COOH-CH(O)
-
-            // Cetona con alcohol → ácido:
-            chain.sustituirCetonaConPor(FunctionalGroup.alcohol, FunctionalGroup.acid); // C(O)(OH)- → COOH-
-
-            // Cetona con amina → amida de poder ser principal:
-            chain.sustituirCetonaConPor(FunctionalGroup.amine, FunctionalGroup.amide); // C(O)(NH2)- → CONH2-
-
-            // Cetona con hidrógeno → aldehído de poder ser principal:
-            chain.componerAldehido(); // CH(O)- → C(HO)
-
-            // Descomposición:
-
-            // Amida no principal → carbamoil del anterior:
-            chain.sustituirTerminalPor(FunctionalGroup.amide, FunctionalGroup.carbamoyl); // CONH2-COOH → C(OOH)(CONH2)
-
-            // Nitrilos no principal → cianuro del anterior:
-            chain.sustituirTerminalPor(FunctionalGroup.nitrile, FunctionalGroup.cyanide); // CN-COOH → C(OOH)(CN)
-
-            // De nuevo (la estructura puede haber cambiado):
-            correctRadicalSubstituents();
-
-            // Corrige el orden de la molécula según la prioridad y los localizadores:
-            correctOrder(); // butan-3-ol → butan-2-ol
-        }
+    public void correct() {
+        correctSubstituents(); // C(O)(OH) → COOH
+        correctChainStructure(); // CH2(CH3)-CH2- → CH3-CH2-CH2-
+        correctChainOrientation(); // butan-3-ol → butan-2-ol
     }
 
     public List<FunctionalGroup> getOrderedBondableGroups() {
@@ -104,34 +91,46 @@ public final class Simple extends Organic implements OpenChain {
 
         if (getFreeBonds() > 2)
             orderedBondableGroups.addAll(List.of(
-                    FunctionalGroup.acid, FunctionalGroup.amide, FunctionalGroup.nitrile, FunctionalGroup.aldehyde)
-            );
+                    FunctionalGroup.acid,
+                    FunctionalGroup.amide,
+                    FunctionalGroup.nitrile,
+                    FunctionalGroup.aldehyde
+            ));
 
         if (getFreeBonds() > 1)
             orderedBondableGroups.add(FunctionalGroup.ketone);
 
         if (getFreeBonds() > 0) {
-            orderedBondableGroups.addAll(List.of(FunctionalGroup.alcohol, FunctionalGroup.amine));
+            orderedBondableGroups.addAll(List.of(
+                    FunctionalGroup.alcohol,
+                    FunctionalGroup.amine
+            ));
 
             if (canBondEther())
                 orderedBondableGroups.add(FunctionalGroup.ether);
 
             orderedBondableGroups.addAll(List.of(
-                    FunctionalGroup.nitro, FunctionalGroup.bromine, FunctionalGroup.chlorine, FunctionalGroup.fluorine,
-                    FunctionalGroup.iodine, FunctionalGroup.radical, FunctionalGroup.hydrogen)
-            );
+                    FunctionalGroup.nitro,
+                    FunctionalGroup.bromine,
+                    FunctionalGroup.chlorine,
+                    FunctionalGroup.fluorine,
+                    FunctionalGroup.iodine,
+                    FunctionalGroup.radical,
+                    FunctionalGroup.hydrogen
+            ));
         }
 
         return orderedBondableGroups;
     }
 
     public String getName() {
-        // Se anticipan los casos excepcionales:
-        if (chain.equals(CO2))
-            return "dióxido de carbono";
+        if (chain.getSize() == 1)
+            if(chain.getSubstituentsWithoutHydrogen().stream().filter(substituent ->
+                    substituent.getFunctionalGroup() == FunctionalGroup.ketone).count() == 2)
+                return "dióxido de carbono";
 
-        List<FunctionalGroup> funciones = chain.getOrderedGroupsWithoutHydrogenNorEther(); // Sin hidrógeno
         int functionalGroup = 0;
+        List<FunctionalGroup> funciones = chain.getOrderedGroupsWithoutHydrogenNorEther(); // Sin hidrógeno
 
         // Se procesa el sufijo:
         String sufijo;
@@ -191,50 +190,44 @@ public final class Simple extends Organic implements OpenChain {
         return getReversed().chain.getStructure();
     }
 
-    // EXTRA -------------------------------------------------------------------------
-
-    Chain getChain() {
-        return chain;
-    }
-
     // PRIVATE -----------------------------------------------------------------------
 
     // Queries:
 
     private boolean canBondEther() {
-        return chain.getSubstituentsWithoutHydrogen().stream()
-                .allMatch((substituent -> substituent.getGroup().ordinal() > FunctionalGroup.ether.ordinal()));
+        return chain.getSubstituentsWithoutHydrogen().stream().allMatch(substituent ->
+                substituent.getFunctionalGroup().compareTo(FunctionalGroup.ether) > 0);
     }
 
     // Modifiers:
 
-    private void reverse() {
-        chain.invertirOrden();
+    private void correctSubstituents() {
+        // Breaking substituents down:
+        chain.breakDownTerminalToKetoneWith(FunctionalGroup.acid, FunctionalGroup.alcohol); // CHOOH → CH(O)(OH)
+        chain.breakDownTerminalToKetoneWith(FunctionalGroup.amide, FunctionalGroup.amine); // CH(ONH2) → CH(O)(NH2)
+        chain.breakDownTerminalToKetoneWith(FunctionalGroup.aldehyde, FunctionalGroup.hydrogen); // CHO → CH(O)
+
+        // Grouping substituents:
+        chain.groupKetoneWithToTerminal(FunctionalGroup.alcohol, FunctionalGroup.acid); // CH(O)(OH) → CHOOH
+        chain.groupKetoneWithToTerminal(FunctionalGroup.amine, FunctionalGroup.amide); // CH(O)(NH2) → CH(ONH2)
+        if (chain.getProrityFunctionalGroup().compareTo(FunctionalGroup.aldehyde) > 0) // Would be priority
+            chain.groupKetoneWithToTerminal(FunctionalGroup.hydrogen, FunctionalGroup.aldehyde); // CH(O) → CHO
+
+        // Moving out carbons into substituents:
+        chain.moveOutWithAs(FunctionalGroup.amide, FunctionalGroup.carbamoyl); // CONH2-COOH → C(OOH)(CONH2)
+        chain.moveOutWithAs(FunctionalGroup.nitrile, FunctionalGroup.cyanide); // CN-COOH → C(OOH)(CN)
     }
 
-    private void correctRadicalSubstituents() {
+    private void correctChainStructure() {
         // Se corrigen los radicales que podrían formar parte de la cadena principal:
-        chain.corregirRadicalesPorLaIzquierda(); // Comprobará internamente si hay radicales
+        chain.correctChainStructureToTheLeft(); // Comprobará internamente si hay radicales
         if (chain.hasFunctionalGroup(FunctionalGroup.radical)) { // Para ahorrar el invertir la cadena
-            reverse(); // En lugar de corregirlos por la derecha
-            chain.corregirRadicalesPorLaIzquierda(); // CHF(CH3)(CH2CH3) → CH3-CH2-CHF-CH3
+            chain.invertOrientation(); // En lugar de corregirlos por la derecha
+            chain.correctChainStructureToTheLeft(); // CHF(CH3)(CH2CH3) → CH3-CH2-CHF-CH3
         }
     }
 
-    private boolean correctOrderBasedOn(int comparaison) {
-        boolean corrected;
-
-        if (comparaison != 0) { // No son iguales
-            if (comparaison > 0) // El inverso va antes alfabéticamente
-                reverse();
-
-            corrected = true; // Ya se ha corregido el orden según los radicales alfabéticamente
-        } else corrected = false; // Indecidible
-
-        return corrected;
-    }
-
-    private void correctOrder() {
+    private void correctChainOrientation() {
         boolean corrected = false;
 
         Simple reversed = getReversed();
@@ -248,7 +241,7 @@ public final class Simple extends Organic implements OpenChain {
                     .stream().mapToInt(Integer::intValue).sum();
 
             // Se comparan las sumas de sus posiciones:
-            corrected = correctOrderBasedOn(suma_normal - suma_inversa);
+            corrected = correctOrderAccordingTo(suma_normal - suma_inversa);
         }
 
         // Los radicales determinan el orden alfabéticamente como última instancia, solo cuando lo demás es indiferente.
@@ -262,19 +255,31 @@ public final class Simple extends Organic implements OpenChain {
 
             // Se comparan los radicales dos a dos desde ambos extremos alfabéticamente:
             for (int i = 0; i < normales.size() && !corrected; i++)
-                corrected = correctOrderBasedOn(normales.get(i).compareTo(inversos.get(i)));
+                corrected = correctOrderAccordingTo(normales.get(i).compareTo(inversos.get(i)));
         }
     }
 
-    // Text: TODO: poner en común en Cadena
+    private boolean correctOrderAccordingTo(int comparaison) {
+        boolean corrected;
 
+        if (comparaison != 0) { // No son iguales
+            if (comparaison > 0) // El inverso va antes alfabéticamente
+                chain.invertOrientation();
+            corrected = true; // Ya se ha corregido el orden según los radicales alfabéticamente
+        } else corrected = false; // Indecidible
+
+        return corrected;
+    }
+
+    // Text:
+    // TODO: poner en común en Chain
     private boolean isRedundantInName(FunctionalGroup group) {
         boolean isRedundant;
 
-        if (group != FunctionalGroup.radical && !(esAlquenoOAlquino(group)) && new Substituent(group).getEnlaces() == 3)
+        if (group != FunctionalGroup.radical && !(esAlquenoOAlquino(group)) && new Substituent(group).getBondCount() == 3)
             isRedundant = true; // Sustituyente terminal: solo puede ir en el primero y/o último
         else if (chain.getSize() == 3) // Derivados del propeno
-            isRedundant = group == FunctionalGroup.alkene && chain.getNumberOf(FunctionalGroup.alkene) == 2; // Propadieno
+            isRedundant = group == FunctionalGroup.alkene && chain.getAmountOf(FunctionalGroup.alkene) == 2; // Propadieno
         else if (chain.getSize() == 2) { // Derivados del etano
             if (esAlquenoOAlquino(group) || chain.hasFunctionalGroup(FunctionalGroup.alkyne)) // Hay una posición posible
                 isRedundant = true;
@@ -337,6 +342,12 @@ public final class Simple extends Organic implements OpenChain {
     @Override
     public String toString() {
         return getStructure();
+    }
+
+    // Getters:
+
+    public Chain getChain() {
+        return chain;
     }
 
 }

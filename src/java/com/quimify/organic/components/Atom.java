@@ -59,7 +59,7 @@ public class Atom {
 		}
 	}
 
-	public Atom(Element element, List<Atom> bondedAtoms) { // TODO set?
+	public Atom(Element element, List<Atom> bondedAtoms) {
 		id = null;
 		this.element = element;
 		this.bondedAtoms = bondedAtoms;
@@ -77,17 +77,13 @@ public class Atom {
 		bondedAtoms = new ArrayList<>(other.bondedAtoms);
 	}
 
-	// Modificadores:
+	// Modifiers:
 
 	public void bond(Atom other) {
 		bondedAtoms.add(other);
 	}
 
 	// Queries:
-
-	public boolean isElement(Element element) {
-		return this.element == element;
-	}
 
 	@Override
 	public boolean equals(Object other) {
@@ -109,7 +105,44 @@ public class Atom {
 				otherBondedAtomsCutOff.stream().anyMatch(bondedAtomCutOff::equals));
 	}
 
-	// Métodos get:
+	public boolean isElement(Element element) {
+		return this.element == element;
+	}
+
+	public Atom toAnonymous() {
+		Atom anonymousAtom = new Atom(element, getBondedAtomsCutOff());
+		anonymousAtom.bondedAtoms.replaceAll(Atom::toAnonymous);
+		return anonymousAtom;
+	}
+
+	public FunctionalGroup toFunctionalGroup() {
+		FunctionalGroup functionalGroup;
+
+		Atom anonymousBondedAtom = toAnonymous();
+		if (anonymousBondedAtom.equals(Atom.H))
+			functionalGroup = FunctionalGroup.hydrogen;
+		else if (anonymousBondedAtom.equals(Atom.N))
+			functionalGroup = FunctionalGroup.nitrile;
+		else if (anonymousBondedAtom.equals(Atom.O))
+			functionalGroup = FunctionalGroup.ketone;
+		else if (anonymousBondedAtom.equals(Atom.OH))
+			functionalGroup = FunctionalGroup.alcohol;
+		else if (anonymousBondedAtom.equals(Atom.NH2))
+			functionalGroup = FunctionalGroup.amine;
+		else if (anonymousBondedAtom.equals(Atom.NO2))
+			functionalGroup = FunctionalGroup.nitro;
+		else if (anonymousBondedAtom.equals(Atom.Br))
+			functionalGroup = FunctionalGroup.bromine;
+		else if (anonymousBondedAtom.equals(Atom.Cl))
+			functionalGroup = FunctionalGroup.chlorine;
+		else if (anonymousBondedAtom.equals(Atom.F))
+			functionalGroup = FunctionalGroup.fluorine;
+		else if (anonymousBondedAtom.equals(Atom.I))
+			functionalGroup = FunctionalGroup.iodine;
+		else throw new IllegalArgumentException("Couldn't find FunctionalGroup of Atom: " + element + ".");
+
+		return functionalGroup;
+	}
 
 	public List<Atom> getBondedAtomsCutOff() {
 		List<Atom> bondedAtomsCutOff = new ArrayList<>();
@@ -125,16 +158,9 @@ public class Atom {
 		return bondedAtomsCutOff;
 	}
 
-	public Atom toAnonymous() {
-		Atom anonymousAtom = new Atom(element, getBondedAtomsCutOff());
-		anonymousAtom.bondedAtoms.replaceAll(Atom::toAnonymous);
-		return anonymousAtom;
-	}
-
 	public List<Atom> getBonded(Element element) {
 		return bondedAtoms.stream().filter(bondedAtom -> bondedAtom.isElement(element)).collect(Collectors.toList());
 	}
-
 
 	// Getters:
 

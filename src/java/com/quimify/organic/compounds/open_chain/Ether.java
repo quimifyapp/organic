@@ -38,7 +38,7 @@ public final class Ether extends Organic implements OpenChain {
 	// OPEN CHAIN --------------------------------------------------------------------
 
 	public Ether getReversed() {
-		return new Ether(secondChain.getInversa(), firstChain.getInversa());
+		return new Ether(secondChain.getInverseOriented(), firstChain.getInverseOriented());
 	}
 
 	public int getFreeBonds() {
@@ -50,26 +50,26 @@ public final class Ether extends Organic implements OpenChain {
 	}
 
 	public void bondCarbon() {
-		secondChain.enlazarCarbono();
+		secondChain.bondCarbon();
 	}
 
 	public void bond(Substituent substituent) {
-		if (orderedBondableGroups.contains(substituent.getGroup())) {
-			currentChain.enlazar(substituent);
+		if (orderedBondableGroups.contains(substituent.getFunctionalGroup())) {
+			currentChain.bond(substituent);
 
 			if (currentChain == firstChain && firstChain.isDone())
 				if (currentChain.isDone())
 					startSecondChain();
 		}
-		else throw new IllegalArgumentException("No se puede enlazar [" + substituent.getGroup() + "] a un Ether.");
+		else throw new IllegalArgumentException("No se puede enlazar [" + substituent.getFunctionalGroup() + "] a un Ether.");
 	}
 
 	public void bond(FunctionalGroup functionalGroup) {
 		bond(new Substituent(functionalGroup));
 	}
 
-	public void correctSubstituents() {
-		correctRadicalSubstituents();
+	public void correct() {
+		correctChainsStructure();
 	}
 
 	public List<FunctionalGroup> getOrderedBondableGroups() {
@@ -79,7 +79,7 @@ public final class Ether extends Organic implements OpenChain {
 	public String getName() {
 		String name;
 
-		String firstChainName = getChainNameFor(firstChain.getInversa()); // Se empieza a contar desde el oxígeno
+		String firstChainName = getChainNameFor(firstChain.getInverseOriented()); // Se empieza a contar desde el oxígeno
 		String secondChainName = getChainNameFor(secondChain); // La secundaria ya está en el orden bueno
 
 		if (!firstChainName.equals(secondChainName)) {
@@ -104,14 +104,14 @@ public final class Ether extends Organic implements OpenChain {
 
 	// Modifiers:
 
-	private void correctRadicalSubstituents() {
+	private void correctChainsStructure() {
 		// Se corrigen los radicales que podrían formar parte de las cadenas principales:
-		firstChain.corregirRadicalesPorLaIzquierda(); // Si no tiene radicales, no hará nada
+		firstChain.correctChainStructureToTheLeft(); // Si no tiene radicales, no hará nada
 
 		if (secondChain.hasFunctionalGroup(FunctionalGroup.radical)) { // Para ahorrar el invertir la cadena
-			secondChain.invertirOrden(); // En lugar de corregirlos por la derecha
-			secondChain.corregirRadicalesPorLaIzquierda(); // CHF(CH3)(CH2CH3) → CH3-CH2-CHF-CH3
-			secondChain.invertirOrden(); // Es necesario para no romper el orden del éter
+			secondChain.invertOrientation(); // En lugar de corregirlos por la derecha
+			secondChain.correctChainStructureToTheLeft(); // CHF(CH3)(CH2CH3) → CH3-CH2-CHF-CH3
+			secondChain.invertOrientation(); // Es necesario para no romper el orden del éter
 		}
 	}
 
@@ -142,7 +142,7 @@ public final class Ether extends Organic implements OpenChain {
 
 		// Derivados del propil:
 		if (chain.getSize() == 3)
-			isRedundant = functionalGroup == FunctionalGroup.alkene && chain.getNumberOf(FunctionalGroup.alkene) == 2; // Es propadienil
+			isRedundant = functionalGroup == FunctionalGroup.alkene && chain.getAmountOf(FunctionalGroup.alkene) == 2; // Es propadienil
 			// Derivados del etil:
 		else if (chain.getSize() == 2)
 			isRedundant = esAlquenoOAlquino(functionalGroup); // Solo hay una posición posible para el enlace

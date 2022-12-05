@@ -23,7 +23,7 @@ public interface OpenChain {
 
     void bond(FunctionalGroup functionalGroup);
 
-    void correctSubstituents();
+    void correct();
 
     List<FunctionalGroup> getOrderedBondableGroups();
 
