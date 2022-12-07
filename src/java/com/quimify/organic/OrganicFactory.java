@@ -51,11 +51,6 @@ public class OrganicFactory {
 
     // TODO: handle exceptions
     public static OrganicResult getFromOpenChain(OpenChain openChain) {
-        if(!openChain.isDone()) {
-            logger.log(Level.SEVERE, "OpenChain incompleta: \"" + openChain.getStructure() + "\".");
-            return organicNotFound;
-        }
-
         OrganicResult organicResult = new OrganicResult(true);
 
         openChain.correct(); // It´s necessary

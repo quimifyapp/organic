@@ -11,10 +11,6 @@ public class Chain extends Organic {
 
 	// Constructores:
 
-	public Chain() {
-		carbons = new ArrayList<>();
-	}
-
 	public Chain(int usedBondCount) {
 		carbons = new ArrayList<>();
 		carbons.add(new Carbon(usedBondCount));
@@ -22,16 +18,12 @@ public class Chain extends Organic {
 
 	public Chain(Chain other) {
 		carbons = new ArrayList<>();
-		bondCopyOf(other);
+		addCopyOf(other.carbons);
 	}
 
-	private void bondCopyOf(List<Carbon> carbons) {
+	private void addCopyOf(List<Carbon> carbons) {
 		for(Carbon carbon : carbons)
 			this.carbons.add(new Carbon(carbon));
-	}
-
-	private void bondCopyOf(Chain other) {
-		bondCopyOf(other.carbons);
 	}
 
 	// Modificadores:
@@ -44,16 +36,8 @@ public class Chain extends Organic {
 		bond(new Substituent(group));
 	}
 
-	public void bond(Substituent substituent, int times) {
-		getLastCarbon().bond(substituent, times);
-	}
-
-	public void bond(Group group, int times) {
-		this.bond(new Substituent(group), times);
-	}
-
 	public void bondCarbon() {
-		if (getFreeBonds() > 0) {
+		if (getFreeBondCount() > 0) {
 			Carbon ultimo = getLastCarbon();
 			ultimo.useBond();
 			carbons.add(new Carbon(ultimo.getFreeBondCount() + 1));
@@ -62,7 +46,7 @@ public class Chain extends Organic {
 
 	private void bondCarbons(List<Carbon> carbons) {
 		getLastCarbon().useBond();
-		bondCopyOf(carbons);
+		addCopyOf(carbons);
 	}
 
 	public void removeCarbon(Carbon carbon) {
@@ -71,11 +55,11 @@ public class Chain extends Organic {
 
 	private void become(Chain other) {
 		carbons.clear();
-		bondCopyOf(other);
+		addCopyOf(other.carbons);
 	}
 
 	public void invertOrientation() {
-		become(getInverseOriented());
+		become(getReversed());
 	}
 
 	public void correctChainStructureToTheLeft() { // CH2(CH3)-CH2- → CH3-CH2-CH2-
@@ -83,7 +67,7 @@ public class Chain extends Organic {
 		for (int i = 0; i < carbons.size(); i = corrected ? 0 : i + 1) { // Sin incremento
 			if(carbons.get(i).getSubstituentsOf(Group.radical).size() > 0) { // Este carbono tiene radicales
 				// Se obtiene el mayor radical de este carbono:
-				Substituent mayor_radical = carbons.get(i).getGreatesRadical();
+				Substituent mayor_radical = carbons.get(i).getGreatestRadical();
 
 				// Se calcula si el "camino" por este radical es preferible a la cadena principal:
 				int comparacion = Integer.compare(mayor_radical.getStraightCarbonCount(), i);
@@ -143,8 +127,8 @@ public class Chain extends Organic {
 		return carbons.size();
 	}
 
-	public boolean isDone() {
-		return getFreeBonds() == 0;
+	public boolean canBondCarbon() {
+		return getFreeBondCount() > 0 && getFreeBondCount() < 4;
 	}
 
 	public Carbon getCarbon(int index) {
@@ -159,7 +143,7 @@ public class Chain extends Organic {
 		return carbons.get(carbons.size() - 1);
 	}
 
-	public boolean hasFunctionalGroup(Group group) {
+	public boolean isBondedTo(Group group) {
 		for(Carbon carbon : carbons)
 			if(carbon.isBondedTo(group))
 				return true;
@@ -167,8 +151,8 @@ public class Chain extends Organic {
 		return false;
 	}
 
-	public Chain getInverseOriented() {
-		Chain reversed = new Chain();
+	public Chain getReversed() {
+		Chain reversed = new Chain(this);
 
 		// Le da la vuelta a los carbonos:
 		Collections.reverse(reversed.carbons);
@@ -184,7 +168,7 @@ public class Chain extends Organic {
 		return reversed;
 	}
 
-	public int getFreeBonds() {
+	public int getFreeBondCount() {
 		return getLastCarbon().getFreeBondCount();
 	}
 
@@ -197,18 +181,18 @@ public class Chain extends Organic {
 		return amount;
 	}
 
-	public Group getPriorityBondedGroup() { // Con hidrógeno
-		for(Group group : Group.values()) // Todas las funciones recogidas en Id
+	public Optional<Group> getPriorityBondedGroup() {
+		for(Group group : Group.values())
 			for(Carbon carbon : carbons)
 				if(carbon.isBondedTo(group))
-					return group;
+					return Optional.of(group);
 
-		return null;
+		return Optional.empty();
 	}
 
 	public List<Group> getBondedGroups() {
 		return Arrays.stream(Group.values())
-				.filter(this::hasFunctionalGroup)
+				.filter(this::isBondedTo)
 				.collect(Collectors.toList());
 	}
 

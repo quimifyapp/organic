@@ -111,15 +111,15 @@ public class Carbon extends Organic {
         return unicos;
     }
 
-    public Substituent getGreatesRadical() {
+    public Substituent getGreatestRadical() {
         Substituent greatestRadical;
 
-        List<Substituent> radicales = getSubstituentsOf(Group.radical);
-        greatestRadical = radicales.get(0); // Se asume que tiene radicales
+        List<Substituent> radicals = getSubstituentsOf(Group.radical);
+        greatestRadical = radicals.get(0); // Se asume que tiene radicales
 
-        for(int i = 1; i < radicales.size(); i++)
-            if(radicales.get(i).isLongerThan(greatestRadical))
-                greatestRadical = radicales.get(i);
+        for(int i = 1; i < radicals.size(); i++)
+            if(radicals.get(i).isLongerThan(greatestRadical))
+                greatestRadical = radicals.get(i);
 
         return greatestRadical;
     }

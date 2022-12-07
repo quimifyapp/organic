@@ -145,11 +145,13 @@ public class Substituent extends Organic {
 
     public Chain toChain() {
         if (carbonCount == 0)
-            return new Chain(); // Empty
+            return null;
 
-        Chain chain = new Chain(0); // (C)
+        Chain chain = new Chain(0);
 
-        chain.bond(Group.hydrogen, 3); // CH3-
+        chain.bond(Group.hydrogen); // CH≡
+        chain.bond(Group.hydrogen); // CH2=
+        chain.bond(Group.hydrogen); // CH3-
 
         int previous = 1; // CH3-
 
@@ -163,7 +165,8 @@ public class Substituent extends Organic {
 
         for (int i = previous; i < carbonCount; i++) {
             chain.bondCarbon(); // CH3-CH(CH3)-C≡
-            chain.bond(Group.hydrogen, 2); // CH3-CH(CH3)-CH2-
+            chain.bond(Group.hydrogen); // CH3-CH(CH3)-CH¡
+            chain.bond(Group.hydrogen); // CH3-CH(CH3)-CH2-
         }
 
         return chain; // CH3-CH(CH3)-CH2-

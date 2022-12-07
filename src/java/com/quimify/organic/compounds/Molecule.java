@@ -166,7 +166,7 @@ public class Molecule extends Organic {
 
 		Optional<Atom> endingCarbon = getEtherEndingCarbon();
 		if(endingCarbon.isPresent()) {
-			Ether ether = new Ether();
+			Ether ether = new Ether(new Chain(0));
 			buildEtherFrom(ether, endingCarbon.get());
 			ether.correct();
 
