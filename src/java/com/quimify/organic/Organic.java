@@ -1,6 +1,6 @@
 package com.quimify.organic;
 
-import com.quimify.organic.components.FunctionalGroup;
+import com.quimify.organic.components.Group;
 import com.quimify.organic.components.Substituent;
 
 import java.util.Arrays;
@@ -13,21 +13,21 @@ import static java.util.Collections.swap;
 
 public class Organic {
 
-    private static final List<FunctionalGroup> halogens = Arrays.asList(FunctionalGroup.bromine, FunctionalGroup.chlorine, FunctionalGroup.fluorine, FunctionalGroup.iodine);
+    private static final List<Group> halogens = Arrays.asList(Group.bromine, Group.chlorine, Group.fluorine, Group.iodine);
 
     // Consultas:
 
-    protected static boolean isHalogen(FunctionalGroup functionalGroup) {
-        return halogens.contains(functionalGroup);
+    protected static boolean isHalogen(Group group) {
+        return halogens.contains(group);
     }
 
-    protected static boolean esAlquenoOAlquino(FunctionalGroup functionalGroup) {
-        return functionalGroup == FunctionalGroup.alkene || functionalGroup ==  FunctionalGroup.alkyne;
+    protected static boolean isBond(Group group) {
+        return group == Group.alkene || group ==  Group.alkyne;
     }
 
     protected static void ordenarPorFunciones(List<Substituent> substituents) {
         for(int i = 0; i < substituents.size() - 1;) // Sin incremento
-            if(substituents.get(i).getFunctionalGroup().compareTo(substituents.get(i + 1).getFunctionalGroup()) > 0) {
+            if(substituents.get(i).getGroup().compareTo(substituents.get(i + 1).getGroup()) > 0) {
                 swap(substituents, i, i + 1); // get(i) > get(i + 1)
                 i = 0;
             }
@@ -185,7 +185,7 @@ public class Organic {
         return resultado;
     }
 
-    protected static class Localizador {
+    protected static class Locator {
 
         // Esta clase representa un localizador de un nombre IUPAC, como "2,3-diol".
 
@@ -204,11 +204,11 @@ public class Organic {
             this.lexema = nombre;
         }
 
-        public Localizador(String multiplicador, String lexema) {
+        public Locator(String multiplicador, String lexema) {
             construir("", multiplicador, lexema);
         }
 
-        public Localizador(List<Integer> posiciones, String lexema) {
+        public Locator(List<Integer> posiciones, String lexema) {
             StringBuilder auxiliar = new StringBuilder();
 
             if(posiciones.size() > 0) {
@@ -222,8 +222,8 @@ public class Organic {
 
         // No se tienen en cuenta los multiplicadores ni las posiciones, como propone la IUPAC.
         // Ej.: "2,3-diol" → "ol"
-        public static void ordenarAlfabeticamente(List<Localizador> localizadores) {
-            localizadores.sort(Comparator.comparing(Localizador::getLexema));
+        public static void ordenarAlfabeticamente(List<Locator> localizadores) {
+            localizadores.sort(Comparator.comparing(Locator::getLexema));
         }
 
         @Override
@@ -257,10 +257,10 @@ public class Organic {
         return nameParticle;
     }
 
-    protected static String getPrefixNameParticle(FunctionalGroup functionalGroup) {
+    protected static String getPrefixNameParticle(Group group) {
         String preffixNameParticle;
 
-        switch(functionalGroup) {
+        switch(group) {
             case carbamoyl:
                 preffixNameParticle = "carbamoil";
                 break;
@@ -292,13 +292,13 @@ public class Organic {
                 preffixNameParticle = "yodo";
                 break;
             default:
-                throw new IllegalArgumentException("No existen prefijos para la función " + functionalGroup + ".");
+                throw new IllegalArgumentException("No existen prefijos para la función " + group + ".");
         }
 
         return preffixNameParticle;
     }
 
-    protected static String getBondNameParticle(FunctionalGroup enlace) {
+    protected static String getBondNameParticle(Group enlace) {
         String bondNameParticle;
 
         switch(enlace) {
@@ -315,10 +315,10 @@ public class Organic {
         return bondNameParticle;
     }
 
-    protected static String getSuffixNameParticle(FunctionalGroup functionalGroup) {
+    protected static String getSuffixNameParticle(Group group) {
         String suffixNameParticle;
 
-        switch(functionalGroup) {
+        switch(group) {
             case acid:
                 suffixNameParticle = "oico";
                 break;
@@ -341,7 +341,7 @@ public class Organic {
                 suffixNameParticle = "amina";
                 break;
             default:
-                throw new IllegalArgumentException("No existen sufijos para la función " + functionalGroup + ".");
+                throw new IllegalArgumentException("No existen sufijos para la función " + group + ".");
         }
 
         return suffixNameParticle;

@@ -4,7 +4,7 @@ import com.quimify.organic.Organic;
 
 public class Substituent extends Organic {
 
-    private FunctionalGroup functionalGroup; // El tipo de sustituyente
+    private Group group; // El tipo de sustituyente
     private int bondCount; // Número de e- que comparte con el carbono
 
     // Solo para radicales:
@@ -49,17 +49,17 @@ public class Substituent extends Organic {
         build(carbonCount);
     }
 
-    public Substituent(FunctionalGroup functionalGroup) {
-        switch(functionalGroup) {
+    public Substituent(Group group) {
+        switch(group) {
             case acid:
             case amide:
             case nitrile:
             case aldehyde:
-                build(functionalGroup, 3);
+                build(group, 3);
                 // Hasta aquí
                 break;
             case ketone:
-                build(functionalGroup, 2);
+                build(group, 2);
                 break;
             case carboxyl:
             case carbamoyl:
@@ -73,29 +73,29 @@ public class Substituent extends Organic {
             case fluorine:
             case iodine:
             case hydrogen:
-                build(functionalGroup, 1);
+                build(group, 1);
                 // Hasta aquí
                 break;
             case radical:
                 throw new IllegalArgumentException("No existe un único sustituyente con función de radical.");
             default: // Id.alqueno, Id.alquino
-                throw new IllegalArgumentException("No existen sustituyentes con función de [" + functionalGroup + "].");
+                throw new IllegalArgumentException("No existen sustituyentes con función de [" + group + "].");
         }
     }
 
-    private void build(FunctionalGroup functionalGroup, int bonds, int carbonos, boolean iso) {
-        this.functionalGroup = functionalGroup;
+    private void build(Group group, int bonds, int carbonos, boolean iso) {
+        this.group = group;
         this.bondCount = bonds;
         this.carbonCount = carbonos;
         this.isIso = iso;
     }
 
-    private void build(FunctionalGroup functionalGroup, int bonds) {
-        build(functionalGroup, bonds, 0, false);
+    private void build(Group group, int bonds) {
+        build(group, bonds, 0, false);
     }
 
     private void build(int carbons, boolean isIso) {
-        build(FunctionalGroup.radical, 1, carbons, isIso);
+        build(Group.radical, 1, carbons, isIso);
     }
 
     private void build(int carbonos) {
@@ -107,7 +107,7 @@ public class Substituent extends Organic {
     // Queries:
 
     public boolean isHalogen() {
-        return Organic.isHalogen(functionalGroup);
+        return Organic.isHalogen(group);
     }
 
     @Override
@@ -117,9 +117,9 @@ public class Substituent extends Organic {
         if(otro != null && otro.getClass() == this.getClass()) {
             Substituent nuevo = (Substituent) otro;
 
-            es_igual = functionalGroup == FunctionalGroup.radical
+            es_igual = group == Group.radical
                     ? carbonCount == nuevo.carbonCount && isIso == nuevo.isIso
-                    : functionalGroup == nuevo.functionalGroup && bondCount == nuevo.bondCount;
+                    : group == nuevo.group && bondCount == nuevo.bondCount;
         }
         else es_igual = false;
 
@@ -149,13 +149,13 @@ public class Substituent extends Organic {
 
         Chain chain = new Chain(0); // (C)
 
-        chain.bond(FunctionalGroup.hydrogen, 3); // CH3-
+        chain.bond(Group.hydrogen, 3); // CH3-
 
         int previous = 1; // CH3-
 
         if (isIso) {
             chain.bondCarbon(); // CH3-C≡
-            chain.bond(FunctionalGroup.hydrogen); // CH3-CH=
+            chain.bond(Group.hydrogen); // CH3-CH=
             chain.bond(CH3); // CH3-CH(CH3)-
 
             previous += 2; // CH3-CH(CH3)-
@@ -163,7 +163,7 @@ public class Substituent extends Organic {
 
         for (int i = previous; i < carbonCount; i++) {
             chain.bondCarbon(); // CH3-CH(CH3)-C≡
-            chain.bond(FunctionalGroup.hydrogen, 2); // CH3-CH(CH3)-CH2-
+            chain.bond(Group.hydrogen, 2); // CH3-CH(CH3)-CH2-
         }
 
         return chain; // CH3-CH(CH3)-CH2-
@@ -175,7 +175,7 @@ public class Substituent extends Organic {
     public String toString() {
         StringBuilder resultado = new StringBuilder();
 
-        switch(functionalGroup) {
+        switch(group) {
             case carboxyl:
                 resultado.append("C");
             case acid:
@@ -239,8 +239,8 @@ public class Substituent extends Organic {
 
     // Getters:
 
-    public FunctionalGroup getFunctionalGroup() {
-        return functionalGroup;
+    public Group getGroup() {
+        return group;
     }
 
 

@@ -5,7 +5,7 @@ package com.quimify.organic.compounds.open_chain;
 //  - Éter: R - O - R' (con funciones de prioridad menor a la función éter)
 //  - Éster: TODO
 
-import com.quimify.organic.components.FunctionalGroup;
+import com.quimify.organic.components.Group;
 import com.quimify.organic.components.Substituent;
 
 import java.util.List;
@@ -19,11 +19,11 @@ public interface OpenChain {
 
     void bond(Substituent substituent);
 
-    void bond(FunctionalGroup functionalGroup);
+    void bond(Group group);
 
     void correct();
 
-    List<FunctionalGroup> getOrderedBondableGroups();
+    List<Group> getBondableGroups();
 
     String getName();
 

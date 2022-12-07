@@ -110,33 +110,33 @@ public class Atom {
 		return anonymousAtom;
 	}
 
-	public FunctionalGroup toFunctionalGroup() {
-		FunctionalGroup functionalGroup;
+	public Group toFunctionalGroup() {
+		Group group;
 
 		Atom anonymousAtom = toAnonymous();
 		if (anonymousAtom.equals(Atom.H))
-			functionalGroup = FunctionalGroup.hydrogen;
+			group = Group.hydrogen;
 		else if (anonymousAtom.equals(Atom.N))
-			functionalGroup = FunctionalGroup.nitrile;
+			group = Group.nitrile;
 		else if (anonymousAtom.equals(Atom.O))
-			functionalGroup = FunctionalGroup.ketone;
+			group = Group.ketone;
 		else if (anonymousAtom.equals(Atom.OH))
-			functionalGroup = FunctionalGroup.alcohol;
+			group = Group.alcohol;
 		else if (anonymousAtom.equals(Atom.NH2))
-			functionalGroup = FunctionalGroup.amine;
+			group = Group.amine;
 		else if (anonymousAtom.equals(Atom.NO2))
-			functionalGroup = FunctionalGroup.nitro;
+			group = Group.nitro;
 		else if (anonymousAtom.equals(Atom.Br))
-			functionalGroup = FunctionalGroup.bromine;
+			group = Group.bromine;
 		else if (anonymousAtom.equals(Atom.Cl))
-			functionalGroup = FunctionalGroup.chlorine;
+			group = Group.chlorine;
 		else if (anonymousAtom.equals(Atom.F))
-			functionalGroup = FunctionalGroup.fluorine;
+			group = Group.fluorine;
 		else if (anonymousAtom.equals(Atom.I))
-			functionalGroup = FunctionalGroup.iodine;
+			group = Group.iodine;
 		else throw new IllegalArgumentException("Couldn't find FunctionalGroup of Atom: " + element + ".");
 
-		return functionalGroup;
+		return group;
 	}
 
 	public List<Atom> getBondedAtomsCutOff() {

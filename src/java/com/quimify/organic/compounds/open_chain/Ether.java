@@ -3,7 +3,7 @@ package com.quimify.organic.compounds.open_chain;
 import com.quimify.organic.Organic;
 import com.quimify.organic.components.Atom;
 import com.quimify.organic.components.Chain;
-import com.quimify.organic.components.FunctionalGroup;
+import com.quimify.organic.components.Group;
 import com.quimify.organic.components.Substituent;
 
 import java.util.ArrayList;
@@ -29,15 +29,15 @@ public final class Ether extends Organic implements OpenChain {
 			Atom.H
 	);
 
-	private static final Set<FunctionalGroup> bondableFunctionalGroups = Set.of(
-			FunctionalGroup.ether,
-			FunctionalGroup.nitro,
-			FunctionalGroup.bromine,
-			FunctionalGroup.chlorine,
-			FunctionalGroup.fluorine,
-			FunctionalGroup.iodine,
-			FunctionalGroup.radical,
-			FunctionalGroup.hydrogen
+	private static final Set<Group> bondableGroups = Set.of(
+			Group.ether,
+			Group.nitro,
+			Group.bromine,
+			Group.chlorine,
+			Group.fluorine,
+			Group.iodine,
+			Group.radical,
+			Group.hydrogen
 	);
 
 	// Constructors:
@@ -54,16 +54,10 @@ public final class Ether extends Organic implements OpenChain {
 		else currentChain = this.firstChain;
 	}
 
-	private Ether(Chain firstChain, Chain secondChain) {
-		this.firstChain = firstChain; // [R - O] - R'
-		this.secondChain = secondChain; // R - O [- R']
-		currentChain = this.firstChain; // It has been rotated
-	}
-
 	// OPEN CHAIN --------------------------------------------------------------------
 
 	public int getFreeBonds() {
-		return currentChain.getEnlacesLibres();
+		return currentChain.getFreeBonds();
 	}
 
 	public boolean isDone() {
@@ -75,42 +69,40 @@ public final class Ether extends Organic implements OpenChain {
 	}
 
 	public void bond(Substituent substituent) {
-		if (bondableFunctionalGroups.contains(substituent.getFunctionalGroup())) {
+		if (bondableGroups.contains(substituent.getGroup())) {
 			currentChain.bond(substituent);
 
 			if (currentChain == firstChain && firstChain.isDone())
 				if (currentChain.isDone())
 					startSecondChain();
 		}
-		else throw new IllegalArgumentException("Couldn't bond " + substituent.getFunctionalGroup() + " to an Ether.");
+		else throw new IllegalArgumentException("Couldn't bond " + substituent.getGroup() + " to an Ether.");
 	}
 
-	public void bond(FunctionalGroup functionalGroup) {
-		bond(new Substituent(functionalGroup));
+	public void bond(Group group) {
+		bond(new Substituent(group));
 	}
 
 	public void correct() {
 		correctChainsStructure();
 	}
 
-	public List<FunctionalGroup> getOrderedBondableGroups() {
+	public List<Group> getBondableGroups() {
 		if(getFreeBonds() == 0)
 			return Collections.emptyList();
 
-		List<FunctionalGroup> result = new ArrayList<>();
+		List<Group> result = new ArrayList<>();
 
 		if(currentChain == firstChain)
-			result.add(FunctionalGroup.ether);
+			result.add(Group.ether);
 
-		result.addAll(List.of(
-				FunctionalGroup.nitro,
-				FunctionalGroup.bromine,
-				FunctionalGroup.chlorine,
-				FunctionalGroup.fluorine,
-				FunctionalGroup.iodine,
-				FunctionalGroup.radical,
-				FunctionalGroup.hydrogen
-		));
+		result.add(Group.nitro);
+		result.add(Group.bromine);
+		result.add(Group.chlorine);
+		result.add(Group.fluorine);
+		result.add(Group.iodine);
+		result.add(Group.radical);
+		result.add(Group.hydrogen);
 
 		return result;
 	}
@@ -147,7 +139,7 @@ public final class Ether extends Organic implements OpenChain {
 		// Se corrigen los radicales que podrían formar parte de las cadenas principales:
 		firstChain.correctChainStructureToTheLeft(); // Si no tiene radicales, no hará nada
 
-		if (secondChain.hasFunctionalGroup(FunctionalGroup.radical)) { // Para ahorrar el invertir la cadena
+		if (secondChain.hasFunctionalGroup(Group.radical)) { // Para ahorrar el invertir la cadena
 			secondChain.invertOrientation(); // En lugar de corregirlos por la derecha
 			secondChain.correctChainStructureToTheLeft(); // CHF(CH3)(CH2CH3) → CH3-CH2-CHF-CH3
 			secondChain.invertOrientation(); // Es necesario para no romper el orden del éter
@@ -163,61 +155,58 @@ public final class Ether extends Organic implements OpenChain {
 
 	@Override
 	public boolean equals(Object other) {
-		boolean isEqual;
+		if (other == null || other.getClass() != this.getClass())
+			return false;
 
-		if (other != null && other.getClass() == this.getClass()) {
-			Ether nuevo = (Ether) other;
+		Ether ether = (Ether) other;
 
-			isEqual = (firstChain.equals(nuevo.firstChain) && secondChain.equals(nuevo.secondChain));
-		} else isEqual = false;
-
-		return isEqual;
+		return firstChain.equals(ether.firstChain) && secondChain.equals(ether.secondChain);
 	}
 
 	// Text: TODO: poner en común en Cadena
 
-	private boolean isRedundantInName(FunctionalGroup functionalGroup, Chain chain) {
+	private boolean isRedundantInName(Group group, Chain chain) {
 		boolean isRedundant;
 
 		// Derivados del propil:
 		if (chain.getSize() == 3)
-			isRedundant = functionalGroup == FunctionalGroup.alkene && chain.getAmountOf(FunctionalGroup.alkene) == 2; // Es propadienil
+			isRedundant = group == Group.alkene && chain.getAmountOf(Group.alkene) == 2; // Es propadienil
 			// Derivados del etil:
 		else if (chain.getSize() == 2)
-			isRedundant = esAlquenoOAlquino(functionalGroup); // Solo hay una posición posible para el enlace
+			isRedundant = isBond(group); // Solo hay una posición posible para el enlace
 			// Derivados del metil:
 		else isRedundant = chain.getSize() == 1;
 
 		return isRedundant;
 	}
 
-	private Localizador getPrefixFor(FunctionalGroup functionalGroup, Chain chain) {
-		Localizador prefijo;
+	private Locator getPrefixFor(Group group, Chain chain) {
+		Locator prefix;
 
-		List<Integer> posiciones = chain.getIndexesOfAll(functionalGroup);
-		String nombre = getPrefixNameParticle(functionalGroup);
+		List<Integer> indexes = chain.getIndexesOf(group);
+		String name = getPrefixNameParticle(group);
 
-		if (isRedundantInName(functionalGroup, chain)) // Sobran los localizadores porque son evidentes
-			prefijo = new Localizador(multiplicadorDe(posiciones.size()), nombre); // Como "difluoro"
-		else prefijo = new Localizador(posiciones, nombre); // Como "1,2-difluoro"
+		if (isRedundantInName(group, chain)) // Sobran los localizadores porque son evidentes
+			prefix = new Locator(multiplicadorDe(indexes.size()), name); // Como "difluoro"
+		else prefix = new Locator(indexes, name); // Como "1,2-difluoro"
 
-		return prefijo;
+		return prefix;
 	}
 
-	private String getBondNameForIn(FunctionalGroup bond, Chain chain) {
+	private String getBondNameForIn(Group bond, Chain chain) {
 		String bondName = "";
 
-		List<Integer> indexes = chain.getIndexesOfAll(bond);
+		List<Integer> indexes = chain.getIndexesOf(bond);
 		String nameParticle = getBondNameParticle(bond);
 
 		if (indexes.size() > 0) {
-			Localizador localizador;
+			Locator locator;
 
 			if (isRedundantInName(bond, chain)) // Sobran los localizadores porque son evidentes
-				localizador = new Localizador(multiplicadorDe(indexes.size()), nameParticle); // Como "dien"
-			else localizador = new Localizador(indexes, nameParticle); // Como "1,2-dien"
+				locator = new Locator(multiplicadorDe(indexes.size()), nameParticle); // Como "dien"
+			else locator = new Locator(indexes, nameParticle); // Como "1,2-dien"
 
-			String localizador_to_string = localizador.toString();
+			String localizador_to_string = locator.toString();
 
 			if (startsWithDigit(localizador_to_string))
 				bondName += "-"; // Guion *antes* de los localizadores
@@ -229,47 +218,51 @@ public final class Ether extends Organic implements OpenChain {
 	}
 
 	private String getChainNameFor(Chain chain) {
+		List<Group> bondedGroups = chain.getBondedGroups();
+		bondedGroups.removeIf(group -> group == Group.hydrogen || group == Group.ether);
+
 		// Exceptional cases:
-		if (chain.getOrderedGroupsWithoutHydrogenNorEther().size() == 1) {
+		if (bondedGroups.size() == 1) {
 			if (chain.hasMethylAt(1))
 				return "iso" + cuantificadorDe(chain.getSize() + 1) + "il";
 			else if (chain.hasMethylAt(2))
 				return "sec" + cuantificadorDe(chain.getSize() + 1) + "il";
 		}
 
-		List<FunctionalGroup> functionalGroups = chain.getOrderedGroupsWithoutHydrogenNorEther(); // Sin hidrógeno ni éter
 		int groupsIndex = 0;
 
 		// Se procesan los prefijos:
-		List<Localizador> prefijos = new ArrayList<>();
+		List<Locator> prefixes = new ArrayList<>();
 
-		while (groupsIndex < functionalGroups.size()) {
-			if (!esAlquenoOAlquino(functionalGroups.get(groupsIndex)) && functionalGroups.get(groupsIndex) != FunctionalGroup.radical)
-				prefijos.add(getPrefixFor(functionalGroups.get(groupsIndex), chain));
+		while (groupsIndex < bondedGroups.size()) {
+			if (!isBond(bondedGroups.get(groupsIndex)) && bondedGroups.get(groupsIndex) != Group.radical)
+				prefixes.add(getPrefixFor(bondedGroups.get(groupsIndex), chain));
 
 			groupsIndex++;
 		}
 
-		List<Substituent> radicales = chain.getUniqueRadicals();
-		for (Substituent radical : radicales)
-			prefijos.add(new Localizador(chain.getIndexesOfAll(radical), getRadicalNameParticle(radical)));
+		Set<Substituent> uniqueRadicals = chain.getUniqueSubstituents();
+		uniqueRadicals.removeIf(substituent -> substituent.getGroup() != Group.radical);
 
-		StringBuilder prefijo = new StringBuilder(chain.hasFunctionalGroup(FunctionalGroup.acid) ? "ácido " : "");
-		if (prefijos.size() > 0) {
-			Localizador.ordenarAlfabeticamente(prefijos);
+		for (Substituent radical : uniqueRadicals)
+			prefixes.add(new Locator(chain.getIndexesOf(radical), getRadicalNameParticle(radical)));
 
-			for (int i = 0; i < prefijos.size() - 1; i++) {
-				prefijo.append(prefijos.get(i).toString());
+		StringBuilder prefix = new StringBuilder(chain.hasFunctionalGroup(Group.acid) ? "ácido " : "");
+		if (prefixes.size() > 0) {
+			Locator.ordenarAlfabeticamente(prefixes);
 
-				if (doesNotStartWithLetter(prefijos.get(i + 1).toString()))
-					prefijo.append("-");
+			for (int i = 0; i < prefixes.size() - 1; i++) {
+				prefix.append(prefixes.get(i).toString());
+
+				if (doesNotStartWithLetter(prefixes.get(i + 1).toString()))
+					prefix.append("-");
 			}
 
-			prefijo.append(prefijos.get(prefijos.size() - 1));
+			prefix.append(prefixes.get(prefixes.size() - 1));
 		}
 
 		// Se procesan los enlaces:
-		String enlaces = getBondNameForIn(FunctionalGroup.alkene, chain) + getBondNameForIn(FunctionalGroup.alkyne, chain);
+		String enlaces = getBondNameForIn(Group.alkene, chain) + getBondNameForIn(Group.alkyne, chain);
 
 		// Se procesa el cuantificador:
 		String cuantificador = cuantificadorDe(chain.getSize());
@@ -277,7 +270,7 @@ public final class Ether extends Organic implements OpenChain {
 		if (!enlaces.equals("") && Organic.doesNotStartWithVowel(enlaces))
 			cuantificador += "a";
 
-		return prefijo + cuantificador + enlaces + "il";
+		return prefix + cuantificador + enlaces + "il";
 	}
 
 	@Override

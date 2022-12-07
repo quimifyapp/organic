@@ -2,9 +2,8 @@ package com.quimify.organic.components;
 
 import com.quimify.organic.Organic;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class Chain extends Organic {
 
@@ -16,19 +15,14 @@ public class Chain extends Organic {
 		carbons = new ArrayList<>();
 	}
 
-	public Chain(int previousBonds) {
+	public Chain(int usedBondCount) {
 		carbons = new ArrayList<>();
-		carbons.add(new Carbon(previousBonds));
+		carbons.add(new Carbon(usedBondCount));
 	}
 
-	public Chain(Chain nueva) {
+	public Chain(Chain other) {
 		carbons = new ArrayList<>();
-		bondCopyOf(nueva);
-	}
-
-	public Chain(List<Carbon> nueva) {
-		carbons = new ArrayList<>();
-		bondCopyOf(nueva);
+		bondCopyOf(other);
 	}
 
 	private void bondCopyOf(List<Carbon> carbons) {
@@ -46,29 +40,33 @@ public class Chain extends Organic {
 		getLastCarbon().bond(substituent);
 	}
 
-	public void bond(FunctionalGroup functionalGroup) {
-		bond(new Substituent(functionalGroup));
+	public void bond(Group group) {
+		bond(new Substituent(group));
 	}
 
 	public void bond(Substituent substituent, int times) {
 		getLastCarbon().bond(substituent, times);
 	}
 
-	public void bond(FunctionalGroup functionalGroup, int times) {
-		this.bond(new Substituent(functionalGroup), times);
+	public void bond(Group group, int times) {
+		this.bond(new Substituent(group), times);
 	}
 
 	public void bondCarbon() {
-		if (getEnlacesLibres() > 0) {
+		if (getFreeBonds() > 0) {
 			Carbon ultimo = getLastCarbon();
 			ultimo.useBond();
-			carbons.add(new Carbon(ultimo.getEnlacesLibres() + 1));
+			carbons.add(new Carbon(ultimo.getFreeBondCount() + 1));
 		} else throw new IllegalStateException("No se puede enlazar un carbono a [" + getStructure() + "].");
 	}
 
 	private void bondCarbons(List<Carbon> carbons) {
 		getLastCarbon().useBond();
 		bondCopyOf(carbons);
+	}
+
+	public void removeCarbon(Carbon carbon) {
+		carbons.remove(carbon);
 	}
 
 	private void become(Chain other) {
@@ -83,7 +81,7 @@ public class Chain extends Organic {
 	public void correctChainStructureToTheLeft() { // CH2(CH3)-CH2- → CH3-CH2-CH2-
 		boolean corrected; // Para actualizar el iterador tras iteración
 		for (int i = 0; i < carbons.size(); i = corrected ? 0 : i + 1) { // Sin incremento
-			if(carbons.get(i).getSubstituentsOf(FunctionalGroup.radical).size() > 0) { // Este carbono tiene radicales
+			if(carbons.get(i).getSubstituentsOf(Group.radical).size() > 0) { // Este carbono tiene radicales
 				// Se obtiene el mayor radical de este carbono:
 				Substituent mayor_radical = carbons.get(i).getGreatesRadical();
 
@@ -97,7 +95,7 @@ public class Chain extends Organic {
 						Substituent oldRadical;
 
 						// Aquí se tiene en cuenta que, de haber un radical, solo podría ser metil
-						if(i > 1 && carbons.get(1).isBondedTo(FunctionalGroup.radical) // Hay un metil en el segundo carbono
+						if(i > 1 && carbons.get(1).isBondedTo(Group.radical) // Hay un metil en el segundo carbono
 								&& carbons.get(1).getSubstituentsWithoutHydrogen().get(0).equals(Substituent.CH3))
 							oldRadical = new Substituent(i + 1, true);
 						else oldRadical = new Substituent(i);
@@ -130,55 +128,12 @@ public class Chain extends Organic {
 			List<Substituent> substituents = carbons.get(i).getSubstituentsWithoutHydrogen(); // Se da por hecho que
 			// los carbonos anteriores sí pueden estar en un radical gracias a los siguientes 'break'
 
-			if(carbons.get(i).getEnlacesLibres() > 0)
+			if(carbons.get(i).getFreeBondCount() > 0)
 				break; // Le sigue un alqueno o alquino
 
 			if(substituents.size() > 0) // Hay sustituyentes distintos del hidrógeno
 				if(!(i == 1 && substituents.size() == 1 && substituents.get(0).getCarbonCount() == 1))
 					break; // Y estos NO son un solo metil en el segundo carbono (NO podría formar un radical 'iso')
-		}
-	}
-
-	public void breakDownTerminalToKetoneWith(FunctionalGroup terminal, FunctionalGroup companion) {
-		breakDownTerminalToKetoneWithIn(terminal, companion, carbons.get(0));
-		breakDownTerminalToKetoneWithIn(terminal, companion, getLastCarbon());
-	}
-
-	private void breakDownTerminalToKetoneWithIn(FunctionalGroup terminal, FunctionalGroup companion, Carbon carbon) {
-		if(carbon.isBondedTo(terminal)) {
-			carbon.removeWithBonds(terminal); // C(A)- → C-
-			carbon.bond(FunctionalGroup.ketone); // C- → C(O)-
-			carbon.bond(companion); // C- → C(O)(B)-
-		}
-	}
-
-	public void groupKetoneWithToTerminal(FunctionalGroup companion, FunctionalGroup terminal) {
-		groupKetoneWithToTerminalIn(companion, terminal, carbons.get(0));
-		groupKetoneWithToTerminalIn(companion, terminal, getLastCarbon());
-	}
-
-	private void groupKetoneWithToTerminalIn(FunctionalGroup companion, FunctionalGroup terminal, Carbon carbon) {
-		if(carbon.isBondedTo(FunctionalGroup.ketone) && carbon.isBondedTo(companion)) {
-			carbon.removeWithBonds(FunctionalGroup.ketone); // C(O)(A)- → C(A)-
-			carbon.removeWithBonds(companion); // C(A)- → C-
-			carbon.bond(terminal);// C- → C(B)-
-		}
-	}
-
-	public void moveOutWithAs(FunctionalGroup terminal, FunctionalGroup substitute) {
-		if(terminal != getProrityFunctionalGroup()) {
-			if(carbons.size() > 1)
-				moveOutWithAsIn(terminal, substitute, carbons.get(0), carbons.get(1));
-			if(carbons.size() > 1) // Might have changed
-				moveOutWithAsIn(terminal, substitute, getLastCarbon(), carbons.get(carbons.size() - 2));
-		}
-	}
-
-	private void moveOutWithAsIn(FunctionalGroup terminal, FunctionalGroup substitute, Carbon ending, Carbon before) {
-		if (ending.isBondedTo(terminal)) {
-			carbons.remove(ending); // C(A)-C(X)- → C(X)=
-			before.freeBond(); // C(X)= → C(X)≡
-			before.bond(substitute); // C(X)≡ → C(CA)(X)-
 		}
 	}
 
@@ -189,16 +144,116 @@ public class Chain extends Organic {
 	}
 
 	public boolean isDone() {
-		return getEnlacesLibres() == 0;
+		return getFreeBonds() == 0;
 	}
 
-	public boolean hasFunctionalGroup(FunctionalGroup functionalGroup) {
+	public Carbon getCarbon(int index) {
+		return carbons.get(index);
+	}
+
+	public Carbon getFirstCarbon() {
+		return carbons.get(0);
+	}
+
+	public Carbon getLastCarbon() {
+		return carbons.get(carbons.size() - 1);
+	}
+
+	public boolean hasFunctionalGroup(Group group) {
 		for(Carbon carbon : carbons)
-			if(carbon.isBondedTo(functionalGroup))
+			if(carbon.isBondedTo(group))
 				return true;
 
 		return false;
 	}
+
+	public Chain getInverseOriented() {
+		Chain reversed = new Chain();
+
+		// Le da la vuelta a los carbonos:
+		Collections.reverse(reversed.carbons);
+
+		// Ajusta los enlaces (no son simétricos):
+		if(reversed.getSize() > 1) {
+			for(int i = 0, j = carbons.size() - 2; i < reversed.getSize() - 1; i++)
+				reversed.carbons.get(i).setFreeBondCount(carbons.get(j--).getFreeBondCount());
+
+			reversed.carbons.get(reversed.getSize() - 1).setFreeBondCount(0); // Se supone que no tiene enlaces sueltos
+		}
+
+		return reversed;
+	}
+
+	public int getFreeBonds() {
+		return getLastCarbon().getFreeBondCount();
+	}
+
+	public int getAmountOf(Group group) {
+		int amount = 0;
+
+		for(Carbon carbon : carbons)
+			amount += carbon.getCantidadDe(group);
+
+		return amount;
+	}
+
+	public Group getPriorityBondedGroup() { // Con hidrógeno
+		for(Group group : Group.values()) // Todas las funciones recogidas en Id
+			for(Carbon carbon : carbons)
+				if(carbon.isBondedTo(group))
+					return group;
+
+		return null;
+	}
+
+	public List<Group> getBondedGroups() {
+		return Arrays.stream(Group.values())
+				.filter(this::hasFunctionalGroup)
+				.collect(Collectors.toList());
+	}
+
+	public List<Integer> getIndexesOf(Group group) {
+		List<Integer> posiciones = new ArrayList<>(); // Posiciones de los carbonos con la función
+
+		for(int i = 0; i < carbons.size(); i++) {
+			int cantidad = carbons.get(i).getCantidadDe(group);
+
+			for(int j = 0; j < cantidad; j++)
+				posiciones.add(i);
+		}
+
+		return posiciones;
+	}
+
+	public List<Integer> getIndexesOf(Substituent substituent) {
+		List<Integer> posiciones = new ArrayList<>(); // Posiciones de los carbonos enlazados al sustituyente
+
+		for(int i = 0; i < carbons.size(); i++) {
+			int cantidad = carbons.get(i).getCantidadDe(substituent);
+
+			for(int j = 0; j < cantidad; j++)
+				posiciones.add(i);
+		}
+
+		return posiciones;
+	}
+
+	public List<Substituent> getSubstituents() {
+		List<Substituent> substituents = new ArrayList<>();
+
+		for(Carbon carbon : carbons)
+			substituents.addAll(carbon.getSubstituents());
+
+		return substituents;
+	}
+
+	public Set<Substituent> getUniqueSubstituents() {
+		return new HashSet<>(getSubstituents());
+	}
+	
+	public boolean hasMethylAt(int index) {
+		return getSize() > index && carbons.get(getSize() - index - 1).isBondedTo(Substituent.CH3);
+	} // TODO
 
 	@Override
 	public boolean equals(Object other) {
@@ -218,122 +273,6 @@ public class Chain extends Organic {
 		return isEqual;
 	}
 
-	public Chain getInverseOriented() {
-		Chain inversa = new Chain(carbons);
-
-		// Le da la vuelta a los carbonos:
-		Collections.reverse(inversa.carbons);
-
-		// Ajusta los enlaces (no son simétricos):
-		if(inversa.getSize() > 1) {
-			for(int i = 0, j = carbons.size() - 2; i < inversa.getSize() - 1; i++)
-				inversa.carbons.get(i).setEnlacesLibres(carbons.get(j--).getEnlacesLibres());
-
-			inversa.carbons.get(inversa.getSize() - 1).setEnlacesLibres(0); // Se supone que no tiene enlaces sueltos
-		}
-
-		return inversa;
-	}
-
-	private Carbon getLastCarbon() {
-		return carbons.get(carbons.size() - 1);
-	}
-
-	public int getEnlacesLibres() {
-		return getLastCarbon().getEnlacesLibres();
-	}
-
-	public int getAmountOf(FunctionalGroup functionalGroup) {
-		int amount = 0;
-
-		for(Carbon carbon : carbons)
-			amount += carbon.getCantidadDe(functionalGroup);
-
-		return amount;
-	}
-
-	public FunctionalGroup getProrityFunctionalGroup() { // Con hidrógeno
-		for(FunctionalGroup functionalGroup : FunctionalGroup.values()) // Todas las funciones recogidas en Id
-			for(Carbon carbon : carbons)
-				if(carbon.isBondedTo(functionalGroup))
-					return functionalGroup;
-
-		return null;
-	}
-
-	public List<FunctionalGroup> getOrderedGroupsWithoutHydrogenNorEther() { // Sin hidrógeno ni éter
-		List<FunctionalGroup> funciones = new ArrayList<>(); // Funciones presentes sin repetición y en orden
-
-		for(FunctionalGroup functionalGroup : FunctionalGroup.values()) // Todas las funciones recogidas en Id
-			if(functionalGroup != FunctionalGroup.hydrogen && functionalGroup != FunctionalGroup.ether) // Excepto hidrógeno y éter
-				for(Carbon carbon : carbons)
-					if(carbon.isBondedTo(functionalGroup)) {
-						funciones.add(functionalGroup);
-						break;
-					}
-
-		return funciones;
-	}
-
-	public List<Integer> getIndexesOfAll(FunctionalGroup functionalGroup) {
-		List<Integer> posiciones = new ArrayList<>(); // Posiciones de los carbonos con la función
-
-		for(int i = 0; i < carbons.size(); i++) {
-			int cantidad = carbons.get(i).getCantidadDe(functionalGroup);
-
-			for(int j = 0; j < cantidad; j++)
-				posiciones.add(i);
-		}
-
-		return posiciones;
-	}
-
-	public List<Integer> getIndexesOfAll(Substituent substituent) {
-		List<Integer> posiciones = new ArrayList<>(); // Posiciones de los carbonos enlazados al sustituyente
-
-		for(int i = 0; i < carbons.size(); i++) {
-			int cantidad = carbons.get(i).getCantidadDe(substituent);
-
-			for(int j = 0; j < cantidad; j++)
-				posiciones.add(i);
-		}
-
-		return posiciones;
-	}
-
-	public List<Substituent> getRadicalSubstituents() {
-		List<Substituent> substituents = new ArrayList<>();
-
-		for(Carbon carbon : carbons)
-			substituents.addAll(carbon.getSubstituentsOf(FunctionalGroup.radical));
-
-		return substituents;
-	}
-
-	public List<Substituent> getUniqueRadicals() {
-		List<Substituent> unicos = new ArrayList<>();
-
-		for(Carbon carbon : carbons)
-			for(Substituent substituent : carbon.getSubstituentsOf(FunctionalGroup.radical))
-				if(!unicos.contains(substituent))
-					unicos.add(substituent);
-
-		return unicos;
-	}
-
-	public List<Substituent> getSubstituentsWithoutHydrogen() {
-		List<Substituent> substituentsWithoutHydrogen = new ArrayList<>();
-
-		for(Carbon carbon : carbons)
-			substituentsWithoutHydrogen.addAll(carbon.getSubstituentsWithoutHydrogen());
-
-		return substituentsWithoutHydrogen;
-	}
-	
-	public boolean hasMethylAt(int index) {
-		return getSize() > index && carbons.get(getSize() - index - 1).isBondedTo(Substituent.CH3);
-	}
-
 	// Texto:
 
 	public String getStructure() {
@@ -345,12 +284,12 @@ public class Chain extends Organic {
 			formula.append(firstCarbon); // Como CH
 
 			// Se escribe el resto con los enlaces libres del anterior:
-			int previousFreeBonds = firstCarbon.getEnlacesLibres();
+			int previousFreeBonds = firstCarbon.getFreeBondCount();
 			for(int i = 1; i < carbons.size(); i++) {
 				formula.append(getBondSymbol(previousFreeBonds)); // Como CH=
 				formula.append(carbons.get(i)); // Como CH=CH
 
-				previousFreeBonds = carbons.get(i).getEnlacesLibres();
+				previousFreeBonds = carbons.get(i).getFreeBondCount();
 			}
 
 			// Se escribe los enlaces libres del último:

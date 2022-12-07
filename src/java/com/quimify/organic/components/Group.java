@@ -2,9 +2,9 @@ package com.quimify.organic.components;
 
 // This enum represents functional groups.
 
-public enum FunctionalGroup { // En orden de prioridad:
+public enum Group { // Ordered by naming priority:
     acid,       // =O, -OH
-    carboxyl,   // -COOH ácido no principal
+    carboxyl,   // -COOH ácido no principal // TODO
     amide,      // =O, -NH2
     carbamoyl,  // -CONH2 amida no principal
     nitrile,    // ≡N
@@ -14,8 +14,8 @@ public enum FunctionalGroup { // En orden de prioridad:
     alcohol,    // -OH
     amine,      // -NH2
     ether,      // -O-R'
-    alkene,     // = doble enlace
-    alkyne,     // ≡ triple enlace
+    alkene,     // = doble bond
+    alkyne,     // ≡ triple bond
     nitro,      // -NO2
     bromine,    // -Br
     chlorine,   // -Cl

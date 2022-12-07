@@ -131,7 +131,7 @@ public class Molecule extends Organic {
 		boolean isSimpleCarbon;
 
 		Set<Atom> nonSubstituentBondedAtoms = carbon.getBondedAtomsCutOff().stream().filter(bondedAtom ->
-				!isSubstituent(bondedAtom, Simple.bondableAtoms)).collect(Collectors.toSet());
+				isNotSubstituent(bondedAtom, Simple.bondableAtoms)).collect(Collectors.toSet());
 
 		if(nonSubstituentBondedAtoms.size() == 1) {
 			Atom nonSubstituent = nonSubstituentBondedAtoms.stream().findAny().get();
@@ -192,7 +192,7 @@ public class Molecule extends Organic {
 		boolean isEtherCarbon;
 
 		Set<Atom> nonSubstituentBondedAtoms = carbon.getBondedAtomsCutOff().stream().filter(bondedAtom ->
-				!isSubstituent(bondedAtom, Ether.bondableAtoms)).collect(Collectors.toSet());
+				isNotSubstituent(bondedAtom, Ether.bondableAtoms)).collect(Collectors.toSet());
 
 		if (nonSubstituentBondedAtoms.size() == 1) {
 			Atom nonSubstituent = nonSubstituentBondedAtoms.stream().findAny().get();
@@ -220,7 +220,7 @@ public class Molecule extends Organic {
 
 		if(nextAtom.isPresent()) {
 			if(nextAtom.get().getElement() == Element.O)  {
-				ether.bond(FunctionalGroup.ether);
+				ether.bond(Group.ether);
 				nextAtom = Optional.of(nextAtom.get().getBondedAtomsCutOff().get(0));
 			}
 			else ether.bondCarbon(); // It's a carbon
@@ -231,8 +231,8 @@ public class Molecule extends Organic {
 
 	// Simple or ether structure:
 
-	private boolean isSubstituent(Atom atom, Set<Atom> bondableAtoms) {
-		return isBondableAtom(atom, bondableAtoms) || isRadicalCarbon(atom);
+	private boolean isNotSubstituent(Atom atom, Set<Atom> bondableAtoms) {
+		return !isBondableAtom(atom, bondableAtoms) && !isRadicalCarbon(atom);
 	}
 
 	private boolean isBondableAtom(Atom atom, Set<Atom> bondableAtoms) {
