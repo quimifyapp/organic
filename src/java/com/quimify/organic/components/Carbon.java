@@ -93,14 +93,14 @@ public class Carbon extends Organic {
                         substituent.getGroup() != Group.hydrogen).collect(Collectors.toList());
     }
 
-    public List<Substituent> getUniqueSubstituents() {
-        List<Substituent> unicos = new ArrayList<>();
+    public List<Substituent> getUniqueSubstituents() { // TODO set?
+        List<Substituent> uniqueSubstituents = new ArrayList<>();
 
         for(Substituent substituent : substituents)
-            if(!unicos.contains(substituent))
-                unicos.add(substituent);
+            if(!uniqueSubstituents.contains(substituent))
+                uniqueSubstituents.add(substituent);
 
-        return unicos;
+        return uniqueSubstituents;
     }
 
     public Substituent getGreatestRadical() {
@@ -147,8 +147,10 @@ public class Carbon extends Organic {
 
             if (unique.getBondCount() == 3 && !(unique.getGroup() == Group.aldehyde && hydrogenCount > 0))
                 result.append(text); // COOH, CHO...
-            else if (unique.isHalogen() || (unique.getGroup() == Group.ketone && hydrogenCount == 0))
-                result.append(text); // CO, CCl...
+            else if (unique.isHalogen())
+                result.append(text); // CHCl, CF...
+            else if(unique.getGroup() == Group.ketone && hydrogenCount == 0)
+                result.append(text); // CO
             else result.append("(").append(text).append(")"); // CH(HO), CH(OH)3, CH3(CH2CH3)...
 
             result.append((getMolecularQuantifier(getAmountOf(unique))));
