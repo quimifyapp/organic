@@ -4,7 +4,6 @@ package com.quimify.organic.components;
 
 public enum Group { // Ordered by naming priority:
     acid,       // =O, -OH
-    carboxyl,   // -COOH ácido no principal // TODO
     amide,      // =O, -NH2
     carbamoyl,  // -CONH2 amida no principal
     nitrile,    // ≡N

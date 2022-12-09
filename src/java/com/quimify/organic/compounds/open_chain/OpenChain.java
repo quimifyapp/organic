@@ -11,11 +11,13 @@ import java.util.List;
 
 public interface OpenChain {
 
+    boolean isDone();
+
     List<Group> getBondableGroups();
 
-    OpenChain bond(Group group);
-
     OpenChain bond(Substituent substituent);
+
+    OpenChain bond(Group group);
 
     boolean canBondCarbon();
 

@@ -8,6 +8,7 @@ import com.quimify.organic.components.Substituent;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 // Esta clase representa éteres: dos cadenas con funciones de prioridad menor a la función éter unidas por un oxígeno.
@@ -45,12 +46,16 @@ public final class Ether extends Organic implements OpenChain {
 	public Ether(Chain firstChain) {
 		this.firstChain = firstChain; // R - O
 
-		if(firstChain.getFreeBondCount() == 0)
-			buildSecondChain(); // R - O - C≡
+		if(firstChain.isDone())
+			switchToSecondChain(); // R - O - C≡
 		else currentChain = this.firstChain;
 	}
 
 	// Interface --------------------------------------------------------------------
+
+	public boolean isDone() {
+		return currentChain.isDone();
+	}
 
 	public List<Group> getBondableGroups() {
 		List<Group> result = new ArrayList<>();
@@ -71,26 +76,26 @@ public final class Ether extends Organic implements OpenChain {
 		return result;
 	}
 
+	public OpenChain bond(Group group) {
+		return bond(new Substituent(group));
+	}
+
 	public OpenChain bond(Substituent substituent) {
 		if (bondableGroups.contains(substituent.getGroup())) {
 			currentChain.bond(substituent);
 
-			if (currentChain == firstChain && firstChain.getFreeBondCount() == 0)
-				buildSecondChain();
+			if (currentChain == firstChain && firstChain.isDone())
+				switchToSecondChain();
 		}
 		else throw new IllegalArgumentException("Couldn't bond " + substituent.getGroup() + " to an Ether.");
 
 		return this;
 	}
 
-	public OpenChain bond(Group group) {
-		return bond(new Substituent(group));
-	}
-
 	public boolean canBondCarbon() {
-		return currentChain == firstChain
-				? !firstChain.isBondedTo(Group.ether) && firstChain.canBondCarbon()
-				: secondChain.canBondCarbon();
+		if(currentChain == firstChain)
+			return !firstChain.isBondedTo(Group.ether) && firstChain.canBondCarbon();
+		else return secondChain.canBondCarbon();
 	}
 
 	public void bondCarbon() {
@@ -111,15 +116,19 @@ public final class Ether extends Organic implements OpenChain {
 	public String getName() {
 		String name;
 
-		String firstChainName = getChainNameFor(firstChain.getReversed()); // Se empieza a contar desde el oxígeno
-		String secondChainName = getChainNameFor(secondChain); // La secundaria ya está en el orden bueno
+		// TODO mirar primero los branched name
+		String firstChainName = getNameFor(firstChain.getReversed()); // Se empieza a contar desde el oxígeno
+		String secondChainName = getNameFor(secondChain); // La secundaria ya está en el orden bueno
 
 		if (!firstChainName.equals(secondChainName)) {
+			// TODO quitar sec, ter ???
+
 			// Chains are alphabetically ordered:
 			if (firstChainName.compareTo(secondChainName) < 0)
 				name = firstChainName + " " + secondChainName;
 			else name = secondChainName + " " + firstChainName;
-		} else name = (startsWithDigit(firstChainName) ? "di " : "di") + firstChainName;
+		}
+		else name = (startsWithDigit(firstChainName) ? "di " : "di") + firstChainName;
 
 		return name + " éter";
 	}
@@ -134,7 +143,7 @@ public final class Ether extends Organic implements OpenChain {
 
 	// Private -----------------------------------------------------------------------
 
-	private void buildSecondChain() {
+	private void switchToSecondChain() {
 		secondChain = new Chain(1);
 		currentChain = secondChain;
 	}
@@ -193,17 +202,40 @@ public final class Ether extends Organic implements OpenChain {
 		return bondName;
 	}
 
-	private String getChainNameFor(Chain chain) {
-		List<Group> bondedGroups = chain.getBondedGroups();
-		bondedGroups.removeIf(group -> group == Group.hydrogen || group == Group.ether);
+	private Optional<String> getBranchedNameFor(Chain chain) {
+		Optional<Group> priorityGroup = chain.getPriorityGroup();
+		if(priorityGroup.isEmpty() || priorityGroup.get() != Group.radical)
+			return Optional.empty(); // There are not only radicals
 
-		// Exceptional cases:
-		if (bondedGroups.size() == 1) {
-			if (chain.hasMethylAt(1))
-				return "iso" + cuantificadorDe(chain.getSize() + 1) + "il";
-			else if (chain.hasMethylAt(2))
-				return "sec" + cuantificadorDe(chain.getSize() + 1) + "il";
+		Substituent CH3 = new Substituent(1);
+		List<Integer> methylIndexes = chain.getIndexesOf(CH3);
+		if(methylIndexes.size() == chain.getAmountOf(Group.radical))
+			return Optional.empty(); // There are not only methyl radicals
+
+		Optional<String> branchedName;
+
+		if(methylIndexes.size() == 1) {
+			if(chain.getSize() >= 2 && methylIndexes.get(0).equals(chain.getSize() - 1 - 1)) // CH3-CH(CH3)-(...)-O-
+				branchedName = Optional.of("iso" + cuantificadorDe(chain.getSize() + 1) + "il");
+			else if(chain.getSize() >= 3 && methylIndexes.get(0).equals(0)) // CH3-(...)-CH(CH3)-O-
+				branchedName = Optional.of("sec-" + cuantificadorDe(chain.getSize() + 1) + "il");
+			else branchedName = Optional.empty();
 		}
+		else if(methylIndexes.size() == 2) {
+			if(chain.getSize() >= 2 && methylIndexes.stream().allMatch(index -> index == 0)) // CH3-(...)-C(CH3)2-O-
+				branchedName = Optional.of("terc-" + cuantificadorDe(chain.getSize() + 2) + "il");
+			else if(chain.getSize() >= 2 && methylIndexes.stream().allMatch(index -> index == 0)) // CH3-(...)-C(CH3)2-O-
+				branchedName = Optional.of("neo" + cuantificadorDe(chain.getSize() + 2) + "il");
+			else branchedName = Optional.empty();
+		}
+		else branchedName = Optional.empty();
+
+		return branchedName;
+	}
+
+	private String getNameFor(Chain chain) {
+		List<Group> bondedGroups = chain.getGroups();
+		bondedGroups.removeIf(group -> group == Group.hydrogen || group == Group.ether);
 
 		int groupsIndex = 0;
 

@@ -9,7 +9,7 @@ public class Chain extends Organic {
 
 	private final List<Carbon> carbons;
 
-	// Constructores:
+	// Constructors:
 
 	public Chain(int usedBondCount) {
 		carbons = new ArrayList<>();
@@ -26,7 +26,7 @@ public class Chain extends Organic {
 			this.carbons.add(new Carbon(carbon));
 	}
 
-	// Modificadores:
+	// Public ------------------------------------------------------------------------
 
 	public void bond(Substituent substituent) {
 		getLastCarbon().bond(substituent);
@@ -44,18 +44,8 @@ public class Chain extends Organic {
 		} else throw new IllegalStateException("No se puede enlazar un carbono a [" + getStructure() + "].");
 	}
 
-	private void bondCarbons(List<Carbon> carbons) {
-		getLastCarbon().useBond();
-		addCopyOf(carbons);
-	}
-
 	public void removeCarbon(Carbon carbon) {
 		carbons.remove(carbon);
-	}
-
-	private void become(Chain other) {
-		carbons.clear();
-		addCopyOf(other.carbons);
 	}
 
 	public void invertOrientation() {
@@ -80,7 +70,7 @@ public class Chain extends Organic {
 
 						// Aquí se tiene en cuenta que, de haber un radical, solo podría ser metil
 						if(i > 1 && carbons.get(1).isBondedTo(Group.radical) // Hay un metil en el segundo carbono
-								&& carbons.get(1).getSubstituentsWithoutHydrogen().get(0).equals(Substituent.CH3))
+								&& carbons.get(1).getSubstituentsWithoutHydrogen().get(0).equals(new Substituent(1)))
 							oldRadical = new Substituent(i + 1, true);
 						else oldRadical = new Substituent(i);
 
@@ -125,6 +115,10 @@ public class Chain extends Organic {
 
 	public int getSize() {
 		return carbons.size();
+	}
+
+	public boolean isDone() {
+		return getFreeBondCount() == 0;
 	}
 
 	public boolean canBondCarbon() {
@@ -176,12 +170,12 @@ public class Chain extends Organic {
 		int amount = 0;
 
 		for(Carbon carbon : carbons)
-			amount += carbon.getCantidadDe(group);
+			amount += carbon.getAmountOf(group);
 
 		return amount;
 	}
 
-	public Optional<Group> getPriorityBondedGroup() {
+	public Optional<Group> getPriorityGroup() {
 		for(Group group : Group.values())
 			for(Carbon carbon : carbons)
 				if(carbon.isBondedTo(group))
@@ -190,74 +184,52 @@ public class Chain extends Organic {
 		return Optional.empty();
 	}
 
-	public List<Group> getBondedGroups() {
-		return Arrays.stream(Group.values())
-				.filter(this::isBondedTo)
-				.collect(Collectors.toList());
+	public List<Group> getGroups() {
+		return Arrays.stream(Group.values()).filter(this::isBondedTo).collect(Collectors.toList());
 	}
 
 	public List<Integer> getIndexesOf(Group group) {
-		List<Integer> posiciones = new ArrayList<>(); // Posiciones de los carbonos con la función
-
-		for(int i = 0; i < carbons.size(); i++) {
-			int cantidad = carbons.get(i).getCantidadDe(group);
-
-			for(int j = 0; j < cantidad; j++)
-				posiciones.add(i);
-		}
-
-		return posiciones;
+		return getIndexesOf(carbons.stream()
+				.map(carbon -> carbon.getAmountOf(group))
+				.collect(Collectors.toList()));
 	}
 
 	public List<Integer> getIndexesOf(Substituent substituent) {
-		List<Integer> posiciones = new ArrayList<>(); // Posiciones de los carbonos enlazados al sustituyente
-
-		for(int i = 0; i < carbons.size(); i++) {
-			int cantidad = carbons.get(i).getCantidadDe(substituent);
-
-			for(int j = 0; j < cantidad; j++)
-				posiciones.add(i);
-		}
-
-		return posiciones;
+		return getIndexesOf(carbons.stream()
+				.map(carbon -> carbon.getAmountOf(substituent))
+				.collect(Collectors.toList()));
 	}
 
 	public List<Substituent> getSubstituents() {
 		List<Substituent> substituents = new ArrayList<>();
-
-		for(Carbon carbon : carbons)
-			substituents.addAll(carbon.getSubstituents());
-
+		carbons.forEach(carbon -> substituents.addAll(carbon.getSubstituents()));
 		return substituents;
 	}
 
 	public Set<Substituent> getUniqueSubstituents() {
 		return new HashSet<>(getSubstituents());
 	}
-	
-	public boolean hasMethylAt(int index) {
-		return getSize() > index && carbons.get(getSize() - index - 1).isBondedTo(Substituent.CH3);
-	} // TODO
 
-	@Override
-	public boolean equals(Object other) {
-		boolean isEqual = false;
+	private List<Integer> getIndexesOf(List<Integer> amounts) {
+		List<Integer> indexes = new ArrayList<>();
 
-		if(other != null && other.getClass() == this.getClass()) {
-			Chain otherChain = (Chain) other;
+		for(int i = 0; i < amounts.size(); i++)
+			indexes.addAll(Collections.nCopies(amounts.get(i), i));
 
-			if(carbons.size() == otherChain.getSize())
-				for(int i = 0; i < carbons.size(); i++)
-					if(carbons.get(i).equals(otherChain.carbons.get(i))) {
-						isEqual = true;
-						break;
-					}
-		}
-
-		return isEqual;
+		return indexes;
 	}
 
-	// Texto:
+	private void bondCarbons(List<Carbon> carbons) {
+		getLastCarbon().useBond();
+		addCopyOf(carbons);
+	}
+
+	private void become(Chain other) {
+		carbons.clear();
+		addCopyOf(other.carbons);
+	}
+
+	// Text:
 
 	public String getStructure() {
 		StringBuilder formula = new StringBuilder();

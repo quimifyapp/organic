@@ -24,8 +24,6 @@ public class Substituent extends Organic {
                            CH3
 	*/
 
-    public static final Substituent CH3 = new Substituent(1);
-
     // Constructores:
 
     public Substituent(int carbonCount, boolean isIso) {
@@ -61,7 +59,6 @@ public class Substituent extends Organic {
             case ketone:
                 build(group, 2);
                 break;
-            case carboxyl:
             case carbamoyl:
             case cyanide:
             case alcohol:
@@ -158,7 +155,7 @@ public class Substituent extends Organic {
         if (isIso) {
             chain.bondCarbon(); // CH3-C≡
             chain.bond(Group.hydrogen); // CH3-CH=
-            chain.bond(CH3); // CH3-CH(CH3)-
+            chain.bond(new Substituent(1)); // CH3-CH(CH3)-
 
             previous += 2; // CH3-CH(CH3)-
         }
@@ -174,70 +171,69 @@ public class Substituent extends Organic {
 
     // Texto:
 
-    @Override
-    public String toString() {
-        StringBuilder resultado = new StringBuilder();
+    private String getStructure() {
+        StringBuilder structure = new StringBuilder();
 
         switch(group) {
-            case carboxyl:
-                resultado.append("C");
             case acid:
-                resultado.append("OOH");
-                // Hasta aquí
+                structure.append("COOH");
                 break;
             case carbamoyl:
-                resultado.append("C");
+                structure.append("C");
             case amide:
-                resultado.append("ONH2");
-                // Hasta aquí
+                structure.append("ONH2");
                 break;
             case cyanide:
-                resultado.append("C");
+                structure.append("C");
             case nitrile:
-                resultado.append("N");
-                // Hasta aquí
+                structure.append("N");
                 break;
             case aldehyde:
-                resultado.append("HO");
+                structure.append("HO");
                 break;
             case ketone:
-                resultado.append("O");
+                structure.append("O");
                 break;
             case alcohol:
-                resultado.append("OH");
+                structure.append("OH");
                 break;
             case amine:
-                resultado.append("NH2");
+                structure.append("NH2");
                 break;
             case ether:
-                resultado.append("-O-");
+                structure.append("-O-");
                 break;
             case nitro:
-                resultado.append("NO2");
+                structure.append("NO2");
                 break;
             case bromine:
-                resultado.append("Br");
+                structure.append("Br");
                 break;
             case chlorine:
-                resultado.append("Cl");
+                structure.append("Cl");
                 break;
             case fluorine:
-                resultado.append("F");
+                structure.append("F");
                 break;
             case iodine:
-                resultado.append("I");
+                structure.append("I");
                 break;
             case radical:
                 if(isIso)
-                    resultado.append("CH2".repeat(Math.max(0, carbonCount -  3))).append("CH(CH3)2");
-                else resultado.append("CH2".repeat(Math.max(0, carbonCount -  1))).append("CH3");
+                    structure.append("CH2".repeat(Math.max(0, carbonCount -  3))).append("CH(CH3)2");
+                else structure.append("CH2".repeat(Math.max(0, carbonCount -  1))).append("CH3");
                 break;
             case hydrogen:
-                resultado.append("H");
+                structure.append("H");
                 break;
         }
 
-        return resultado.toString();
+        return structure.toString();
+    }
+
+    @Override
+    public String toString() {
+        return getStructure();
     }
 
     // Getters:

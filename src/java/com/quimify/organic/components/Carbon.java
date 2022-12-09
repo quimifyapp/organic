@@ -27,9 +27,9 @@ public class Carbon extends Organic {
     public boolean isBondedTo(Group group) {
         switch(group) {
             case alkene:
-                return freeBondCount == 1; // Como en -CO=
+                return freeBondCount == 1; // -CO=
             case alkyne:
-                return freeBondCount == 2; // Como en -CH#
+                return freeBondCount == 2; // -CH≡
             default:
                 for(Substituent substituent : substituents)
                     if(substituent.getGroup() == group)
@@ -39,19 +39,11 @@ public class Carbon extends Organic {
         }
     }
 
-    public boolean isBondedTo(Substituent substituent) {
-        for(Substituent otro_substituent : substituents)
-            if(otro_substituent.equals(substituent))
-                return true;
-
-        return false;
-    }
-
-    public int getCantidadDe(Substituent substituent) {
+    public int getAmountOf(Substituent substituent) {
         return Collections.frequency(substituents, substituent);
     }
 
-    public int getCantidadDe(Group group) {
+    public int getAmountOf(Group group) {
         int cantidad = 0;
 
         if(isBondedTo(group)) {
@@ -91,12 +83,12 @@ public class Carbon extends Organic {
 
     // Métodos get:
 
-    public List<Substituent> getSubstituentsOf(Group group) {
+    public List<Substituent> getSubstituentsOf(Group group) { // TODO remove
         return substituents.stream().filter(substituent ->
                         substituent.getGroup() == group).collect(Collectors.toList());
     }
 
-    public List<Substituent> getSubstituentsWithoutHydrogen() {
+    public List<Substituent> getSubstituentsWithoutHydrogen() { // TODO remove
         return substituents.stream().filter(substituent ->
                         substituent.getGroup() != Group.hydrogen).collect(Collectors.toList());
     }
@@ -138,7 +130,7 @@ public class Carbon extends Organic {
 
         // Se escribe los hidrógenos:
 
-        final int hydrogenCount = getCantidadDe(Group.hydrogen);
+        final int hydrogenCount = getAmountOf(Group.hydrogen);
 
         if(hydrogenCount > 0) {
             Substituent hydrogen = new Substituent(Group.hydrogen);
@@ -159,12 +151,12 @@ public class Carbon extends Organic {
                 result.append(text); // CO, CCl...
             else result.append("(").append(text).append(")"); // CH(HO), CH(OH)3, CH3(CH2CH3)...
 
-            result.append((getMolecularQuantifier(getCantidadDe(unique))));
+            result.append((getMolecularQuantifier(getAmountOf(unique))));
         }
         else if(uniques.size() > 1) { // Hay más de un tipo además del hidrógeno y éter
             for (Substituent substituent : uniques)
                 result.append("(").append(substituent).append(")") // C(OH)3(Cl), CH2(NO2)(CH3)...
-                        .append(getMolecularQuantifier(getCantidadDe(substituent)));
+                        .append(getMolecularQuantifier(getAmountOf(substituent)));
         }
 
         // Se escribe el éter:
@@ -183,11 +175,6 @@ public class Carbon extends Organic {
 
     public void bond(Group group) {
         bond(new Substituent(group));
-    }
-
-    public void bond(Substituent substituent, int times) {
-        for(int i = 0; i < times; i++)
-            bond(substituent);
     }
 
     public void remove(Substituent substituent) {

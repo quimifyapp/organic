@@ -56,6 +56,10 @@ public final class Simple extends Organic implements OpenChain {
 
     // Interface ---------------------------------------------------------------------
 
+    public boolean isDone() {
+        return chain.isDone();
+    }
+
     public List<Group> getBondableGroups() {
         List<Group> bondableGroups = new ArrayList<>();
 
@@ -88,6 +92,10 @@ public final class Simple extends Organic implements OpenChain {
         return bondableGroups;
     }
 
+    public OpenChain bond(Group group) {
+        return bond(new Substituent(group));
+    }
+
     public OpenChain bond(Substituent substituent) {
         OpenChain bondedOpenChain;
 
@@ -102,10 +110,6 @@ public final class Simple extends Organic implements OpenChain {
         else throw new IllegalArgumentException("Can't bond " + substituent.getGroup() + " to a Simple.");
 
         return bondedOpenChain;
-    }
-
-    public OpenChain bond(Group group) {
-        return bond(new Substituent(group));
     }
 
     public boolean canBondCarbon() {
@@ -126,7 +130,7 @@ public final class Simple extends Organic implements OpenChain {
         if (chain.getSize() == 1 && chain.getIndexesOf(Group.ketone).size() == 2)
             return "dióxido de carbono";
 
-        List<Group> bondedGroups = chain.getBondedGroups();
+        List<Group> bondedGroups = chain.getGroups();
         bondedGroups.removeIf(group -> group == Group.hydrogen);
         int functionalGroup = 0;
 
@@ -193,7 +197,7 @@ public final class Simple extends Organic implements OpenChain {
     // Private -----------------------------------------------------------------------
 
     private boolean wouldBePriority(Group group) {
-        return chain.getPriorityBondedGroup().map(priorityBondedGroup ->
+        return chain.getPriorityGroup().map(priorityBondedGroup ->
                 priorityBondedGroup.ordinal() >= group.ordinal()).orElse(true);
     }
 
@@ -209,7 +213,7 @@ public final class Simple extends Organic implements OpenChain {
         groupKetoneWithToTerminal(Group.alcohol, Group.acid); // CH(O)(OH) → CHOOH
         groupKetoneWithToTerminal(Group.amine, Group.amide); // CH(O)(NH2) → CH(ONH2)
 
-        if(chain.getPriorityBondedGroup().filter(group ->
+        if(chain.getPriorityGroup().filter(group ->
                 group.ordinal() < Group.aldehyde.ordinal()).isPresent()) // Would be priority
             groupKetoneWithToTerminal(Group.hydrogen, Group.aldehyde); // CH(O) → CHO
 
@@ -274,7 +278,7 @@ public final class Simple extends Organic implements OpenChain {
     private void correctChainOrientation() {
         Simple reversed = new Simple(chain.getReversed());
 
-        List<Group> bondedGroups = chain.getBondedGroups();
+        List<Group> bondedGroups = chain.getGroups();
         bondedGroups.removeIf(group -> group == Group.hydrogen);
 
         boolean corrected = false;
