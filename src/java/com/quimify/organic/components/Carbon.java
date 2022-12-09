@@ -44,18 +44,13 @@ public class Carbon extends Organic {
     }
 
     public int getAmountOf(Group group) {
-        int cantidad = 0;
+        if(!isBondedTo(group))
+            return 0;
 
-        if(isBondedTo(group)) {
-            if(group != Group.alkene && group != Group.alkyne) {
-                for(Substituent substituent : substituents)
-                    if(substituent.getGroup() == group)
-                        cantidad += 1;
-            }
-            else cantidad = 1;
-        }
+        if(isBond(group))
+            return 1; // Maximum
 
-        return cantidad;
+        return (int) substituents.stream().filter(s -> s.getGroup() == group).count();
     }
 
     @Override
