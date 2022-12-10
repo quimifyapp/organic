@@ -40,7 +40,12 @@ public final class Ether extends Organic implements OpenChain {
 
 	// Constructors:
 
-	public Ether(Chain firstChain) {
+	public Ether() {
+		this.firstChain = new Chain(0); // C - O
+		currentChain = this.firstChain;
+	}
+
+	Ether(Chain firstChain) {
 		this.firstChain = firstChain; // R - O
 
 		if(firstChain.isDone())

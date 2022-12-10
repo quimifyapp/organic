@@ -55,62 +55,77 @@ public class Chain extends Organic {
 	}
 
 	public void correctChainStructureToTheLeft() { // CH2(CH3)-CH2- → CH3-CH2-CH2-
-		boolean corrected; // Para actualizar el iterador tras iteración
-		for (int i = 0; i < carbons.size(); i = corrected ? 0 : i + 1) { // Sin incremento
-			if(carbons.get(i).getSubstituentsOf(Group.radical).size() > 0) { // Este carbono tiene radicales
-				// Se obtiene el mayor radical de este carbono:
-				Substituent mayor_radical = carbons.get(i).getGreatestRadical();
+		int carbonIndex = 0;
 
-				// Se calcula si el "camino" por este radical es preferible a la cadena principal:
-				int comparacion = Integer.compare(mayor_radical.getStraightCarbonCount(), i);
+		while (carbonIndex < carbons.size()) {
+			boolean corrected = correctChainStructureToTheLeftIn(carbonIndex);
 
-				if(comparacion == 1 || (comparacion == 0 && mayor_radical.isIso())) {
-					// Se corrige la cadena por la izquierda:
-					if(i != 0) {
-						// Se convierte el camino antiguo de la cadena principal en radical:
-						Substituent oldRadical;
-
-						// Aquí se tiene en cuenta que, de haber un radical, solo podría ser metil
-						if(i > 1 && carbons.get(1).isBondedTo(Group.radical) // Hay un metil en el segundo carbono
-								&& carbons.get(1).getSubstituentsWithoutHydrogen().get(0).equals(new Substituent(1)))
-							oldRadical = new Substituent(i + 1, true);
-						else oldRadical = new Substituent(i);
-
-						// Se enlaza tal radical:
-						carbons.get(i).bond(oldRadical);
-
-						// Se elimina el radical que será el camino de la cadena principal:
-						carbons.get(i).unbond(mayor_radical);
-
-						// Se elimina el camino antiguo de la cadena principal:
-						carbons.subList(0, i).clear();
-					}
-					else carbons.get(0).remove(mayor_radical); // Será el camino de la cadena principal
-
-					// Se convierte el radical en el nuevo camino de la cadena principal:
-					Chain parte_izquierda = mayor_radical.toChain();
-					parte_izquierda.bondCarbons(carbons);
-
-					// Se efectúa el cambio:
-					become(parte_izquierda);
-					corrected = true;
-				}
-				else corrected = false;
-			}
-			else corrected = false;
-
-			// Se comprueba si este carbono no podría estar en un radical, ergo debe pertenecer a la cadena principal:
-
-			List<Substituent> substituents = carbons.get(i).getSubstituentsWithoutHydrogen(); // Se da por hecho que
-			// los carbonos anteriores sí pueden estar en un radical gracias a los siguientes 'break'
-
-			if(carbons.get(i).getFreeBondCount() > 0)
-				break; // Le sigue un alqueno o alquino
-
-			if(substituents.size() > 0) // Hay sustituyentes distintos del hidrógeno
-				if(!(i == 1 && substituents.size() == 1 && substituents.get(0).getCarbonCount() == 1))
-					break; // Y estos NO son un solo metil en el segundo carbono (NO podría formar un radical 'iso')
+			// To this point, past carbons COULD be part of a radical
+			if(couldBePartOfRadical(carbonIndex))
+				carbonIndex = corrected ? 0 : carbonIndex + 1;
+			else break;
 		}
+	}
+
+	private boolean correctChainStructureToTheLeftIn(int carbonIndex) {
+		if (!carbons.get(carbonIndex).isBondedTo(Group.radical))
+			return false;
+
+		// Se obtiene el mayor radical de este carbono:
+		Substituent greatestRadical = carbons.get(carbonIndex).getGreatestRadical();
+
+		// Se calcula si el "camino" por este radical es preferible a la cadena principal:
+		int comparaison = Integer.compare(greatestRadical.getStraightCarbonCount(), carbonIndex);
+
+		if (comparaison != 1 && (comparaison != 0 || !greatestRadical.isIso()))
+			return false;
+
+		// Se corrige la cadena por la izquierda:
+		if (carbonIndex != 0) {
+			// Se convierte el camino antiguo de la cadena principal en radical:
+			Substituent oldRadical;
+
+			// Aquí se tiene en cuenta que, de haber un radical, solo podría ser metil
+			if (carbonIndex > 1 && carbons.get(1).isBondedTo(Group.radical) // Hay un metil en el segundo carbono
+					&& carbons.get(1).getSubstituentsWithoutHydrogen().get(0).equals(new Substituent(1)))
+				oldRadical = new Substituent(carbonIndex + 1, true);
+			else oldRadical = new Substituent(carbonIndex);
+
+			// Se enlaza tal radical:
+			carbons.get(carbonIndex).bond(oldRadical);
+
+			// Se elimina el radical que será el camino de la cadena principal:
+			carbons.get(carbonIndex).unbond(greatestRadical);
+
+			// Se elimina el camino antiguo de la cadena principal:
+			carbons.subList(0, carbonIndex).clear();
+		}
+		else carbons.get(0).remove(greatestRadical); // Será el camino de la cadena principal
+
+		// Se convierte el radical en el nuevo camino de la cadena principal:
+		Chain parte_izquierda = greatestRadical.toChain();
+		parte_izquierda.bondCarbons(carbons);
+
+		// Se efectúa el cambio:
+		become(parte_izquierda);
+
+		return true;
+	}
+
+	private boolean couldBePartOfRadical(int carbonIndex) {
+		Carbon carbon = carbons.get(carbonIndex);
+
+		if(carbon.isBondedTo(Group.alkene) || carbon.isBondedTo(Group.alkyne))
+			return false;
+
+		if(carbonIndex == 1) { // Could be part of a 'iso' radical
+			List<Substituent> substituents = carbon.getSubstituents();
+			substituents.removeIf(substituent -> substituent.getGroup() == Group.hydrogen);
+
+			return substituents.equals(List.of(new Substituent(1)));
+		}
+
+		return true;
 	}
 
 	// QUERIES -----------------------------------------------------------------------
