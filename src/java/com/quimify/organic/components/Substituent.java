@@ -40,7 +40,7 @@ public class Substituent extends Organic {
     );
 
     private static final Map<Group, String> groupToStructure = Map.ofEntries(
-            entry(Group.acid, "COOH"),
+            entry(Group.acid, "OOH"),
             entry(Group.amide, "ONH2"),
             entry(Group.carbamoyl, "COHN2"),
             entry(Group.nitrile, "N"),
