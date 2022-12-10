@@ -41,7 +41,7 @@ public class Carbon extends Organic {
 
     public int getAmountOf(Group group) {
         if(Organic.isBond(group))
-            return 1; // Maximum
+            return isBond(group) ? 1 : 0;
 
         return (int) substituents.stream().filter(s -> s.getGroup() == group).count();
     }
