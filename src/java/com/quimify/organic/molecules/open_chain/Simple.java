@@ -191,7 +191,7 @@ public final class Simple extends Organic implements OpenChain {
     }
 
     public String getStructure() {
-        return chain.getStructure();
+        return chain.toString();
     }
 
     // Private:

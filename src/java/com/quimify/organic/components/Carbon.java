@@ -130,8 +130,7 @@ public class Carbon extends Organic {
 
     // Text:
 
-    @Override
-    public String toString() {
+    private String getStructure() {
         StringBuilder result = new StringBuilder("C");
 
         // Hydrogen:
@@ -175,6 +174,11 @@ public class Carbon extends Organic {
             result.append(new Substituent(Group.ether)); // CHBr-O-
 
         return result.toString();
+    }
+
+    @Override
+    public String toString() {
+        return getStructure();
     }
 
     // Getters and setters:

@@ -229,7 +229,7 @@ public class Chain extends Organic {
 
 	// Text:
 
-	public String getStructure() {
+	private String getStructure() {
 		StringBuilder formula = new StringBuilder();
 
 		if(carbons.size() > 0) {

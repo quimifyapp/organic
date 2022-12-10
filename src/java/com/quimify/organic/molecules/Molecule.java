@@ -69,6 +69,8 @@ public class Molecule extends Organic {
 		}
 	}
 
+	// Text
+
 	public Optional<String> getStructure() {
 		Optional<String> structure;
 

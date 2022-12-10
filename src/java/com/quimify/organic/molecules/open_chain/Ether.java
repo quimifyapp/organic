@@ -128,11 +128,11 @@ public final class Ether extends Organic implements OpenChain {
 	}
 
 	public String getStructure() {
-		String firstChainStructure = firstChain.getStructure();
+		String firstChainStructure = firstChain.toString();
 
 		return currentChain == firstChain
 				? firstChainStructure.substring(0, firstChainStructure.length() - 1)
-				: firstChainStructure + secondChain.getStructure();
+				: firstChainStructure + secondChain.toString();
 	}
 
 	// Private:
