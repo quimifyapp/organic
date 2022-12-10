@@ -22,7 +22,7 @@ public class Carbon extends Organic {
         freeBondCount = other.freeBondCount;
     }
 
-    // Consultas:
+    // Queries:
 
     public boolean isBondedTo(Group group) {
         switch(group) {
@@ -39,152 +39,85 @@ public class Carbon extends Organic {
         }
     }
 
-    public int getAmountOf(Substituent substituent) {
-        return Collections.frequency(substituents, substituent);
-    }
-
     public int getAmountOf(Group group) {
-        if(!isBondedTo(group))
-            return 0;
-
-        if(isBond(group))
+        if(Organic.isBond(group))
             return 1; // Maximum
 
         return (int) substituents.stream().filter(s -> s.getGroup() == group).count();
     }
 
-    @Override
-    public boolean equals(Object otro) {
-        boolean es_igual;
-
-        if(otro != null && otro.getClass() == this.getClass()) {
-            Carbon nuevo = (Carbon) otro;
-
-            if(freeBondCount == nuevo.freeBondCount && substituents.size() == nuevo.substituents.size()) {
-                es_igual = true;
-
-                for(int i = 0; i < substituents.size(); i++)
-                    if(!substituents.get(i).equals(nuevo.substituents.get(i))) {
-                        es_igual = false;
-                        break;
-                    }
-            }
-            else es_igual = false;
-        }
-        else es_igual = false;
-
-        return es_igual;
+    public int getAmountOf(Substituent substituent) {
+        return Collections.frequency(substituents, substituent);
     }
 
-    // Métodos get:
+    @Override
+    public boolean equals(Object other) {
+        if (other == null || other.getClass() != this.getClass())
+            return false;
+
+        Carbon otherCarbon = (Carbon) other;
+
+        if (freeBondCount != otherCarbon.freeBondCount)
+            return false;
+
+        if (substituents.size() != otherCarbon.substituents.size())
+            return false;
+
+        for (Substituent substituent : substituents)
+            if (Collections.frequency(substituents, substituent) !=
+                    Collections.frequency(otherCarbon.substituents, substituent))
+                return false;
+
+        return true;
+    }
+
+    // TODO remove:
 
     public List<Substituent> getSubstituentsOf(Group group) { // TODO remove
         return substituents.stream().filter(substituent ->
-                        substituent.getGroup() == group).collect(Collectors.toList());
+                substituent.getGroup() == group).collect(Collectors.toList());
     }
 
     public List<Substituent> getSubstituentsWithoutHydrogen() { // TODO remove
         return substituents.stream().filter(substituent ->
-                        substituent.getGroup() != Group.hydrogen).collect(Collectors.toList());
+                substituent.getGroup() != Group.hydrogen).collect(Collectors.toList());
     }
 
-    public List<Substituent> getUniqueSubstituents() { // TODO set?
-        List<Substituent> uniqueSubstituents = new ArrayList<>();
-
-        for(Substituent substituent : substituents)
-            if(!uniqueSubstituents.contains(substituent))
-                uniqueSubstituents.add(substituent);
-
-        return uniqueSubstituents;
-    }
-
-    public Substituent getGreatestRadical() {
+    public Substituent getGreatestRadical() { // TODO remove
         Substituent greatestRadical;
 
         List<Substituent> radicals = getSubstituentsOf(Group.radical);
         greatestRadical = radicals.get(0); // Se asume que tiene radicales
 
         for(int i = 1; i < radicals.size(); i++)
-            if(radicals.get(i).isLongerThan(greatestRadical))
+            if(radicals.get(i).isGreaterThan(greatestRadical))
                 greatestRadical = radicals.get(i);
 
         return greatestRadical;
     }
 
-    // Texto:
+    // Modifiers:
 
-    @Override
-    public String toString() {
-        StringBuilder result = new StringBuilder("C");
-
-        // Se recogen los tipos de sustituyente:
-        List<Substituent> uniques = getUniqueSubstituents(); // Sin repetirse
-
-        // Se ordenan según la prioridad de su función:
-        Organic.ordenarPorFunciones(uniques);
-
-        // Se escribe los hidrógenos:
-
-        final int hydrogenCount = getAmountOf(Group.hydrogen);
-
-        if(hydrogenCount > 0) {
-            Substituent hydrogen = new Substituent(Group.hydrogen);
-            result.append(hydrogen).append(getMolecularQuantifier(hydrogenCount));
-            uniques.remove(uniques.size() - 1); // Se borra el hidrógeno de la lista
-        }
-
-        // Se escribe el resto de sustituyentes excepto el éter:
-        uniques.removeIf(substituent -> substituent.getGroup() == Group.ether);
-
-        if(uniques.size() == 1) { // Solo hay un tipo además del hidrógeno y éter
-            Substituent unique = uniques.get(0);
-            String text = unique.toString();
-
-            if (unique.getBondCount() == 3 && !(unique.getGroup() == Group.aldehyde && hydrogenCount > 0))
-                result.append(text); // COOH, CHO...
-            else if (unique.isHalogen())
-                result.append(text); // CHCl, CF...
-            else if(unique.getGroup() == Group.ketone && hydrogenCount == 0)
-                result.append(text); // CO
-            else result.append("(").append(text).append(")"); // CH(HO), CH(OH)3, CH3(CH2CH3)...
-
-            result.append((getMolecularQuantifier(getAmountOf(unique))));
-        }
-        else if(uniques.size() > 1) { // Hay más de un tipo además del hidrógeno y éter
-            for (Substituent substituent : uniques)
-                result.append("(").append(substituent).append(")") // C(OH)3(Cl), CH2(NO2)(CH3)...
-                        .append(getMolecularQuantifier(getAmountOf(substituent)));
-        }
-
-        // Se escribe el éter:
-        if(isBondedTo(Group.ether))
-            result.append(new Substituent(Group.ether));
-
-        return result.toString();
+    public void bond(Group group) {
+        bond(new Substituent(group));
     }
-
-    // Modificadores:
 
     public void bond(Substituent substituent) {
         substituents.add(substituent);
         freeBondCount -= substituent.getBondCount();
     }
 
-    public void bond(Group group) {
-        bond(new Substituent(group));
+    public void unbond(Group group) {
+        unbond(new Substituent(group));
+    }
+
+    public void unbond(Substituent substituent) {
+        freeBondCount += substituent.getBondCount();
+        remove(substituent);
     }
 
     public void remove(Substituent substituent) {
-        substituents.remove(substituent); // No se ha eliminado su enlace
-    }
-
-    public void removeWithBonds(Substituent substituent) {
-        remove(substituent);
-        freeBondCount += substituent.getBondCount();
-    }
-
-    public void removeWithBonds(Group group) {
-        removeWithBonds(new Substituent(group));
+        substituents.remove(substituent);
     }
 
     public void useBond() {
@@ -193,6 +126,55 @@ public class Carbon extends Organic {
 
     public void freeBond() {
         freeBondCount++;
+    }
+
+    // Text:
+
+    @Override
+    public String toString() {
+        StringBuilder result = new StringBuilder("C");
+
+        // Hydrogen:
+
+        final int hydrogenCount = getAmountOf(Group.hydrogen);
+
+        if(hydrogenCount > 0)
+            result.append(new Substituent(Group.hydrogen)).append(molecularQuantifierFor(hydrogenCount));
+
+        // Rest of them except ether:
+
+        Set<Substituent> uniqueSubstituents = new HashSet<>(substituents);
+        uniqueSubstituents.removeIf(s -> s.getGroup() == Group.hydrogen || s.getGroup() == Group.ether);
+
+        List<Substituent> uniqueOrderedSubstituents = uniqueSubstituents.stream()
+                .sorted(Comparator.comparing(Substituent::getGroup)).collect(Collectors.toList());
+
+        if(uniqueOrderedSubstituents.size() == 1) { // Only one kind except for hydrogen and ether
+            Substituent substituent = uniqueOrderedSubstituents.get(0);
+
+            boolean isAldehyde = substituent.getGroup() == Group.aldehyde;
+
+            if(substituent.getBondCount() == 3 && !isAldehyde)
+                result.append(substituent); // CHOOH, CONH2...
+            else if(isAldehyde && hydrogenCount == 0)
+                result.append(substituent); // CHO
+            else if (Organic.isHalogen(substituent.getGroup()))
+                result.append(substituent); // CHCl2, CF3...
+            else result.append("(").append(substituent).append(")"); // CH(HO), CH(NO2)3, CH2(CH3)...
+
+            result.append((molecularQuantifierFor(getAmountOf(substituent))));
+        }
+        else if(uniqueOrderedSubstituents.size() > 1) // More than one kind except for hydrogen and ether
+            for (Substituent substituent : uniqueOrderedSubstituents)
+                result.append("(").append(substituent).append(")") // C(OH)3(Cl), CH2(NO2)(CH3)...
+                        .append(molecularQuantifierFor(getAmountOf(substituent)));
+
+        // Ether:
+
+        if(isBondedTo(Group.ether))
+            result.append(new Substituent(Group.ether)); // CHBr-O-
+
+        return result.toString();
     }
 
     // Getters and setters:

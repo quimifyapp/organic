@@ -1,9 +1,9 @@
-package com.quimify.organic.compounds;
+package com.quimify.organic.molecules;
 
 import com.quimify.organic.Organic;
 import com.quimify.organic.components.*;
-import com.quimify.organic.compounds.open_chain.Ether;
-import com.quimify.organic.compounds.open_chain.Simple;
+import com.quimify.organic.molecules.open_chain.Ether;
+import com.quimify.organic.molecules.open_chain.Simple;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
@@ -15,7 +15,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.*;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -25,8 +24,6 @@ import java.util.stream.Stream;
 // éster, cíclico...), pero también podría no encajar en ninguno de esos tipos.
 
 public class Molecule extends Organic {
-
-	private static final Logger logger = Logger.getLogger(Molecule.class.getName());
 
 	private final String smiles;
 	private final Set<Atom> molecule;
@@ -54,7 +51,7 @@ public class Molecule extends Organic {
 
 		// Se enlazan entre sí:
 		NodeList xmlBonds = xml.getElementsByTagName("bond");
-		for(int i = 0; i < xmlBonds.getLength(); i++) { // TODO for each
+		for(int i = 0; i < xmlBonds.getLength(); i++) {
 			org.w3c.dom.Element bond = (org.w3c.dom.Element) xmlBonds.item(i);
 
 			int[] ids = Arrays.stream(bond.getAttribute("id").replace("a", "").split("_"))

@@ -26,6 +26,8 @@ public class Chain extends Organic {
 			this.carbons.add(new Carbon(carbon));
 	}
 
+	// TODO organize
+
 	// Public ------------------------------------------------------------------------
 
 	public void bond(Substituent substituent) {
@@ -78,7 +80,7 @@ public class Chain extends Organic {
 						carbons.get(i).bond(oldRadical);
 
 						// Se elimina el radical que será el camino de la cadena principal:
-						carbons.get(i).removeWithBonds(mayor_radical);
+						carbons.get(i).unbond(mayor_radical);
 
 						// Se elimina el camino antiguo de la cadena principal:
 						carbons.subList(0, i).clear();
@@ -206,10 +208,6 @@ public class Chain extends Organic {
 		return substituents;
 	}
 
-	public Set<Substituent> getUniqueSubstituents() {
-		return new HashSet<>(getSubstituents());
-	}
-
 	private List<Integer> getIndexesOf(List<Integer> amounts) {
 		List<Integer> indexes = new ArrayList<>();
 
@@ -242,7 +240,7 @@ public class Chain extends Organic {
 			// Se escribe el resto con los enlaces libres del anterior:
 			int previousFreeBonds = firstCarbon.getFreeBondCount();
 			for(int i = 1; i < carbons.size(); i++) {
-				formula.append(getBondSymbol(previousFreeBonds)); // Como CH=
+				formula.append(bondSymbolFor(previousFreeBonds)); // Como CH=
 				formula.append(carbons.get(i)); // Como CH=CH
 
 				previousFreeBonds = carbons.get(i).getFreeBondCount();
@@ -250,7 +248,7 @@ public class Chain extends Organic {
 
 			// Se escribe los enlaces libres del último:
 			if(previousFreeBonds > 0 && previousFreeBonds < 4) // Ni está completo ni es el primero vacío
-				formula.append(getBondSymbol(previousFreeBonds - 1)); // Como CH=CH-CH2-C≡
+				formula.append(bondSymbolFor(previousFreeBonds - 1)); // Como CH=CH-CH2-C≡
 		}
 
 		return formula.toString();

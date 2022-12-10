@@ -1,8 +1,8 @@
 import com.quimify.organic.OrganicFactory;
 import com.quimify.organic.components.Group;
 import com.quimify.organic.components.Substituent;
-import com.quimify.organic.compounds.open_chain.OpenChain;
-import com.quimify.organic.compounds.open_chain.Simple;
+import com.quimify.organic.molecules.open_chain.OpenChain;
+import com.quimify.organic.molecules.open_chain.Simple;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -4,8 +4,8 @@ import com.quimify.organic.bridges.opsin.Opsin;
 import com.quimify.organic.bridges.opsin.OpsinResult;
 import com.quimify.organic.bridges.pubchem.PubChem;
 import com.quimify.organic.bridges.pubchem.PubChemResult;
-import com.quimify.organic.compounds.Molecule;
-import com.quimify.organic.compounds.open_chain.OpenChain;
+import com.quimify.organic.molecules.Molecule;
+import com.quimify.organic.molecules.open_chain.OpenChain;
 
 import java.util.Optional;
 import java.util.logging.Level;
@@ -15,9 +15,11 @@ public class OrganicFactory {
 
     private static final Logger logger = Logger.getLogger(OrganicFactory.class.getName());
 
-    public static final OrganicResult organicNotFound = new OrganicResult(false); // Constante auxiliar
+    // Constants:
 
-    // PUBLIC ------------------------------------------------------------------------
+    public static final OrganicResult organicNotFound = new OrganicResult(false);
+
+    // Public:
 
     public static OrganicResult getFromName(String name) {
         OrganicResult organicResult;
@@ -49,7 +51,6 @@ public class OrganicFactory {
         return organicResult;
     }
 
-    // TODO: handle exceptions
     public static OrganicResult getFromOpenChain(OpenChain openChain) {
         OrganicResult organicResult = new OrganicResult(true);
 
@@ -69,7 +70,7 @@ public class OrganicFactory {
         return organicResult;
     }
 
-    // PRIVATE -----------------------------------------------------------------------
+    // Private:
 
     private static void complementViaPubChem(OrganicResult organicResult, String smiles) {
         PubChemResult pubChemResult = new PubChem(smiles).getResult();

@@ -93,8 +93,10 @@ public class Atom {
 
 		if(!Objects.equals(id, otherAtom.id))
 			return false; // Objects.equals(null, null) = true
+
 		if (element != otherAtom.element)
 			return false;
+
 		if (bondedAtoms.size() != otherAtom.bondedAtoms.size())
 			return false;
 

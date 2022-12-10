@@ -1,4 +1,4 @@
-package com.quimify.organic.compounds.open_chain;
+package com.quimify.organic.molecules.open_chain;
 
 // Esta interfaz implementa compuestos orgánicos no cíclicos:
 //  - Simple: R

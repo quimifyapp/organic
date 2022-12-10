@@ -1,4 +1,4 @@
-package com.quimify.organic.compounds.open_chain;
+package com.quimify.organic.molecules.open_chain;
 
 import com.quimify.organic.Organic;
 import com.quimify.organic.components.Atom;
@@ -6,10 +6,7 @@ import com.quimify.organic.components.Chain;
 import com.quimify.organic.components.Group;
 import com.quimify.organic.components.Substituent;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 // Esta clase representa éteres: dos cadenas con funciones de prioridad menor a la función éter unidas por un oxígeno.
 
@@ -51,7 +48,7 @@ public final class Ether extends Organic implements OpenChain {
 		else currentChain = this.firstChain;
 	}
 
-	// Interface --------------------------------------------------------------------
+	// Interface:
 
 	public boolean isDone() {
 		return currentChain.isDone();
@@ -116,13 +113,10 @@ public final class Ether extends Organic implements OpenChain {
 	public String getName() {
 		String name;
 
-		// TODO mirar primero los branched name
 		String firstChainName = getNameFor(firstChain.getReversed()); // Se empieza a contar desde el oxígeno
 		String secondChainName = getNameFor(secondChain); // La secundaria ya está en el orden bueno
 
 		if (!firstChainName.equals(secondChainName)) {
-			// TODO quitar sec, ter ???
-
 			// Chains are alphabetically ordered:
 			if (firstChainName.compareTo(secondChainName) < 0)
 				name = firstChainName + " " + secondChainName;
@@ -141,14 +135,16 @@ public final class Ether extends Organic implements OpenChain {
 				: firstChainStructure + secondChain.getStructure();
 	}
 
-	// Private -----------------------------------------------------------------------
+	// Private:
 
 	private void switchToSecondChain() {
 		secondChain = new Chain(1);
 		currentChain = secondChain;
 	}
 
-	// Naming: TODO: poner en común en Cadena
+	// TODO fix repeated code
+
+	// Naming:
 
 	private boolean isRedundantInName(Group group, Chain chain) {
 		boolean isRedundant;
@@ -169,10 +165,10 @@ public final class Ether extends Organic implements OpenChain {
 		Locator prefix;
 
 		List<Integer> indexes = chain.getIndexesOf(group);
-		String name = getPrefixNameParticle(group);
+		String name = prefixNameParticleFor(group);
 
 		if (isRedundantInName(group, chain)) // Sobran los localizadores porque son evidentes
-			prefix = new Locator(multiplicadorDe(indexes.size()), name); // Como "difluoro"
+			prefix = new Locator(multiplierFor(indexes.size()), name); // Como "difluoro"
 		else prefix = new Locator(indexes, name); // Como "1,2-difluoro"
 
 		return prefix;
@@ -182,13 +178,13 @@ public final class Ether extends Organic implements OpenChain {
 		String bondName = "";
 
 		List<Integer> indexes = chain.getIndexesOf(bond);
-		String nameParticle = getBondNameParticle(bond);
+		String nameParticle = bondNameParticleFor(bond);
 
 		if (indexes.size() > 0) {
 			Locator locator;
 
 			if (isRedundantInName(bond, chain)) // Sobran los localizadores porque son evidentes
-				locator = new Locator(multiplicadorDe(indexes.size()), nameParticle); // Como "dien"
+				locator = new Locator(multiplierFor(indexes.size()), nameParticle); // Como "dien"
 			else locator = new Locator(indexes, nameParticle); // Como "1,2-dien"
 
 			String localizador_to_string = locator.toString();
@@ -200,37 +196,6 @@ public final class Ether extends Organic implements OpenChain {
 		}
 
 		return bondName;
-	}
-
-	private Optional<String> getBranchedNameFor(Chain chain) {
-		Optional<Group> priorityGroup = chain.getPriorityGroup();
-		if(priorityGroup.isEmpty() || priorityGroup.get() != Group.radical)
-			return Optional.empty(); // There are not only radicals
-
-		Substituent CH3 = new Substituent(1);
-		List<Integer> methylIndexes = chain.getIndexesOf(CH3);
-		if(methylIndexes.size() == chain.getAmountOf(Group.radical))
-			return Optional.empty(); // There are not only methyl radicals
-
-		Optional<String> branchedName;
-
-		if(methylIndexes.size() == 1) {
-			if(chain.getSize() >= 2 && methylIndexes.get(0).equals(chain.getSize() - 1 - 1)) // CH3-CH(CH3)-(...)-O-
-				branchedName = Optional.of("iso" + cuantificadorDe(chain.getSize() + 1) + "il");
-			else if(chain.getSize() >= 3 && methylIndexes.get(0).equals(0)) // CH3-(...)-CH(CH3)-O-
-				branchedName = Optional.of("sec-" + cuantificadorDe(chain.getSize() + 1) + "il");
-			else branchedName = Optional.empty();
-		}
-		else if(methylIndexes.size() == 2) {
-			if(chain.getSize() >= 2 && methylIndexes.stream().allMatch(index -> index == 0)) // CH3-(...)-C(CH3)2-O-
-				branchedName = Optional.of("terc-" + cuantificadorDe(chain.getSize() + 2) + "il");
-			else if(chain.getSize() >= 2 && methylIndexes.stream().allMatch(index -> index == 0)) // CH3-(...)-C(CH3)2-O-
-				branchedName = Optional.of("neo" + cuantificadorDe(chain.getSize() + 2) + "il");
-			else branchedName = Optional.empty();
-		}
-		else branchedName = Optional.empty();
-
-		return branchedName;
 	}
 
 	private String getNameFor(Chain chain) {
@@ -249,11 +214,11 @@ public final class Ether extends Organic implements OpenChain {
 			groupsIndex++;
 		}
 
-		Set<Substituent> uniqueRadicals = chain.getUniqueSubstituents();
+		Set<Substituent> uniqueRadicals = new HashSet<>(chain.getSubstituents());
 		uniqueRadicals.removeIf(substituent -> substituent.getGroup() != Group.radical);
 
 		for (Substituent radical : uniqueRadicals)
-			prefixes.add(new Locator(chain.getIndexesOf(radical), getRadicalNameParticle(radical)));
+			prefixes.add(new Locator(chain.getIndexesOf(radical), radicalNameParticleFor(radical)));
 
 		StringBuilder prefix = new StringBuilder(chain.isBondedTo(Group.acid) ? "ácido " : "");
 		if (prefixes.size() > 0) {
@@ -273,7 +238,7 @@ public final class Ether extends Organic implements OpenChain {
 		String enlaces = getBondNameForIn(Group.alkene, chain) + getBondNameForIn(Group.alkyne, chain);
 
 		// Se procesa el cuantificador:
-		String cuantificador = cuantificadorDe(chain.getSize());
+		String cuantificador = quantifierFor(chain.getSize());
 
 		if (!enlaces.equals("") && Organic.doesNotStartWithVowel(enlaces))
 			cuantificador += "a";

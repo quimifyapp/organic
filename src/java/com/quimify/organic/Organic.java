@@ -3,186 +3,180 @@ package com.quimify.organic;
 import com.quimify.organic.components.Group;
 import com.quimify.organic.components.Substituent;
 
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 
-import static java.util.Collections.swap;
-
-// Esta clase generaliza distintos tipos de compuestos orgánicos: cadenas simples, cíclicos, ésteres...
+// This class wraps up organic utilities.
 
 public class Organic {
 
-    private static final List<Group> halogens = Arrays.asList(Group.bromine, Group.chlorine, Group.fluorine, Group.iodine);
+    private static final Set<Group> halogenGroups = Set.of(
+            Group.bromine,
+            Group.chlorine,
+            Group.fluorine,
+            Group.iodine
+    );
 
-    // Consultas:
+    // Queries:
 
     protected static boolean isHalogen(Group group) {
-        return halogens.contains(group);
+        return halogenGroups.contains(group);
     }
 
     protected static boolean isBond(Group group) {
         return group == Group.alkene || group ==  Group.alkyne;
     }
 
-    protected static void ordenarPorFunciones(List<Substituent> substituents) {
-        for(int i = 0; i < substituents.size() - 1;) // Sin incremento
-            if(substituents.get(i).getGroup().compareTo(substituents.get(i + 1).getGroup()) > 0) {
-                swap(substituents, i, i + 1); // get(i) > get(i + 1)
-                i = 0;
-            }
-            else i++; // get(i) <= get(i + 1)
-    }
+    // Text:
 
-    // Texto:
+    private static String greekPrefixFor(int digit) {
+        String greekPrefix;
 
-    private static String prefijoGriegoDe(int numero) {
-        String resultado;
-
-        switch(numero) {
+        switch(digit) {
             case 0:
-                resultado = "";
+                greekPrefix = "";
                 break;
             case 1:
-                resultado = "hen";
+                greekPrefix = "hen";
                 break;
             case 2:
-                resultado = "do";
+                greekPrefix = "do";
                 break;
             case 3:
-                resultado = "tri";
+                greekPrefix = "tri";
                 break;
             case 4:
-                resultado = "tetra";
+                greekPrefix = "tetra";
                 break;
             case 5:
-                resultado = "pent";
+                greekPrefix = "pent";
                 break;
             case 6:
-                resultado = "hex";
+                greekPrefix = "hex";
                 break;
             case 7:
-                resultado = "hept";
+                greekPrefix = "hept";
                 break;
             case 8:
-                resultado = "oct";
+                greekPrefix = "oct";
                 break;
             case 9:
-                resultado = "non";
+                greekPrefix = "non";
                 break;
             default:
-                throw new IllegalArgumentException("No se contempla el prefijo griego para: " + numero);
+                throw new IllegalArgumentException("There is no greek prefix for: " + digit + ".");
         }
 
-        return resultado;
+        return greekPrefix;
     }
 
-    protected static String cuantificadorDe(int numero) {
-        String resultado;
+    protected static String quantifierFor(int number) {
+        String quantifier;
 
-        if(numero < 10) { // [1, 9]
-            switch(numero) {
+        if(number < 10) { // [1, 9]
+            switch(number) {
                 case 1:
-                    resultado = "met";
+                    quantifier = "met";
                     break;
                 case 2:
-                    resultado = "et";
+                    quantifier = "et";
                     break;
                 case 3:
-                    resultado = "prop";
+                    quantifier = "prop";
                     break;
                 case 4:
-                    resultado = "but";
+                    quantifier = "but";
                     break;
                 default: // 0, 5, 6, 7, 8, 9
-                    resultado = prefijoGriegoDe(numero);
+                    quantifier = greekPrefixFor(number);
                     break;
             }
         }
-        else if(numero == 11) // 11
-            resultado = "undec";
+        else if(number == 11) // 11
+            quantifier = "undec";
         else { // 10 U [12, 999]
-            int decenas = numero / 10;
-            int unidades = numero - (decenas * 10);
+            int decenas = number / 10;
+            int unidades = number - (decenas * 10);
 
-            if(numero < 15) // 10 U [12, 14]
-                resultado = prefijoGriegoDe(unidades) + "dec";
-            else if(numero < 20) // [15, 19]
-                resultado = prefijoGriegoDe(unidades) + "adec";
-            else if(numero == 20) // 20
-                resultado = "icos";
-            else if(numero == 21) // 21
-                resultado = "heneicos";
-            else if(numero < 25) // [22, 25]
-                resultado = prefijoGriegoDe(unidades) + "cos";
-            else if(numero < 30) // [26, 29]
-                resultado = prefijoGriegoDe(unidades) + "acos";
-            else if(numero < 100) { // [30, 99]
-                resultado = prefijoGriegoDe(unidades);
+            if(number < 15) // 10 U [12, 14]
+                quantifier = greekPrefixFor(unidades) + "dec";
+            else if(number < 20) // [15, 19]
+                quantifier = greekPrefixFor(unidades) + "adec";
+            else if(number == 20) // 20
+                quantifier = "icos";
+            else if(number == 21) // 21
+                quantifier = "heneicos";
+            else if(number < 25) // [22, 25]
+                quantifier = greekPrefixFor(unidades) + "cos";
+            else if(number < 30) // [26, 29]
+                quantifier = greekPrefixFor(unidades) + "acos";
+            else if(number < 100) { // [30, 99]
+                quantifier = greekPrefixFor(unidades);
 
                 if(unidades > 4)
-                    resultado += "a";
+                    quantifier += "a";
 
-                resultado += prefijoGriegoDe(decenas);
+                quantifier += greekPrefixFor(decenas);
 
                 if(decenas == 4)
-                    resultado += "cont";
-                else resultado += "acont";
+                    quantifier += "cont";
+                else quantifier += "acont";
             }
-            else if(numero == 100) // 100
-                resultado = "hect";
-            else if(numero < 999) {  // [101, 999]
-                int centenas = numero / 100;
+            else if(number == 100) // 100
+                quantifier = "hect";
+            else if(number < 999) {  // [101, 999]
+                int centenas = number / 100;
                 decenas = decenas - (centenas * 10);
 
-                resultado = cuantificadorDe(10 * decenas + unidades); // Recursivo
+                quantifier = quantifierFor(10 * decenas + unidades); // Recursivo
 
                 switch(centenas) {
                     case 1: // [101, 199]
-                        resultado += "ahect";
+                        quantifier += "ahect";
                         break;
                     case 2: // [200, 299]
-                        resultado += "adict";
+                        quantifier += "adict";
                         break;
                     case 3: // [300, 399]
-                        resultado += "atrict";
+                        quantifier += "atrict";
                         break;
                     case 4: // [400, 499]
-                        resultado += "atetract";
+                        quantifier += "atetract";
                         break;
                     default: // [500, 999]
-                        resultado += "a" + prefijoGriegoDe(centenas) + "act";
+                        quantifier += "a" + greekPrefixFor(centenas) + "act";
                         break;
                 }
             }
-            else throw new IllegalArgumentException("No se contempla este número de carbonos: " + numero); // > 999
+            else throw new IllegalArgumentException("Can't handle this amount of carbons: " + number + "."); // > 999
         }
 
-        return resultado;
+        return quantifier;
     }
 
-    protected static String multiplicadorDe(int numero) {
-        String resultado;
+    protected static String multiplierFor(int number) {
+        String multiplier;
 
-        switch(numero) {
+        switch(number) {
             case 1:
-                resultado = "";
+                multiplier = "";
                 break;
             case 2:
-                resultado = "di";
+                multiplier = "di";
                 break;
             case 3:
-                resultado = "tri";
+                multiplier = "tri";
                 break;
             case 4:
-                resultado = "tetra";
+                multiplier = "tetra";
                 break;
             default:
-                resultado = cuantificadorDe(numero) + "a";
+                multiplier = quantifierFor(number) + "a";
                 break;
         }
 
-        return resultado;
+        return multiplier;
     }
 
     protected static class Locator {
@@ -217,7 +211,7 @@ public class Organic {
                 auxiliar.append(posiciones.get(posiciones.size() - 1) + 1);
             }
 
-            construir(auxiliar.toString(), Organic.multiplicadorDe(posiciones.size()), lexema);
+            construir(auxiliar.toString(), Organic.multiplierFor(posiciones.size()), lexema);
         }
 
         // No se tienen en cuenta los multiplicadores ni las posiciones, como propone la IUPAC.
@@ -245,63 +239,63 @@ public class Organic {
 
     }
 
-    protected static String getRadicalNameParticle(Substituent radical) {
+    protected static String radicalNameParticleFor(Substituent radical) {
         String nameParticle;
 
         if(radical.isIso())
             nameParticle = "iso";
         else nameParticle = "";
 
-        nameParticle += cuantificadorDe(radical.getCarbonCount()) + "il";
+        nameParticle += quantifierFor(radical.getCarbonCount()) + "il";
 
         return nameParticle;
     }
 
-    protected static String getPrefixNameParticle(Group group) {
-        String preffixNameParticle;
+    protected static String prefixNameParticleFor(Group group) {
+        String prefixNameParticle;
 
         switch(group) {
             case carbamoyl:
-                preffixNameParticle = "carbamoil";
+                prefixNameParticle = "carbamoil";
                 break;
             case cyanide:
-                preffixNameParticle = "ciano";
+                prefixNameParticle = "ciano";
                 break;
             case ketone:
-                preffixNameParticle = "oxo";
+                prefixNameParticle = "oxo";
                 break;
             case alcohol:
-                preffixNameParticle = "hidroxi";
+                prefixNameParticle = "hidroxi";
                 break;
             case amine:
-                preffixNameParticle = "amino";
+                prefixNameParticle = "amino";
                 break;
             case nitro:
-                preffixNameParticle = "nitro";
+                prefixNameParticle = "nitro";
                 break;
             case bromine:
-                preffixNameParticle = "bromo";
+                prefixNameParticle = "bromo";
                 break;
             case chlorine:
-                preffixNameParticle = "cloro";
+                prefixNameParticle = "cloro";
                 break;
             case fluorine:
-                preffixNameParticle = "fluoro";
+                prefixNameParticle = "fluoro";
                 break;
             case iodine:
-                preffixNameParticle = "yodo";
+                prefixNameParticle = "yodo";
                 break;
             default:
                 throw new IllegalArgumentException("No existen prefijos para la función " + group + ".");
         }
 
-        return preffixNameParticle;
+        return prefixNameParticle;
     }
 
-    protected static String getBondNameParticle(Group enlace) {
+    protected static String bondNameParticleFor(Group bond) {
         String bondNameParticle;
 
-        switch(enlace) {
+        switch(bond) {
             case alkene:
                 bondNameParticle = "en";
                 break;
@@ -309,13 +303,13 @@ public class Organic {
                 bondNameParticle = "in";
                 break;
             default:
-                throw new IllegalArgumentException("La función " + enlace + " no es un tipo de enlace.");
+                throw new IllegalArgumentException("La función " + bond + " no es un tipo de enlace.");
         }
 
         return bondNameParticle;
     }
 
-    protected static String getSuffixNameParticle(Group group) {
+    protected static String suffixNameParticleFor(Group group) {
         String suffixNameParticle;
 
         switch(group) {
@@ -347,7 +341,7 @@ public class Organic {
         return suffixNameParticle;
     }
 
-    protected static String getBondSymbol(int bondOrder) {
+    protected static String bondSymbolFor(int bondOrder) {
         switch(bondOrder) {
             case 0:
                 return "-";
@@ -360,14 +354,11 @@ public class Organic {
         }
     }
 
-    protected static String getMolecularQuantifier(int count) {
+    protected static String molecularQuantifierFor(int count) {
         return count != 1 ? String.valueOf(count) : ""; // As in "CO2" or "CO"
     }
 
-    protected static char firstLetterOf(String text) {
-        return (char) text.chars().filter(c -> String.valueOf((char) c).matches("[a-zA-Z]"))
-                .findFirst().orElse(0);
-    }
+    // Text utils: TODO private
 
     protected static boolean doesNotStartWithVowel(String text) {
         return "aeiou".indexOf(firstLetterOf(text)) == -1;
@@ -378,7 +369,14 @@ public class Organic {
     }
 
     protected static boolean startsWithDigit(String text) {
-        return text.matches("^\\d.*$") ;
+        return text.matches("^\\d.*$");
+    }
+
+    // Private:
+
+    private static char firstLetterOf(String text) {
+        return (char) text.chars().filter(c -> String.valueOf((char) c).matches("[a-zA-Z]"))
+                .findFirst().orElse(0);
     }
 
 }
