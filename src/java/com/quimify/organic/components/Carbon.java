@@ -50,16 +50,32 @@ public class Carbon extends Organic {
         return Collections.frequency(substituents, substituent);
     }
 
+    @Override
+    public boolean equals(Object other) {
+        if (other == null || other.getClass() != this.getClass())
+            return false;
+
+        Carbon otherCarbon = (Carbon) other;
+
+        if (freeBondCount != otherCarbon.freeBondCount)
+            return false;
+
+        if (substituents.size() != otherCarbon.substituents.size())
+            return false;
+
+        for (Substituent substituent : substituents)
+            if (Collections.frequency(substituents, substituent) !=
+                    Collections.frequency(otherCarbon.substituents, substituent))
+                return false;
+
+        return true;
+    }
+
     // TODO remove:
 
     public List<Substituent> getSubstituentsOf(Group group) { // TODO remove
         return substituents.stream().filter(substituent ->
                 substituent.getGroup() == group).collect(Collectors.toList());
-    }
-
-    public List<Substituent> getSubstituentsWithoutHydrogen() { // TODO remove
-        return substituents.stream().filter(substituent ->
-                substituent.getGroup() != Group.hydrogen).collect(Collectors.toList());
     }
 
     public Substituent getGreatestRadical() { // TODO remove
