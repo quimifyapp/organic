@@ -65,11 +65,11 @@ public class Chain extends Organic {
 				carbonIndex = corrected ? 0 : carbonIndex + 1;
 			else break;
 		}
+
+		System.out.println("a");
 	}
 
 	private boolean correctChainStructureToTheLeftIn(int carbonIndex) {
-		// Pre-condition
-
 		if (!carbons.get(carbonIndex).isBondedTo(Group.radical))
 			return false;
 
@@ -80,20 +80,27 @@ public class Chain extends Organic {
 		if (greatestRadical.getStraightCarbonCount() <= carbonIndex)
 			return false;
 
-		if (carbonIndex != 0) {
-			Carbon CHCH3 = new Carbon(1);
-			CHCH3.bond(Group.hydrogen);
-			CHCH3.bond(new Substituent(1));
+		if (carbonIndex == 0)
+			carbons.get(0).remove(greatestRadical);
+		else {
+			Substituent newRadical;
 
-			Substituent oldRadical = carbonIndex > 1 && carbons.get(1).equals(CHCH3)
-					? new Substituent(carbonIndex + 1, true)
-					: new Substituent(carbonIndex);
+			if(carbonIndex == 1)
+				newRadical = new Substituent(carbonIndex);
+			else {
+				Carbon CHCH3 = new Carbon(1);
+				CHCH3.bond(Group.hydrogen);
+				CHCH3.bond(new Substituent(1));
+
+				if(carbons.get(1).equals(CHCH3))
+					newRadical = new Substituent(carbonIndex + 1, true);
+				else newRadical = new Substituent(carbonIndex);
+			}
 
 			// Radical substitution:
 			carbons.get(carbonIndex).unbond(greatestRadical);
-			carbons.get(carbonIndex).bond(oldRadical);
+			carbons.get(carbonIndex).bond(newRadical);
 		}
-		else carbons.get(0).remove(greatestRadical);
 
 		// New chain left side:
 		Chain newLeftSide = greatestRadical.toChain();
@@ -114,10 +121,11 @@ public class Chain extends Organic {
 			return false;
 
 		if(carbonIndex == 1) { // Could be part of a 'iso' radical
-			List<Substituent> substituents = carbon.getSubstituents();
-			substituents.removeIf(substituent -> substituent.getGroup() == Group.hydrogen);
+			Carbon CHCH3 = new Carbon(1);
+			CHCH3.bond(Group.hydrogen);
+			CHCH3.bond(new Substituent(1));
 
-			return substituents.equals(List.of(new Substituent(1)));
+			return carbons.get(1).equals(CHCH3);
 		}
 
 		return true;
