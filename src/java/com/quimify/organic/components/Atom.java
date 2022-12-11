@@ -87,7 +87,7 @@ public class Atom {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(id, element, bondedAtoms);
+		return Objects.hash(id, element, getBondedAtomsCutOff());
 	}
 
 	@Override
