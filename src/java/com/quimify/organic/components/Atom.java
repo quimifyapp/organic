@@ -87,7 +87,7 @@ public class Atom {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(id, element, getBondedAtomsCutOff());
+		return Objects.hash(id, element, new HashSet<>(getBondedAtomsCutOff()));
 	}
 
 	@Override
@@ -106,10 +106,12 @@ public class Atom {
 		if (bondedAtoms.size() != otherAtom.bondedAtoms.size())
 			return false;
 
-		List<Atom> otherBondedAtomsCutOff = otherAtom.getBondedAtomsCutOff();
+		List<Atom> bondedAtomsCutOff = getBondedAtomsCutOff();
+		List<Atom> othersBondedAtomsCutOff = otherAtom.getBondedAtomsCutOff();
 
-		return getBondedAtomsCutOff().stream().allMatch(bondedAtomCutOff ->
-				otherBondedAtomsCutOff.stream().anyMatch(bondedAtomCutOff::equals));
+		return bondedAtomsCutOff.stream().allMatch(bondedAtom ->
+				Collections.frequency(bondedAtomsCutOff, bondedAtom) ==
+						Collections.frequency(othersBondedAtomsCutOff, bondedAtom));
 	}
 
 	public Atom toAnonymous() {
