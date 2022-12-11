@@ -40,6 +40,11 @@ public class Chain extends Organic {
 		carbons.add(new Carbon(usedBondCount));
 	}
 
+	private Chain(Chain other) {
+		carbons = new ArrayList<>();
+		copyCarbons(other.carbons);
+	}
+
 	// Public ------------------------------------------------------------------------
 
 	public void bond(Substituent substituent) {
@@ -121,7 +126,7 @@ public class Chain extends Organic {
 	}
 
 	public Chain getInverseOrientation() {
-		Chain reversed = clone();
+		Chain reversed = new Chain(this);
 
 		// Le da la vuelta a los carbonos:
 		Collections.reverse(reversed.carbons);
@@ -181,23 +186,11 @@ public class Chain extends Organic {
 		return substituents;
 	}
 
-	@Override
-	protected Chain clone() { // TODO throw?
-		try {
-			Chain chain = (Chain) super.clone();
-			chain.carbons.clear();
-			carbons.forEach(carbon -> chain.carbons.add(carbon.clone()));
-			return chain;
-		} catch (CloneNotSupportedException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
 	// Private:
 
 	private void copyCarbons(List<Carbon> carbons) {
 		this.carbons.clear();
-		carbons.forEach(carbon -> this.carbons.add(carbon.clone()));
+		carbons.forEach(carbon -> this.carbons.add(new Carbon(carbon)));
 	}
 
 	private List<Integer> getIndexesOf(List<Integer> amounts) {

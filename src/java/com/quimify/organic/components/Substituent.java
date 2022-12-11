@@ -9,10 +9,10 @@ import static java.util.Map.entry;
 
 public class Substituent extends Organic {
 
-    private Group group;
-    private int bondCount;
-    private int carbonCount;
-    private boolean isIso;
+    private final Group group;
+    private final int bondCount;
+    private final int carbonCount;
+    private final boolean isIso;
 
     /* Examples:
 	-Cl             →   { Group.chlorine, bondCount: 1, carbonCount: 0, isIso: false }
@@ -70,7 +70,10 @@ public class Substituent extends Organic {
         if(bondCount == null)
             throw new IllegalArgumentException("There are no substituents with functional group: " + group + ".");
 
-        build(group, bondCount, 0, false);
+        this.group = group;
+        this.bondCount = bondCount;
+        this.carbonCount = 0;
+        this.isIso = false;
     }
 
     public Substituent(int carbonCount, boolean isIso) {
@@ -83,25 +86,27 @@ public class Substituent extends Organic {
         if(isIso && carbonCount == 2)
             throw new IllegalArgumentException("There is no \"isoethyl\".");
 
-        build(carbonCount, isIso);
+        this.group = Group.radical;
+        this.bondCount = 1;
+        this.carbonCount = carbonCount;
+        this.isIso = isIso;
     }
 
     public Substituent(int carbonCount) {
         if(carbonCount < 1)
             throw new IllegalArgumentException("Radicals must have at least 1 carbon.");
 
-        build(carbonCount, false);
-    }
-
-    private void build(int carbonCount, boolean isIso) {
-        build(Group.radical, 1, carbonCount, isIso);
-    }
-
-    private void build(Group group, int bondCount, int carbonCount, boolean isIso) {
-        this.group = group;
-        this.bondCount = bondCount;
+        this.group = Group.radical;
+        this.bondCount = 1;
         this.carbonCount = carbonCount;
-        this.isIso = isIso;
+        this.isIso = false;
+    }
+
+    Substituent(Substituent other) {
+        this.group = other.group;
+        this.bondCount = other.bondCount;
+        this.carbonCount = other.carbonCount;
+        this.isIso = other.isIso;
     }
 
     // Queries:
@@ -128,15 +133,6 @@ public class Substituent extends Organic {
             return false;
 
         return isIso == otherSubstituent.isIso;
-    }
-
-    @Override
-    protected Substituent clone() {
-        try {
-            return (Substituent) super.clone();
-        } catch (CloneNotSupportedException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public int compareTo(Substituent substituent) {
