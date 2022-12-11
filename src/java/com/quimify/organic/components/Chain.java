@@ -45,10 +45,74 @@ public class Chain extends Organic {
 		copyCarbons(other.carbons);
 	}
 
-	// Public ------------------------------------------------------------------------
+	// Public:
+
+	public int getFreeBondCount() {
+		return getLastCarbon().getFreeBondCount();
+	}
+
+	public boolean isDone() {
+		return getFreeBondCount() == 0;
+	}
+
+	public int getSize() {
+		return carbons.size();
+	}
+
+	public List<Group> getGroups() {
+		return Arrays.stream(Group.values()).filter(this::isBondedTo).collect(Collectors.toList());
+	}
+
+	public Optional<Group> getPriorityGroup() {
+		for(Group group : Group.values())
+			for(Carbon carbon : carbons)
+				if(carbon.isBondedTo(group))
+					return Optional.of(group);
+
+		return Optional.empty();
+	}
+
+	public boolean isBondedTo(Group group) {
+		for(Carbon carbon : carbons)
+			if(carbon.isBondedTo(group))
+				return true;
+
+		return false;
+	}
+
+	public int getAmountOf(Group group) {
+		int amount = 0;
+
+		for(Carbon carbon : carbons)
+			amount += carbon.getAmountOf(group);
+
+		return amount;
+	}
+
+	public List<Integer> getIndexesOf(Group group) {
+		return getIndexesOf(carbons.stream()
+				.map(carbon -> carbon.getAmountOf(group))
+				.collect(Collectors.toList()));
+	}
 
 	public void bond(Substituent substituent) {
 		getLastCarbon().bond(substituent);
+	}
+
+	public List<Substituent> getSubstituents() {
+		List<Substituent> substituents = new ArrayList<>();
+		carbons.forEach(carbon -> substituents.addAll(carbon.getSubstituents()));
+		return substituents;
+	}
+
+	public List<Integer> getIndexesOf(Substituent substituent) {
+		return getIndexesOf(carbons.stream()
+				.map(carbon -> carbon.getAmountOf(substituent))
+				.collect(Collectors.toList()));
+	}
+
+	public boolean canBondCarbon() {
+		return getFreeBondCount() > 0 && getFreeBondCount() < 4;
 	}
 
 	public void bondCarbon() {
@@ -63,11 +127,24 @@ public class Chain extends Organic {
 		carbons.remove(carbon);
 	}
 
+	public Carbon getCarbon(int index) {
+		return carbons.get(index);
+	}
+
+	public Carbon getFirstCarbon() {
+		return carbons.get(0);
+	}
+
+	public Carbon getLastCarbon() {
+		return carbons.get(carbons.size() - 1);
+	}
+
 	public void correctChainToTheRight() {
 		// -CH2-CH2(CH3) → -CH2-CH2-CH3
-		if(isBondedTo(Group.radical)) { // To avoid reversing itself needlessly
+		if(isBondedTo(Group.radical)) { // To avoid inverting orientation needlessly
 			Chain inverseOrientation = getInverseOrientation();
 			inverseOrientation.correctChainToTheLeft();
+
 			copyCarbons(inverseOrientation.carbons);
 		}
 	}
@@ -88,43 +165,6 @@ public class Chain extends Organic {
 		}
 	}
 
-	public int getSize() {
-		return carbons.size();
-	}
-
-	public boolean isDone() {
-		return getFreeBondCount() == 0;
-	}
-
-	public boolean canBondCarbon() {
-		return getFreeBondCount() > 0 && getFreeBondCount() < 4;
-	}
-
-	public Carbon getCarbon(int index) {
-		return carbons.get(index);
-	}
-
-	public Carbon getFirstCarbon() {
-		return carbons.get(0);
-	}
-
-	public Carbon getLastCarbon() {
-		return carbons.get(carbons.size() - 1);
-	}
-
-	public boolean isBondedTo(Group group) {
-		for(Carbon carbon : carbons)
-			if(carbon.isBondedTo(group))
-				return true;
-
-		return false;
-	}
-
-	public void reverseOrientation() {
-		Chain inverseOrientation = getInverseOrientation();
-		copyCarbons(inverseOrientation.carbons);
-	}
-
 	public Chain getInverseOrientation() {
 		Chain reversed = new Chain(this);
 
@@ -142,48 +182,9 @@ public class Chain extends Organic {
 		return reversed;
 	}
 
-	public int getFreeBondCount() {
-		return getLastCarbon().getFreeBondCount();
-	}
-
-	public int getAmountOf(Group group) {
-		int amount = 0;
-
-		for(Carbon carbon : carbons)
-			amount += carbon.getAmountOf(group);
-
-		return amount;
-	}
-
-	public Optional<Group> getPriorityGroup() {
-		for(Group group : Group.values())
-			for(Carbon carbon : carbons)
-				if(carbon.isBondedTo(group))
-					return Optional.of(group);
-
-		return Optional.empty();
-	}
-
-	public List<Group> getGroups() {
-		return Arrays.stream(Group.values()).filter(this::isBondedTo).collect(Collectors.toList());
-	}
-
-	public List<Integer> getIndexesOf(Group group) {
-		return getIndexesOf(carbons.stream()
-				.map(carbon -> carbon.getAmountOf(group))
-				.collect(Collectors.toList()));
-	}
-
-	public List<Integer> getIndexesOf(Substituent substituent) {
-		return getIndexesOf(carbons.stream()
-				.map(carbon -> carbon.getAmountOf(substituent))
-				.collect(Collectors.toList()));
-	}
-
-	public List<Substituent> getSubstituents() {
-		List<Substituent> substituents = new ArrayList<>();
-		carbons.forEach(carbon -> substituents.addAll(carbon.getSubstituents()));
-		return substituents;
+	public void reverseOrientation() {
+		Chain inverseOrientation = getInverseOrientation();
+		copyCarbons(inverseOrientation.carbons);
 	}
 
 	// Private:

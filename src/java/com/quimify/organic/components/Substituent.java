@@ -14,12 +14,14 @@ public class Substituent extends Organic {
     private final int carbonCount;
     private final boolean isIso;
 
-    /* Examples:
-	-Cl             →   { Group.chlorine, bondCount: 1, carbonCount: 0, isIso: false }
-	=O              →   { Group.ketone,   bondCount: 2, carbonCount: 0, isIso: false }
-	-CH2-CH2-CH3    →   { Group.radical,  bondCount: 1, carbonCount: 3, isIso: false }
-	-CH(CH3)-CH3    →   { Group.radical,  bondCount: 1, carbonCount: 3, isIso: true  }
-	*/
+    // Examples:
+
+	// -Cl             →   { Group.chlorine, bondCount: 1, carbonCount: 0, isIso: false }
+	// =O              →   { Group.ketone,   bondCount: 2, carbonCount: 0, isIso: false }
+	// -CH2-CH2-CH3    →   { Group.radical,  bondCount: 1, carbonCount: 3, isIso: false }
+	// -CH(CH3)-CH3    →   { Group.radical,  bondCount: 1, carbonCount: 3, isIso: true  }
+
+    // Constants:
 
     private static final Map<Group, Integer> groupToBondCount = Map.ofEntries(
             entry(Group.acid, 3),

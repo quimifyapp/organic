@@ -13,7 +13,7 @@ import java.util.*;
 public final class Ether extends Organic implements OpenChain {
 
 	private final Chain firstChain; // R
-	private Chain secondChain; // R'
+	private final Chain secondChain; // R'
 	private Chain currentChain; // Pointer
 
 	// Constants:
@@ -41,16 +41,15 @@ public final class Ether extends Organic implements OpenChain {
 	// Constructors:
 
 	public Ether() {
-		this.firstChain = new Chain(0); // C - O
+		this.firstChain = new Chain(0); // (C)
+		this.secondChain = new Chain(1); // -C≡
 		currentChain = this.firstChain;
 	}
 
 	Ether(Chain firstChain) {
-		this.firstChain = firstChain; // R - O
-
-		if(firstChain.isDone())
-			switchToSecondChain(); // R - O - C≡
-		else currentChain = this.firstChain;
+		this.firstChain = firstChain; // R
+		this.secondChain = new Chain(1); // -C≡
+		currentChain = firstChain.isDone() ? secondChain : firstChain;
 	}
 
 	// Interface:
@@ -60,22 +59,22 @@ public final class Ether extends Organic implements OpenChain {
 	}
 
 	public List<Group> getBondableGroups() {
-		List<Group> result = new ArrayList<>();
+		List<Group> bondableGroups = new ArrayList<>();
 
 		if(currentChain.getFreeBondCount() >= 1) {
 			if (!firstChain.isBondedTo(Group.ether))
-				result.add(Group.ether);
+				bondableGroups.add(Group.ether);
 
-			result.add(Group.nitro);
-			result.add(Group.bromine);
-			result.add(Group.chlorine);
-			result.add(Group.fluorine);
-			result.add(Group.iodine);
-			result.add(Group.radical);
-			result.add(Group.hydrogen);
+			bondableGroups.add(Group.nitro);
+			bondableGroups.add(Group.bromine);
+			bondableGroups.add(Group.chlorine);
+			bondableGroups.add(Group.fluorine);
+			bondableGroups.add(Group.iodine);
+			bondableGroups.add(Group.radical);
+			bondableGroups.add(Group.hydrogen);
 		}
 
-		return result;
+		return bondableGroups;
 	}
 
 	public OpenChain bond(Group group) {
@@ -87,7 +86,7 @@ public final class Ether extends Organic implements OpenChain {
 			currentChain.bond(substituent);
 
 			if (currentChain == firstChain && firstChain.isDone())
-				switchToSecondChain();
+				currentChain = secondChain;
 		}
 		else throw new IllegalArgumentException("Couldn't bond " + substituent.getGroup() + " to an Ether.");
 
@@ -132,13 +131,6 @@ public final class Ether extends Organic implements OpenChain {
 		return currentChain == firstChain
 				? firstChainStructure.substring(0, firstChainStructure.length() - 1)
 				: firstChainStructure + secondChain.toString();
-	}
-
-	// Private:
-
-	private void switchToSecondChain() {
-		secondChain = new Chain(1);
-		currentChain = secondChain;
 	}
 
 	// TODO fix repeated code
