@@ -157,18 +157,18 @@ public final class Simple extends Organic implements OpenChain {
         for (Substituent radical : uniqueRadicals)
             prefixes.add(new Locator(chain.getIndexesOf(radical), radicalNameParticleFor(radical)));
 
-        StringBuilder prefijo = new StringBuilder(chain.isBondedTo(Group.acid) ? "ácido " : "");
+        StringBuilder prefix = new StringBuilder(chain.isBondedTo(Group.acid) ? "ácido " : "");
         if (prefixes.size() > 0) {
             Locator.ordenarAlfabeticamente(prefixes);
 
             for (int i = 0; i < prefixes.size() - 1; i++) {
-                prefijo.append(prefixes.get(i).toString());
+                prefix.append(prefixes.get(i).toString());
 
                 if (doesNotStartWithLetter(prefixes.get(i + 1).toString()))
-                    prefijo.append("-");
+                    prefix.append("-");
             }
 
-            prefijo.append(prefixes.get(prefixes.size() - 1));
+            prefix.append(prefixes.get(prefixes.size() - 1));
         }
 
         // Se procesan los enlaces:
@@ -187,7 +187,7 @@ public final class Simple extends Organic implements OpenChain {
         if (Organic.doesNotStartWithVowel(enlaces))
             cuantificador += "a";
 
-        return prefijo + cuantificador + enlaces + suffix;
+        return prefix + cuantificador + enlaces + suffix;
     }
 
     public String getStructure() {
