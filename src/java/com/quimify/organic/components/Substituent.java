@@ -136,15 +136,17 @@ public class Substituent extends Organic {
         return carbonCount - (isIso ? 1 : 0);
     }
 
-    public boolean isGreaterThan(Substituent radical) {
+    public int compareTo(Substituent radical) {
         int comparaison = Integer.compare(getStraightCarbonCount(), radical.getStraightCarbonCount());
 
-        // -CH(CH3)-CH3 > -CH2-CH3
-        if(comparaison == 0)
-            return isIso && !radical.isIso;
+        if(comparaison == 0) {
+            if (isIso == radical.isIso)
+                return 0; // -CH(CH3)-CH3 = -CH2(CH3)-CH3
 
-        // -CH2-CH3 > -CH3
-        return comparaison > 0;
+            return isIso ? 1 : -1; // -CH(CH3)-CH3 > -CH2-CH3
+        }
+
+        return comparaison; // -CH2-CH3 > -CH3
     }
 
     public Chain toChain() {
