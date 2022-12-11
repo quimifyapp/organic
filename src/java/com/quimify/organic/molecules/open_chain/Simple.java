@@ -269,6 +269,7 @@ public final class Simple extends Organic implements OpenChain {
     private void correctChainStructure() {
         // Se corrigen los radicales que podrían formar parte de la cadena principal:
         chain.correctChainStructureToTheLeft(); // Comprobará internamente si hay radicales
+
         if (chain.isBondedTo(Group.radical)) { // Para ahorrar el invertir la cadena
             chain.invertOrientation(); // En lugar de corregirlos por la derecha
             chain.correctChainStructureToTheLeft(); // CHF(CH3)(CH2CH3) → CH3-CH2-CHF-CH3

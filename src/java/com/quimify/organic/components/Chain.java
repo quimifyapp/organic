@@ -61,7 +61,7 @@ public class Chain extends Organic {
 			boolean corrected = correctChainStructureToTheLeftIn(carbonIndex);
 
 			// To this point, past carbons COULD be part of a radical
-			if(couldBePartOfRadical(carbonIndex))
+			if(couldBePartOfARadical(carbonIndex))
 				carbonIndex = corrected ? 0 : carbonIndex + 1;
 			else break;
 		}
@@ -71,11 +71,18 @@ public class Chain extends Organic {
 		if (!carbons.get(carbonIndex).isBondedTo(Group.radical))
 			return false;
 
-		// Se obtiene el mayor radical de este carbono:
-		Substituent greatestRadical = carbons.get(carbonIndex).getGreatestRadical();
+		List<Substituent> radicals = new ArrayList<>(carbons.get(carbonIndex).getSubstituents());
+		radicals.removeIf(substituent -> substituent.getGroup() != Group.radical);
+		radicals.sort(Substituent::compareTo);
 
-		// Calculates if that radical is a preferred chain path:
-		if (greatestRadical.getStraightCarbonCount() <= carbonIndex)
+		Substituent greatestRadical = radicals.get(radicals.size() - 1);
+
+		int comparaison = Integer.compare(greatestRadical.getStraightCarbonCount(), carbonIndex);
+
+		// TODO fix iso redundancy (not severe)
+
+		// Calculates if that radical would make a longer chain:
+		if(comparaison <= 0 && (comparaison != 0 || !greatestRadical.isIso()))
 			return false;
 
 		if (carbonIndex == 0)
@@ -83,10 +90,10 @@ public class Chain extends Organic {
 		else {
 			Substituent newRadical;
 
-			if(carbonIndex == 1)
-				newRadical = new Substituent(carbonIndex);
-			else {
-				Carbon CHCH3 = new Carbon(1);
+			if(carbonIndex == 1) // Can only be methyl
+				newRadical = new Substituent(1);
+			else { // Could be whatever radical, maybe even an 'iso' one
+				Carbon CHCH3 = new Carbon(2);
 				CHCH3.bond(Group.hydrogen);
 				CHCH3.bond(new Substituent(1));
 
@@ -112,21 +119,40 @@ public class Chain extends Organic {
 		return true;
 	}
 
-	private boolean couldBePartOfRadical(int carbonIndex) {
+	private boolean couldBePartOfARadical(int carbonIndex) {
 		Carbon carbon = carbons.get(carbonIndex);
 
 		if(carbon.isBondedTo(Group.alkene) || carbon.isBondedTo(Group.alkyne))
 			return false;
 
-		if(carbonIndex == 1) { // Could be part of a 'iso' radical
-			Carbon CHCH3 = new Carbon(1);
-			CHCH3.bond(Group.hydrogen);
-			CHCH3.bond(new Substituent(1));
+		boolean couldBePartOfARadical;
 
-			return carbons.get(1).equals(CHCH3);
+		Carbon CH3 = new Carbon(1);
+		CH3.bond(Group.hydrogen);
+		CH3.bond(Group.hydrogen);
+		CH3.bond(Group.hydrogen);
+
+		Carbon CH2 = new Carbon(2);
+		CH2.bond(Group.hydrogen);
+		CH2.bond(Group.hydrogen);
+
+		switch (carbonIndex) {
+			case 0:
+				couldBePartOfARadical = carbon.equals(CH3);
+				break;
+			case 1: // Could be part of a 'iso' radical
+				Carbon CHCH3 = new Carbon(2);
+				CHCH3.bond(Group.hydrogen);
+				CHCH3.bond(new Substituent(1));
+
+				couldBePartOfARadical = Set.of(CH2, CHCH3).contains(carbon);
+				break;
+			default:
+				couldBePartOfARadical = carbon.equals(CH2);
+				break;
 		}
 
-		return true;
+		return couldBePartOfARadical;
 	}
 
 	// QUERIES -----------------------------------------------------------------------

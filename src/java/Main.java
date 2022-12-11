@@ -47,19 +47,19 @@ public class Main {
             System.out.println();
         }
 
-        System.out.print("Input sequence: ");
+        System.out.print("Input sequence:\t\t\t\t");
         System.out.println(inputSequence);
-        System.out.print("Input structure: ");
+        System.out.print("Input structure: \t\t\t");
         System.out.println(openChain.getStructure());
 
         openChain.correct();
-        System.out.print("Corrected input structure: ");
+        System.out.print("Corrected input structure:\t");
         System.out.println(openChain.getStructure());
 
         String name = openChain.getName();
-        System.out.print("Name given structure: ");
+        System.out.print("Name given structure:\t\t");
         System.out.println(name);
-        System.out.print("Structure given name: ");
+        System.out.print("Structure given name:\t\t");
         System.out.println(OrganicFactory.getFromName(name).getStructure());
     }
 

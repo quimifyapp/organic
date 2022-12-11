@@ -7,19 +7,19 @@ import java.util.stream.Collectors;
 
 public class Carbon extends Organic {
 
-    private final List<Substituent> substituents;
     private int freeBondCount;
+    private final List<Substituent> substituents;
 
     // Constructor:
 
     public Carbon(int usedBondCount) {
-        substituents = new ArrayList<>();
         freeBondCount = 4 - usedBondCount;
+        substituents = new ArrayList<>();
     }
 
     public Carbon(Carbon other) {
-        substituents = new ArrayList<>(other.substituents);
         freeBondCount = other.freeBondCount;
+        substituents = new ArrayList<>(other.substituents);
     }
 
     // Queries:
@@ -52,7 +52,7 @@ public class Carbon extends Organic {
 
     @Override
     public int hashCode() {
-        return Objects.hash(substituents, freeBondCount);
+        return Objects.hash(freeBondCount, substituents);
     }
 
     @Override
@@ -74,26 +74,6 @@ public class Carbon extends Organic {
                 return false;
 
         return true;
-    }
-
-    // TODO remove:
-
-    public List<Substituent> getSubstituentsOf(Group group) { // TODO remove
-        return substituents.stream().filter(substituent ->
-                substituent.getGroup() == group).collect(Collectors.toList());
-    }
-
-    public Substituent getGreatestRadical() { // TODO remove
-        Substituent greatestRadical;
-
-        List<Substituent> radicals = getSubstituentsOf(Group.radical);
-        greatestRadical = radicals.get(0); // Se asume que tiene radicales
-
-        for(int i = 1; i < radicals.size(); i++)
-            if(radicals.get(i).isGreaterThan(greatestRadical))
-                greatestRadical = radicals.get(i);
-
-        return greatestRadical;
     }
 
     // Modifiers:
