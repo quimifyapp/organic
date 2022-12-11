@@ -132,10 +132,6 @@ public class Substituent extends Organic {
 
     // Queries for radicals:
 
-    public int getStraightCarbonCount() { // TODO private?
-        return carbonCount - (isIso ? 1 : 0);
-    }
-
     public int compareTo(Substituent radical) {
         int comparaison = Integer.compare(getStraightCarbonCount(), radical.getStraightCarbonCount());
 
@@ -176,6 +172,12 @@ public class Substituent extends Organic {
         }
 
         return chain; // CH3-CH(CH3)-CH2-
+    }
+
+    // Private:
+
+    private int getStraightCarbonCount() {
+        return carbonCount - (isIso ? 1 : 0);
     }
 
     // Text:

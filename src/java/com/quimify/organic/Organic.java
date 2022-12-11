@@ -358,7 +358,7 @@ public class Organic {
         return count != 1 ? String.valueOf(count) : ""; // As in "CO2" or "CO"
     }
 
-    // Text utils: TODO private
+    // Text utils: TODO private?
 
     protected static boolean doesNotStartWithVowel(String text) {
         return "aeiou".indexOf(firstLetterOf(text)) == -1;
