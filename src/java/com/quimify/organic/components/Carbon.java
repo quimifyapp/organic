@@ -51,6 +51,11 @@ public class Carbon extends Organic {
     }
 
     @Override
+    public int hashCode() {
+        return Objects.hash(substituents, freeBondCount);
+    }
+
+    @Override
     public boolean equals(Object other) {
         if (other == null || other.getClass() != this.getClass())
             return false;

@@ -84,6 +84,12 @@ public class Atom {
 
 	// Queries:
 
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(id, element, bondedAtoms);
+	}
+
 	@Override
 	public boolean equals(Object other) {
 		if (other == null || other.getClass() != this.getClass())
@@ -91,8 +97,8 @@ public class Atom {
 
 		Atom otherAtom = (Atom) other;
 
-		if(!Objects.equals(id, otherAtom.id))
-			return false; // Objects.equals(null, null) = true
+		if(!Objects.equals(id, otherAtom.id)) // Objects.equals(null, null) = true
+			return false;
 
 		if (element != otherAtom.element)
 			return false;
