@@ -145,6 +145,10 @@ public class Substituent extends Organic {
         return comparaison; // -CH2-CH3 > -CH3
     }
 
+    public int getStraightCarbonCount() { // TODO private
+        return carbonCount - (isIso ? 1 : 0);
+    }
+
     public Chain toChain() {
         if (carbonCount == 0)
             return null;
@@ -172,12 +176,6 @@ public class Substituent extends Organic {
         }
 
         return chain; // CH3-CH(CH3)-CH2-
-    }
-
-    // Private:
-
-    private int getStraightCarbonCount() {
-        return carbonCount - (isIso ? 1 : 0);
     }
 
     // Text:
