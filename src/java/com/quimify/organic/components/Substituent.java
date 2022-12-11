@@ -130,9 +130,17 @@ public class Substituent extends Organic {
         return isIso == otherSubstituent.isIso;
     }
 
+    public int compareTo(Substituent substituent) {
+        // OOH < Cl < CH2CH3 < CH(CH3)2 < CH2CH2CH3 < H
+        if(group != Group.radical || substituent.group != Group.radical)
+            return group.compareTo(substituent.group);
+        else return compareToRadical(substituent);
+    }
+
     // Queries for radicals:
 
-    public int compareTo(Substituent radical) {
+    private int compareToRadical(Substituent radical) {
+        // CH2CH3 < CH(CH3)2 < CH2CH2CH3
         int comparaison = Integer.compare(getStraightCarbonCount(), radical.getStraightCarbonCount());
 
         if(comparaison == 0) {
@@ -145,7 +153,7 @@ public class Substituent extends Organic {
         return comparaison; // -CH2-CH3 > -CH3
     }
 
-    public int getStraightCarbonCount() { // TODO private
+    private int getStraightCarbonCount() {
         return carbonCount - (isIso ? 1 : 0);
     }
 

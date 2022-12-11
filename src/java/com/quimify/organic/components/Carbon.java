@@ -126,7 +126,7 @@ public class Carbon extends Organic {
         uniqueSubstituents.removeIf(s -> s.getGroup() == Group.hydrogen || s.getGroup() == Group.ether);
 
         List<Substituent> uniqueOrderedSubstituents = uniqueSubstituents.stream()
-                .sorted(Comparator.comparing(Substituent::getGroup)).collect(Collectors.toList());
+                .sorted(Substituent::compareTo).collect(Collectors.toList());
 
         if(uniqueOrderedSubstituents.size() == 1) { // Only one kind except for hydrogen and ether
             Substituent substituent = uniqueOrderedSubstituents.get(0);

@@ -54,11 +54,11 @@ public class Chain extends Organic {
 		become(getReversed());
 	}
 
-	public void correctChainStructureToTheLeft() { // CH2(CH3)-CH2- → CH3-CH2-CH2-
+	public void correctChainToTheLeft() { // CH2(CH3)-CH2- → CH3-CH2-CH2-
 		int carbonIndex = 0;
 
 		while (carbonIndex < carbons.size()) {
-			boolean corrected = correctChainStructureToTheLeftIn(carbonIndex);
+			boolean corrected = correctChainToTheLeftIn(carbonIndex);
 
 			// To this point, past carbons COULD be part of a radical
 			if(couldBePartOfARadical(carbonIndex))
@@ -67,43 +67,42 @@ public class Chain extends Organic {
 		}
 	}
 
-	private boolean correctChainStructureToTheLeftIn(int carbonIndex) {
-		if (!carbons.get(carbonIndex).isBondedTo(Group.radical))
+	private boolean correctChainToTheLeftIn(int carbonIndex) {
+		// Pre-condition: any carbon to the left could be part of a radical
+		Carbon carbon = carbons.get(carbonIndex);
+
+		if (!carbon.isBondedTo(Group.radical))
 			return false;
 
-		List<Substituent> radicals = new ArrayList<>(carbons.get(carbonIndex).getSubstituents());
+		List<Substituent> radicals = new ArrayList<>(carbon.getSubstituents());
 		radicals.removeIf(substituent -> substituent.getGroup() != Group.radical);
 		radicals.sort(Substituent::compareTo);
 
 		Substituent greatestRadical = radicals.get(radicals.size() - 1);
 
-		int comparaison = Integer.compare(greatestRadical.getStraightCarbonCount(), carbonIndex);
-
-		// TODO fix iso redundancy (not severe)
-
-		// Calculates if that radical would make a longer chain:
-		if(comparaison <= 0 && (comparaison != 0 || !greatestRadical.isIso()))
-			return false;
-
-		if (carbonIndex == 0)
-			carbons.get(0).remove(greatestRadical);
+		if(carbonIndex == 0)
+			carbon.remove(greatestRadical);
 		else {
-			Substituent newRadical;
+			Substituent leftSide;
 
 			if(carbonIndex > 1) { // Could be whatever radical, maybe even an 'iso' one
 				Carbon CHCH3 = new Carbon(2);
 				CHCH3.bond(Group.hydrogen);
 				CHCH3.bond(new Substituent(1));
 
-				if(carbons.get(1).equals(CHCH3))
-					newRadical = new Substituent(carbonIndex + 1, true);
-				else newRadical = new Substituent(carbonIndex);
+				boolean isIso = carbons.get(1).equals(CHCH3);
+
+				leftSide = new Substituent(isIso ? carbonIndex + 1 : carbonIndex, isIso);
 			}
-			else newRadical = new Substituent(1); // Can only be methyl
+			else leftSide = new Substituent(1); // Can only be methyl
+
+			// Calculates if that radical would make a longer chain:
+			if(greatestRadical.compareTo(leftSide) <= 0)
+				return false;
 
 			// Radical substitution:
-			carbons.get(carbonIndex).unbond(greatestRadical);
-			carbons.get(carbonIndex).bond(newRadical);
+			carbon.unbond(greatestRadical);
+			carbon.bond(leftSide);
 		}
 
 		// New chain left side:
