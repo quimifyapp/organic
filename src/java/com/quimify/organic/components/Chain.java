@@ -90,9 +90,7 @@ public class Chain extends Organic {
 		else {
 			Substituent newRadical;
 
-			if(carbonIndex == 1) // Can only be methyl
-				newRadical = new Substituent(1);
-			else { // Could be whatever radical, maybe even an 'iso' one
+			if(carbonIndex > 1) { // Could be whatever radical, maybe even an 'iso' one
 				Carbon CHCH3 = new Carbon(2);
 				CHCH3.bond(Group.hydrogen);
 				CHCH3.bond(new Substituent(1));
@@ -101,6 +99,7 @@ public class Chain extends Organic {
 					newRadical = new Substituent(carbonIndex + 1, true);
 				else newRadical = new Substituent(carbonIndex);
 			}
+			else newRadical = new Substituent(1); // Can only be methyl
 
 			// Radical substitution:
 			carbons.get(carbonIndex).unbond(greatestRadical);
