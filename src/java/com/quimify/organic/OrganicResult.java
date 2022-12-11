@@ -12,7 +12,7 @@ public class OrganicResult {
 
     // Constructor:
 
-    public OrganicResult(boolean present) {
+    OrganicResult(boolean present) {
         this.present = present;
     }
 
