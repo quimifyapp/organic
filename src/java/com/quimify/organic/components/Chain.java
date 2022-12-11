@@ -65,8 +65,6 @@ public class Chain extends Organic {
 				carbonIndex = corrected ? 0 : carbonIndex + 1;
 			else break;
 		}
-
-		System.out.println("a");
 	}
 
 	private boolean correctChainStructureToTheLeftIn(int carbonIndex) {
