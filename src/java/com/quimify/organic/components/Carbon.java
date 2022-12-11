@@ -17,7 +17,7 @@ public class Carbon extends Organic {
         substituents = new ArrayList<>();
     }
 
-    public Carbon(Carbon other) {
+    public Carbon(Carbon other) { // TODO override clone
         freeBondCount = other.freeBondCount;
         substituents = new ArrayList<>(other.substituents);
     }
@@ -74,6 +74,18 @@ public class Carbon extends Organic {
                 return false;
 
         return true;
+    }
+
+    @Override
+    protected Carbon clone() {
+        try {
+            Carbon carbon = (Carbon) super.clone();
+            carbon.substituents.clear();
+            substituents.forEach(substituent -> carbon.substituents.add(substituent.clone()));
+            return carbon;
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     // Modifiers:

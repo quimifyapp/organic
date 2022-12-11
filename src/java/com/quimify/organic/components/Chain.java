@@ -9,6 +9,30 @@ public class Chain extends Organic {
 
 	private final List<Carbon> carbons;
 
+	// Constants:
+
+	private static final Carbon CH3 = new Carbon(1);
+
+	static {
+		CH3.bond(Group.hydrogen);
+		CH3.bond(Group.hydrogen);
+		CH3.bond(Group.hydrogen);
+	}
+
+	private static final Carbon CHCH3 = new Carbon(2);
+
+	static {
+		CHCH3.bond(Group.hydrogen);
+		CHCH3.bond(new Substituent(1));
+	}
+
+	private static final Carbon CH2 = new Carbon(2);
+
+	static {
+		CH2.bond(Group.hydrogen);
+		CH2.bond(Group.hydrogen);
+	}
+
 	// Constructors:
 
 	public Chain(int usedBondCount) {
@@ -16,26 +40,10 @@ public class Chain extends Organic {
 		carbons.add(new Carbon(usedBondCount));
 	}
 
-	public Chain(Chain other) {
-		carbons = new ArrayList<>();
-		addCopyOf(other.carbons);
-	}
-
-	private void addCopyOf(List<Carbon> carbons) {
-		for(Carbon carbon : carbons)
-			this.carbons.add(new Carbon(carbon));
-	}
-
-	// TODO organize
-
 	// Public ------------------------------------------------------------------------
 
 	public void bond(Substituent substituent) {
 		getLastCarbon().bond(substituent);
-	}
-
-	public void bond(Group group) {
-		bond(new Substituent(group));
 	}
 
 	public void bondCarbon() {
@@ -50,110 +58,30 @@ public class Chain extends Organic {
 		carbons.remove(carbon);
 	}
 
-	public void invertOrientation() {
-		become(getReversed());
+	public void correctChainToTheRight() {
+		// -CH2-CH2(CH3) → -CH2-CH2-CH3
+		if(isBondedTo(Group.radical)) { // To avoid reversing itself needlessly
+			Chain inverseOrientation = getInverseOrientation();
+			inverseOrientation.correctChainToTheLeft();
+			copyCarbons(inverseOrientation.carbons);
+		}
 	}
 
-	public void correctChainToTheLeft() { // CH2(CH3)-CH2- → CH3-CH2-CH2-
+	public void correctChainToTheLeft() {
+		// CH2(CH3)-CH2- → CH3-CH2-CH2-
 		int carbonIndex = 0;
 
 		while (carbonIndex < carbons.size()) {
-			boolean corrected = correctChainToTheLeftIn(carbonIndex);
+			boolean correctionPerformed = correctChainToTheLeftIn(carbonIndex);
 
-			// To this point, past carbons COULD be part of a radical
-			if(couldBePartOfARadical(carbonIndex))
-				carbonIndex = corrected ? 0 : carbonIndex + 1;
-			else break;
+			// Check if past carbons could be part of a radical
+			if (couldBePartOfARadical(carbonIndex))
+				// If a correction was performed, start again at the beginning
+				// Otherwise, move to the next carbon
+				carbonIndex = correctionPerformed ? 0 : carbonIndex + 1;
+			else break; // Stop the loop if the current carbon cannot be part of a radical
 		}
 	}
-
-	private boolean correctChainToTheLeftIn(int carbonIndex) {
-		// Pre-condition: any carbon to the left could be part of a radical
-		Carbon carbon = carbons.get(carbonIndex);
-
-		if (!carbon.isBondedTo(Group.radical))
-			return false;
-
-		List<Substituent> radicals = new ArrayList<>(carbon.getSubstituents());
-		radicals.removeIf(substituent -> substituent.getGroup() != Group.radical);
-		radicals.sort(Substituent::compareTo);
-
-		Substituent greatestRadical = radicals.get(radicals.size() - 1);
-
-		if(carbonIndex == 0)
-			carbon.remove(greatestRadical);
-		else {
-			Substituent leftSide;
-
-			if(carbonIndex > 1) { // Could be whatever radical, maybe even an 'iso' one
-				Carbon CHCH3 = new Carbon(2);
-				CHCH3.bond(Group.hydrogen);
-				CHCH3.bond(new Substituent(1));
-
-				boolean isIso = carbons.get(1).equals(CHCH3);
-
-				leftSide = new Substituent(isIso ? carbonIndex + 1 : carbonIndex, isIso);
-			}
-			else leftSide = new Substituent(1); // Can only be methyl
-
-			// Calculates if that radical would make a longer chain:
-			if(greatestRadical.compareTo(leftSide) <= 0)
-				return false;
-
-			// Radical substitution:
-			carbon.unbond(greatestRadical);
-			carbon.bond(leftSide);
-		}
-
-		// New chain left side:
-		Chain newLeftSide = greatestRadical.toChain();
-
-		// Chain substitution:
-		newLeftSide.bondCarbons(carbons.subList(carbonIndex, carbons.size()));
-
-		// Chain substitution:
-		become(newLeftSide);
-
-		return true;
-	}
-
-	private boolean couldBePartOfARadical(int carbonIndex) {
-		Carbon carbon = carbons.get(carbonIndex);
-
-		if(carbon.isBondedTo(Group.alkene) || carbon.isBondedTo(Group.alkyne))
-			return false;
-
-		boolean couldBePartOfARadical;
-
-		Carbon CH3 = new Carbon(1);
-		CH3.bond(Group.hydrogen);
-		CH3.bond(Group.hydrogen);
-		CH3.bond(Group.hydrogen);
-
-		Carbon CH2 = new Carbon(2);
-		CH2.bond(Group.hydrogen);
-		CH2.bond(Group.hydrogen);
-
-		switch (carbonIndex) {
-			case 0:
-				couldBePartOfARadical = carbon.equals(CH3);
-				break;
-			case 1: // Could be part of a 'iso' radical
-				Carbon CHCH3 = new Carbon(2);
-				CHCH3.bond(Group.hydrogen);
-				CHCH3.bond(new Substituent(1));
-
-				couldBePartOfARadical = Set.of(CH2, CHCH3).contains(carbon);
-				break;
-			default:
-				couldBePartOfARadical = carbon.equals(CH2);
-				break;
-		}
-
-		return couldBePartOfARadical;
-	}
-
-	// QUERIES -----------------------------------------------------------------------
 
 	public int getSize() {
 		return carbons.size();
@@ -187,8 +115,13 @@ public class Chain extends Organic {
 		return false;
 	}
 
-	public Chain getReversed() {
-		Chain reversed = new Chain(this);
+	public void reverseOrientation() {
+		Chain inverseOrientation = getInverseOrientation();
+		copyCarbons(inverseOrientation.carbons);
+	}
+
+	public Chain getInverseOrientation() {
+		Chain reversed = clone();
 
 		// Le da la vuelta a los carbonos:
 		Collections.reverse(reversed.carbons);
@@ -248,6 +181,25 @@ public class Chain extends Organic {
 		return substituents;
 	}
 
+	@Override
+	protected Chain clone() { // TODO throw?
+		try {
+			Chain chain = (Chain) super.clone();
+			chain.carbons.clear();
+			carbons.forEach(carbon -> chain.carbons.add(carbon.clone()));
+			return chain;
+		} catch (CloneNotSupportedException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	// Private:
+
+	private void copyCarbons(List<Carbon> carbons) {
+		this.carbons.clear();
+		carbons.forEach(carbon -> this.carbons.add(carbon.clone()));
+	}
+
 	private List<Integer> getIndexesOf(List<Integer> amounts) {
 		List<Integer> indexes = new ArrayList<>();
 
@@ -257,14 +209,111 @@ public class Chain extends Organic {
 		return indexes;
 	}
 
-	private void bondCarbons(List<Carbon> carbons) {
-		getLastCarbon().useBond();
-		addCopyOf(carbons);
+	private boolean correctChainToTheLeftIn(int carbonIndex) {
+		// Pre-condition: any carbon to the left could be part of a radical
+		Carbon carbon = carbons.get(carbonIndex);
+
+		if (!carbon.isBondedTo(Group.radical))
+			return false;
+
+		Substituent greatestRadical = getGreatestRadicalIn(carbon);
+
+		// Replaces the greatest radical with the left part of the chain:
+
+		if(carbonIndex > 0) {
+			Substituent leftSideRadical = getRadicalToTheLeftOf(carbonIndex);
+
+			// Calculates if that radical would make a longer chain:
+			if(greatestRadical.compareTo(leftSideRadical) <= 0)
+				return false;
+
+			// Replaces the greatestRadical with the newly created:
+			carbon.unbond(greatestRadical);
+			carbon.bond(leftSideRadical);
+		}
+		else carbon.remove(greatestRadical); // There is no left side of the chain
+
+		// Replaces the left part of the chain with the greatest radical:
+
+		List<Carbon> newCarbons = getCarbonsInRadical(greatestRadical);
+
+		// Substitutes the current chain with the new one:
+
+		newCarbons.addAll(carbons.subList(carbonIndex, carbons.size())); // The rest of it
+
+		carbons.clear();
+		carbons.addAll(newCarbons);
+
+		return true;
 	}
 
-	private void become(Chain other) {
-		carbons.clear();
-		addCopyOf(other.carbons);
+	private Substituent getGreatestRadicalIn(Carbon carbon) {
+		if (!carbon.isBondedTo(Group.radical))
+			throw new IllegalArgumentException("The carbon: " + carbon + " isn't bonded to any radical.");
+
+		List<Substituent> radicals = new ArrayList<>(carbon.getSubstituents());
+		radicals.removeIf(substituent -> substituent.getGroup() != Group.radical);
+		radicals.sort(Substituent::compareTo);
+
+		return radicals.get(radicals.size() - 1);
+	}
+
+	private Substituent getRadicalToTheLeftOf(int carbonIndex) {
+		if (carbonIndex == 0)
+			throw new IllegalArgumentException("First carbon doesn't have any radical to its left.");
+
+		if (carbonIndex > 1 && carbons.get(1).equals(CHCH3))
+			return new Substituent(carbonIndex + 1, true);
+		else return new Substituent(carbonIndex);
+	}
+
+	private List<Carbon> getCarbonsInRadical(Substituent radical) {
+		if (radical.getGroup() != Group.radical)
+			throw new IllegalArgumentException("Substituent: " + radical + " is not a radical.");
+
+		List<Carbon> carbonsInRadical = new ArrayList<>();
+		carbonsInRadical.add(CH3);
+
+		int carbonCount = 1; // CH3-
+
+		if (radical.isIso()) {
+			carbonsInRadical.add(CHCH3); // CH3-CH(CH3)-
+			carbonCount += 2; // It had a methyl bonded to it
+		}
+
+		int remaining = radical.getCarbonCount() - carbonCount;
+		carbonsInRadical.addAll(Collections.nCopies(remaining, CH2)); // CH3-CH(CH3)-CH2-
+
+		return carbonsInRadical;
+	}
+
+	private boolean couldBePartOfARadical(int carbonIndex) {
+		Carbon carbon = carbons.get(carbonIndex);
+
+		if(carbon.isBondedTo(Group.alkene) || carbon.isBondedTo(Group.alkyne))
+			return false;
+
+		Carbon CH3 = new Carbon(1);
+		CH3.bond(Group.hydrogen);
+		CH3.bond(Group.hydrogen);
+		CH3.bond(Group.hydrogen);
+
+		Carbon CH2 = new Carbon(2);
+		CH2.bond(Group.hydrogen);
+		CH2.bond(Group.hydrogen);
+
+		switch (carbonIndex) {
+			case 0:
+				return carbon.equals(CH3);
+			case 1: // Could be part of a 'iso' radical
+				Carbon CHCH3 = new Carbon(2);
+				CHCH3.bond(Group.hydrogen);
+				CHCH3.bond(new Substituent(1));
+
+				return Set.of(CH2, CHCH3).contains(carbon);
+			default:
+				return carbon.equals(CH2);
+		}
 	}
 
 	// Text:

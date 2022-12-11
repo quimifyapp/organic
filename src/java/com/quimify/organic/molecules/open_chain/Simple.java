@@ -50,10 +50,6 @@ public final class Simple extends Organic implements OpenChain {
         this.chain = new Chain(0);
     }
 
-    private Simple(Chain chain) {
-        this.chain = new Chain(chain);
-    }
-
     // Interface:
 
     public boolean isDone() {
@@ -268,16 +264,12 @@ public final class Simple extends Organic implements OpenChain {
 
     private void correctChainStructure() {
         // Se corrigen los radicales que podrían formar parte de la cadena principal:
-        chain.correctChainToTheLeft(); // Comprobará internamente si hay radicales
-
-        if (chain.isBondedTo(Group.radical)) { // Para ahorrar el invertir la cadena
-            chain.invertOrientation(); // En lugar de corregirlos por la derecha
-            chain.correctChainToTheLeft(); // CHF(CH3)(CH2CH3) → CH3-CH2-CHF-CH3
-        }
+        chain.correctChainToTheLeft(); // CF(CH3)(CH2CH3) → CH3-CH2-CF(CH3)
+        chain.correctChainToTheRight(); // CH3-CH2-CF(CH3) → CH3-CH2-CF-CH3
     }
 
     private void correctChainOrientation() {
-        Simple reversed = new Simple(chain.getReversed());
+        Chain inverseOrientation = chain.getInverseOrientation();
 
         List<Group> bondedGroups = chain.getGroups();
         bondedGroups.removeIf(group -> group == Group.hydrogen);
@@ -285,13 +277,13 @@ public final class Simple extends Organic implements OpenChain {
         boolean corrected = false;
         for (int i = 0; i < bondedGroups.size() && !corrected; i++) {
             // Se calculan las sumas de sus posiciones:
-            int suma_normal = chain.getIndexesOf(bondedGroups.get(i))
+            int normalSum = chain.getIndexesOf(bondedGroups.get(i))
                     .stream().mapToInt(Integer::intValue).sum();
-            int suma_inversa = reversed.chain.getIndexesOf(bondedGroups.get(i))
+            int inverseSum = inverseOrientation.getIndexesOf(bondedGroups.get(i))
                     .stream().mapToInt(Integer::intValue).sum();
 
             // Se comparan las sumas de sus posiciones:
-            corrected = correctChainOrientationBy(suma_normal - suma_inversa);
+            corrected = correctChainOrientationBy(normalSum - inverseSum);
         }
 
         // Los radicales determinan el orden alfabéticamente como última instancia, solo cuando lo demás es indiferente.
@@ -319,7 +311,7 @@ public final class Simple extends Organic implements OpenChain {
 
         if (comparaison != 0) { // No son iguales
             if (comparaison > 0) // El inverso va antes alfabéticamente
-                chain.invertOrientation();
+                chain.reverseOrientation();
             corrected = true; // Ya se ha corregido el orden según los radicales alfabéticamente
         } else corrected = false; // Indecidible
 

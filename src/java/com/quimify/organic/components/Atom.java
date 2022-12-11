@@ -84,7 +84,6 @@ public class Atom {
 
 	// Queries:
 
-
 	@Override
 	public int hashCode() {
 		return Objects.hash(id, element, new HashSet<>(getBondedAtomsCutOff()));

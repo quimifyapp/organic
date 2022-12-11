@@ -105,20 +105,14 @@ public final class Ether extends Organic implements OpenChain {
 	}
 
 	public void correct() {
-		// Se corrigen los radicales que podrían formar parte de las cadenas principales:
-		firstChain.correctChainToTheLeft(); // Si no tiene radicales, no hará nada
-
-		if (secondChain.isBondedTo(Group.radical)) { // Para ahorrar el invertir la cadena
-			secondChain.invertOrientation(); // En lugar de corregirlos por la derecha
-			secondChain.correctChainToTheLeft(); // CHF(CH3)(CH2CH3) → CH3-CH2-CHF-CH3
-			secondChain.invertOrientation(); // Es necesario para no romper el orden del éter
-		}
+		firstChain.correctChainToTheLeft(); // CF(CH3)-O- → CH3-CF-O-
+		secondChain.correctChainToTheRight(); // -O-CHF(CH3) → -O-CHF-CH3
 	}
 
 	public String getName() {
 		String name;
 
-		String firstChainName = getNameFor(firstChain.getReversed()); // Se empieza a contar desde el oxígeno
+		String firstChainName = getNameFor(firstChain.getInverseOrientation()); // Se empieza a contar desde el oxígeno
 		String secondChainName = getNameFor(secondChain); // La secundaria ya está en el orden bueno
 
 		if (!firstChainName.equals(secondChainName)) {

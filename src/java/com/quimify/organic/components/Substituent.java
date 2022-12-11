@@ -130,6 +130,15 @@ public class Substituent extends Organic {
         return isIso == otherSubstituent.isIso;
     }
 
+    @Override
+    protected Substituent clone() {
+        try {
+            return (Substituent) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public int compareTo(Substituent substituent) {
         // OOH < Cl < CH2CH3 < CH(CH3)2 < CH2CH2CH3 < H
         if(group != Group.radical || substituent.group != Group.radical)
@@ -155,35 +164,6 @@ public class Substituent extends Organic {
 
     private int getStraightCarbonCount() {
         return carbonCount - (isIso ? 1 : 0);
-    }
-
-    public Chain toChain() {
-        if (carbonCount == 0)
-            return null;
-
-        Chain chain = new Chain(0);
-
-        chain.bond(Group.hydrogen); // CH≡
-        chain.bond(Group.hydrogen); // CH2=
-        chain.bond(Group.hydrogen); // CH3-
-
-        int previous = 1; // CH3-
-
-        if (isIso) {
-            chain.bondCarbon(); // CH3-C≡
-            chain.bond(Group.hydrogen); // CH3-CH=
-            chain.bond(new Substituent(1)); // CH3-CH(CH3)-
-
-            previous += 2; // CH3-CH(CH3)-
-        }
-
-        for (int i = previous; i < carbonCount; i++) {
-            chain.bondCarbon(); // CH3-CH(CH3)-C≡
-            chain.bond(Group.hydrogen); // CH3-CH(CH3)-CH-
-            chain.bond(Group.hydrogen); // CH3-CH(CH3)-CH2-
-        }
-
-        return chain; // CH3-CH(CH3)-CH2-
     }
 
     // Text:
