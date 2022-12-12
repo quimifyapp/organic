@@ -33,6 +33,11 @@ public class Chain extends Organic {
 		CH2.bond(Group.hydrogen);
 	}
 
+	private static final String cannotBondCarbonError = "Cannot bond carbon to the right of chain: %s.";
+	private static final String noRadicalBondedError = "There are no radicals bonded to carbon: %s.";
+	private static final String nothingToTheLeftError = "No first carbon can have more chain to its left.";
+	private static final String notRadicalError = "Substituent with functional group %s is not a radical.";
+
 	// Constructors:
 
 	public Chain(int usedBondCount) {
@@ -116,11 +121,11 @@ public class Chain extends Organic {
 	}
 
 	public void bondCarbon() {
-		if (getFreeBondCount() > 0) {
+		if (canBondCarbon()) {
 			Carbon ultimo = getLastCarbon();
 			ultimo.useBond();
 			carbons.add(new Carbon(ultimo.getFreeBondCount() + 1));
-		} else throw new IllegalStateException("No se puede enlazar un carbono a [" + getStructure() + "].");
+		} else throw new IllegalStateException(String.format(cannotBondCarbonError, getStructure()));
 	}
 
 	public void removeCarbon(Carbon carbon) {
@@ -176,7 +181,8 @@ public class Chain extends Organic {
 			for(int i = 0, j = carbons.size() - 2; i < reversed.getSize() - 1; i++)
 				reversed.carbons.get(i).setFreeBondCount(carbons.get(j--).getFreeBondCount());
 
-			reversed.carbons.get(reversed.getSize() - 1).setFreeBondCount(0); // Se supone que no tiene enlaces sueltos
+			// Se supone que no tiene enlaces sueltos:
+			reversed.carbons.get(reversed.getSize() - 1).setFreeBondCount(0);
 		}
 
 		return reversed;
@@ -243,7 +249,7 @@ public class Chain extends Organic {
 
 	private Substituent getGreatestRadicalIn(Carbon carbon) {
 		if (!carbon.isBondedTo(Group.radical))
-			throw new IllegalArgumentException("The carbon: " + carbon + " isn't bonded to any radical.");
+			throw new IllegalArgumentException(String.format(noRadicalBondedError, carbon));
 
 		List<Substituent> radicals = new ArrayList<>(carbon.getSubstituents());
 		radicals.removeIf(substituent -> substituent.getGroup() != Group.radical);
@@ -254,7 +260,7 @@ public class Chain extends Organic {
 
 	private Substituent getRadicalToTheLeftOf(int carbonIndex) {
 		if (carbonIndex == 0)
-			throw new IllegalArgumentException("First carbon doesn't have any radical to its left.");
+			throw new IllegalArgumentException(nothingToTheLeftError);
 
 		if (carbonIndex > 1 && carbons.get(1).equals(CHCH3))
 			return new Substituent(carbonIndex + 1, true);
@@ -263,7 +269,7 @@ public class Chain extends Organic {
 
 	private List<Carbon> getCarbonsInRadical(Substituent radical) {
 		if (radical.getGroup() != Group.radical)
-			throw new IllegalArgumentException("Substituent: " + radical + " is not a radical.");
+			throw new IllegalArgumentException(String.format(notRadicalError, radical.getGroup()));
 
 		List<Carbon> carbonsInRadical = new ArrayList<>();
 		carbonsInRadical.add(CH3);

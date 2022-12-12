@@ -2,96 +2,79 @@ package com.quimify.organic.components;
 
 import com.quimify.organic.Organic;
 
-import java.util.Map;
 import java.util.Objects;
-
-import static java.util.Map.entry;
 
 public class Substituent extends Organic {
 
     private final Group group;
     private final int bondCount;
     private final int carbonCount;
-    private final boolean isIso;
+    private final boolean iso;
 
     // Examples:
 
-	// -Cl             →   { Group.chlorine, bondCount: 1, carbonCount: 0, isIso: false }
-	// =O              →   { Group.ketone,   bondCount: 2, carbonCount: 0, isIso: false }
-	// -CH2-CH2-CH3    →   { Group.radical,  bondCount: 1, carbonCount: 3, isIso: false }
-	// -CH(CH3)-CH3    →   { Group.radical,  bondCount: 1, carbonCount: 3, isIso: true  }
+	// -Cl             →   { Group.chlorine, bondCount: 1, carbonCount: 0, iso: false }
+	// =O              →   { Group.ketone,   bondCount: 2, carbonCount: 0, iso: false }
+	// -CH2-CH2-CH3    →   { Group.radical,  bondCount: 1, carbonCount: 3, iso: false }
+	// -CH(CH3)-CH3    →   { Group.radical,  bondCount: 1, carbonCount: 3, iso: true  }
 
     // Constants:
 
-    private static final Map<Group, Integer> groupToBondCount = Map.ofEntries(
-            entry(Group.acid, 3),
-            entry(Group.amide, 3),
-            entry(Group.carbamoyl, 1),
-            entry(Group.nitrile, 3),
-            entry(Group.cyanide, 1),
-            entry(Group.aldehyde, 3),
-            entry(Group.ketone, 2),
-            entry(Group.alcohol, 1),
-            entry(Group.amine, 1),
-            entry(Group.ether, 1),
-            entry(Group.nitro, 1),
-            entry(Group.bromine, 1),
-            entry(Group.chlorine, 1),
-            entry(Group.fluorine, 1),
-            entry(Group.iodine, 1),
-            entry(Group.hydrogen, 1)
-    );
-
-    private static final Map<Group, String> groupToStructure = Map.ofEntries(
-            entry(Group.acid, "OOH"),
-            entry(Group.amide, "ONH2"),
-            entry(Group.carbamoyl, "COHN2"),
-            entry(Group.nitrile, "N"),
-            entry(Group.cyanide, "CN"),
-            entry(Group.aldehyde, "HO"),
-            entry(Group.ketone, "O"),
-            entry(Group.alcohol, "OH"),
-            entry(Group.amine, "NH2"),
-            entry(Group.ether, "-O-"),
-            entry(Group.nitro, "NO2"),
-            entry(Group.bromine, "Br"),
-            entry(Group.chlorine, "Cl"),
-            entry(Group.fluorine, "F"),
-            entry(Group.iodine, "I"),
-            entry(Group.hydrogen, "H")
-    );
+    private static final String noUniqueError = "There is no unique substituent with functional group: %s.";
+    private static final String noSuchError = "There is no substituent with functional group: %s.";
+    private static final String radicalTooShortError = "Radicals must have at least 1 carbon.";
+    private static final String isoRadicalTooShortError = "Isotopic radicals must have at least 3 carbons.";
+    private static final String unknownStructureError = "Unknown structure for substituent with functional group: %s.";
 
     // Constructors:
 
     public Substituent(Group group) {
         if(group == Group.radical)
-            throw new IllegalArgumentException("There is no unique radical substituent.");
+            throw new IllegalArgumentException(String.format(noUniqueError, Group.radical));
 
-        Integer bondCount = groupToBondCount.get(group);
-
-        if(bondCount == null)
-            throw new IllegalArgumentException("There are no substituents with functional group: " + group + ".");
+        switch (group) {
+            case acid:
+            case amide:
+            case nitrile:
+            case aldehyde:
+                this.bondCount = 3;
+                break;
+            case ketone:
+                this.bondCount = 2;
+                break;
+            case carbamoyl:
+            case cyanide:
+            case alcohol:
+            case amine:
+            case ether:
+            case nitro:
+            case bromine:
+            case chlorine:
+            case fluorine:
+            case iodine:
+            case hydrogen:
+                this.bondCount = 1;
+                break;
+            default:
+                throw new IllegalArgumentException(String.format(noSuchError, group));
+        }
 
         this.group = group;
-        this.bondCount = bondCount;
         this.carbonCount = 0;
-        this.isIso = false;
+        this.iso = false;
     }
 
-    public Substituent(int carbonCount, boolean isIso) {
-        if(isIso && carbonCount == 0)
-            throw new IllegalArgumentException("Radicals must have at least 1 carbon.");
+    public Substituent(int carbonCount, boolean iso) {
+        if(!iso && carbonCount < 1)
+            throw new IllegalArgumentException(radicalTooShortError);
 
-        if(isIso && carbonCount == 1)
-            throw new IllegalArgumentException("There is no \"isomethyl\".");
-
-        if(isIso && carbonCount == 2)
-            throw new IllegalArgumentException("There is no \"isoethyl\".");
+        if(iso && carbonCount < 3)
+            throw new IllegalArgumentException(isoRadicalTooShortError);
 
         this.group = Group.radical;
         this.bondCount = 1;
         this.carbonCount = carbonCount;
-        this.isIso = isIso;
+        this.iso = iso;
     }
 
     public Substituent(int carbonCount) {
@@ -101,21 +84,39 @@ public class Substituent extends Organic {
         this.group = Group.radical;
         this.bondCount = 1;
         this.carbonCount = carbonCount;
-        this.isIso = false;
+        this.iso = false;
     }
 
     Substituent(Substituent other) {
         this.group = other.group;
         this.bondCount = other.bondCount;
         this.carbonCount = other.carbonCount;
-        this.isIso = other.isIso;
+        this.iso = other.iso;
     }
 
     // Queries:
 
+    public int compareTo(Substituent other) {
+        // OOH < Cl < CH(CH3)2 < CH2CH3 < CH2CH2CH3 < H
+        if(group == Group.radical && other.group == Group.radical)
+            return compareToRadical(other); // CH(CH3)2 < CH2CH3 < CH2CH2CH3
+
+        return group.compareTo(other.group); // OOH < Cl < H
+    }
+
+    private int compareToRadical(Substituent radical) {
+        // CH(CH3)2 < CH2CH3 < CH2CH2CH3
+        int comparaison = Integer.compare(carbonCount, radical.carbonCount);
+
+        if(comparaison == 0)
+            return iso == radical.iso ? 0 : iso ? -1 : 1; // CH(CH3)2 < CH2CH3
+
+        return comparaison; // CH2CH3 < CH2CH2CH3
+    }
+
     @Override
     public int hashCode() {
-        return Objects.hash(group, bondCount, carbonCount, isIso);
+        return Objects.hash(group, bondCount, carbonCount, iso);
     }
 
     @Override
@@ -128,56 +129,59 @@ public class Substituent extends Organic {
         if(group != otherSubstituent.group)
             return false;
 
-        if(bondCount != otherSubstituent.bondCount)
-            return false;
-
         if(carbonCount != otherSubstituent.carbonCount)
             return false;
 
-        return isIso == otherSubstituent.isIso;
-    }
-
-    public int compareTo(Substituent substituent) {
-        // OOH < Cl < CH2CH3 < CH(CH3)2 < CH2CH2CH3 < H
-        if(group != Group.radical || substituent.group != Group.radical)
-            return group.compareTo(substituent.group);
-        else return compareToRadical(substituent);
-    }
-
-    // Queries for radicals:
-
-    private int compareToRadical(Substituent radical) {
-        // CH2CH3 < CH(CH3)2 < CH2CH2CH3
-        int comparaison = Integer.compare(getStraightCarbonCount(), radical.getStraightCarbonCount());
-
-        if(comparaison == 0) {
-            if (isIso == radical.isIso)
-                return 0; // -CH(CH3)-CH3 = -CH2(CH3)-CH3
-
-            return isIso ? 1 : -1; // -CH(CH3)-CH3 > -CH2-CH3
-        }
-
-        return comparaison; // -CH2-CH3 > -CH3
-    }
-
-    private int getStraightCarbonCount() {
-        return carbonCount - (isIso ? 1 : 0);
+        return iso == otherSubstituent.iso;
     }
 
     // Text:
 
     private String getStructure() {
-        if(group == Group.radical)
-            return isIso
+        switch (group) {
+            case acid:
+                return "OOH";
+            case amide:
+                return "ONH2";
+            case carbamoyl:
+                return "COHN2";
+            case nitrile:
+                return "N";
+            case cyanide:
+                return "CN";
+            case aldehyde:
+                return "HO";
+            case ketone:
+                return "O";
+            case alcohol:
+                return "OH";
+            case amine:
+                return "NH2";
+            case ether:
+                return "-O-";
+            case nitro:
+                return "NO2";
+            case bromine:
+                return "Br";
+            case chlorine:
+                return "Cl";
+            case fluorine:
+                return "F";
+            case iodine:
+                return "I";
+            case hydrogen:
+                return "H";
+            case radical:
+                return getRadicalStructure(carbonCount, iso);
+            default:
+                throw new IllegalArgumentException(unknownStructureError);
+        }
+    }
+
+    private String getRadicalStructure(int carbonCount, boolean isIso) {
+        return isIso
                 ? "CH2".repeat(Math.max(0, carbonCount -  3)) + "CH(CH3)2"
                 : "CH2".repeat(Math.max(0, carbonCount -  1)) + "CH3";
-
-        String structure = groupToStructure.get(group);
-
-        if(structure == null)
-            throw new IllegalArgumentException("Unknown structure for functional group: " + group + ".");
-
-        return structure;
     }
 
     @Override
@@ -200,7 +204,7 @@ public class Substituent extends Organic {
     }
 
     public boolean isIso() {
-        return isIso;
+        return iso;
     }
 
 }

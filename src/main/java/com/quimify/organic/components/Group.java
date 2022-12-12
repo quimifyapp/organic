@@ -1,6 +1,6 @@
 package com.quimify.organic.components;
 
-// This enum represents functional groups.
+// This enum represents functional groups. TODO reverse order?
 
 public enum Group { // Ordered by naming priority:
     acid,       // =O, -OH

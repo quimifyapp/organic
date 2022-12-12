@@ -1,7 +1,6 @@
 package com.quimify.organic.components;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class Atom {
 
@@ -22,11 +21,14 @@ public class Atom {
 	public static final Atom F = new Atom(Element.F);
 	public static final Atom I = new Atom(Element.I);
 
+	private static final String unknownAtomError = "Unknown organic atom: %s.";
+	private static final String unknownFunctionalGroupError = "Unknown functional group given atom: %s.";
+
 	// Constructor:
 
 	public Atom(int id, String symbol) {
 		this.id = id;
-		bondedAtoms = new ArrayList<>();
+		this.bondedAtoms = new ArrayList<>();
 
 		switch (symbol) {
 			case "C":
@@ -54,26 +56,26 @@ public class Atom {
 				element = Element.I;
 				break;
 			default:
-				throw new IllegalArgumentException("No se contempla el átomo \"" + symbol + "\".");
+				throw new IllegalArgumentException(String.format(unknownAtomError, symbol));
 		}
 	}
 
 	public Atom(Element element, List<Atom> bondedAtoms) {
-		id = null;
+		this.id = null;
 		this.element = element;
 		this.bondedAtoms = bondedAtoms;
 	}
 
 	public Atom(Element element) {
-		id = null;
+		this.id = null;
 		this.element = element;
-		bondedAtoms = new ArrayList<>();
+		this.bondedAtoms = new ArrayList<>();
 	}
 
 	private Atom(Atom other) {
-		id = other.id;
-		element = other.element;
-		bondedAtoms = new ArrayList<>(other.bondedAtoms);
+		this.id = other.id;
+		this.element = other.element;
+		this.bondedAtoms = new ArrayList<>(other.bondedAtoms);
 	}
 
 	// Modifiers:
@@ -84,37 +86,26 @@ public class Atom {
 
 	// Queries:
 
-	@Override
-	public int hashCode() {
-		return Objects.hash(id, element, new HashSet<>(getBondedAtomsCutOff()));
+	public int getAmountOf(Element element) {
+		return (int) bondedAtoms.stream().filter(bondedAtom -> bondedAtom.getElement() == element).count();
 	}
 
-	@Override
-	public boolean equals(Object other) {
-		if (other == null || other.getClass() != this.getClass())
-			return false;
+	public List<Atom> getBondedAtomsSeparated() {
+		List<Atom> bondedAtomsCutOff = new ArrayList<>();
 
-		Atom otherAtom = (Atom) other;
+		for (Atom bondedAtom : bondedAtoms)
+			bondedAtomsCutOff.add(new Atom(bondedAtom));
 
-		if(!Objects.equals(id, otherAtom.id)) // Objects.equals(null, null) = true
-			return false;
+		if (id != null)
+			for (Atom bondedAtomCutOff : bondedAtomsCutOff)
+				bondedAtomCutOff.bondedAtoms.removeIf(bondedAtom ->
+						Objects.equals(id, bondedAtom.id)); // Removes itself from the copy
 
-		if (element != otherAtom.element)
-			return false;
-
-		if (bondedAtoms.size() != otherAtom.bondedAtoms.size())
-			return false;
-
-		List<Atom> bondedAtomsCutOff = getBondedAtomsCutOff();
-		List<Atom> othersBondedAtomsCutOff = otherAtom.getBondedAtomsCutOff();
-
-		return bondedAtomsCutOff.stream().allMatch(bondedAtom ->
-				Collections.frequency(bondedAtomsCutOff, bondedAtom) ==
-						Collections.frequency(othersBondedAtomsCutOff, bondedAtom));
+		return bondedAtomsCutOff;
 	}
 
 	public Atom toAnonymous() {
-		Atom anonymousAtom = new Atom(element, getBondedAtomsCutOff());
+		Atom anonymousAtom = new Atom(element, getBondedAtomsSeparated());
 		anonymousAtom.bondedAtoms.replaceAll(Atom::toAnonymous);
 		return anonymousAtom;
 	}
@@ -143,27 +134,38 @@ public class Atom {
 			group = Group.fluorine;
 		else if (anonymousAtom.equals(Atom.I))
 			group = Group.iodine;
-		else throw new IllegalArgumentException("Couldn't find FunctionalGroup of Atom: " + element + ".");
+		else throw new IllegalArgumentException(String.format(unknownFunctionalGroupError, element));
 
 		return group;
 	}
 
-	public List<Atom> getBondedAtomsCutOff() {
-		List<Atom> bondedAtomsCutOff = new ArrayList<>();
-
-		for (Atom bondedAtom : bondedAtoms)
-			bondedAtomsCutOff.add(new Atom(bondedAtom));
-
-		if (id != null)
-			for (Atom bondedAtomCutOff : bondedAtomsCutOff)
-				bondedAtomCutOff.bondedAtoms.removeIf(bondedAtom ->
-						Objects.equals(id, bondedAtom.id)); // Cuts itself off from the copy
-
-		return bondedAtomsCutOff;
+	@Override
+	public int hashCode() {
+		return Objects.hash(id, element, new HashSet<>(getBondedAtomsSeparated()));
 	}
 
-	public List<Atom> getBonded(Element element) {
-		return bondedAtoms.stream().filter(bondedAtom -> bondedAtom.getElement() == element).collect(Collectors.toList());
+	@Override
+	public boolean equals(Object other) {
+		if (other == null || other.getClass() != this.getClass())
+			return false;
+
+		Atom otherAtom = (Atom) other;
+
+		if(!Objects.equals(id, otherAtom.id)) // Objects.equals(null, null) = true
+			return false;
+
+		if (element != otherAtom.element)
+			return false;
+
+		if (bondedAtoms.size() != otherAtom.bondedAtoms.size())
+			return false;
+
+		List<Atom> bondedAtomsCutOff = getBondedAtomsSeparated();
+		List<Atom> othersBondedAtomsCutOff = otherAtom.getBondedAtomsSeparated();
+
+		return bondedAtomsCutOff.stream().allMatch(bondedAtom ->
+				Collections.frequency(bondedAtomsCutOff, bondedAtom) ==
+						Collections.frequency(othersBondedAtomsCutOff, bondedAtom));
 	}
 
 	// Getters:

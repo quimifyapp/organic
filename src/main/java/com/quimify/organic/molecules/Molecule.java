@@ -96,12 +96,15 @@ public class Molecule extends Organic {
 	}
 
 	private List<Atom> getCarbons() {
-		return molecule.stream().filter(atom -> atom.getElement() == Element.C).collect(Collectors.toList());
+		return molecule.stream().filter(atom ->
+				atom.getElement() == Element.C)
+				.collect(Collectors.toList());
 	}
 
 	private List<Atom> getEndingCarbons() {
-		List<Atom> carbons = getCarbons();
-		return carbons.stream().filter(carbon -> carbon.getBonded(Element.C).size() < 2).collect(Collectors.toList());
+		return getCarbons().stream().filter(carbon ->
+				carbon.getAmountOf(Element.C) < 2)
+				.collect(Collectors.toList());
 	}
 
 	// Simple structure:
@@ -127,7 +130,7 @@ public class Molecule extends Organic {
 	}
 
 	private boolean isSimpleCarbon(Atom carbon) {
-		Set<Atom> nonSubstituentBondedAtoms = carbon.getBondedAtomsCutOff().stream().filter(bondedAtom ->
+		Set<Atom> nonSubstituentBondedAtoms = carbon.getBondedAtomsSeparated().stream().filter(bondedAtom ->
 				isNotSubstituent(bondedAtom, Simple.bondableAtoms)).collect(Collectors.toSet());
 
 		if(nonSubstituentBondedAtoms.size() == 1) {
@@ -138,10 +141,10 @@ public class Molecule extends Organic {
 		return nonSubstituentBondedAtoms.size() == 0;
 	}
 
-	private void buildSimpleFrom(Simple simple, Atom simpleCarbon) {
+	private void buildSimpleFrom(Simple simple, Atom simpleCarbon) { // TODO runtime exceptions
 		Optional<Atom> nextCarbon = Optional.empty();
 
-		for(Atom bondedAtom : simpleCarbon.getBondedAtomsCutOff()) {
+		for(Atom bondedAtom : simpleCarbon.getBondedAtomsSeparated()) {
 			if (isBondableAtom(bondedAtom, Simple.bondableAtoms))
 				simple.bond(bondedAtom.toFunctionalGroup());
 			else if(isRadicalCarbon(bondedAtom))
@@ -178,7 +181,7 @@ public class Molecule extends Organic {
 
 		if(endingCarbons.size() > 2) // -C-O-C- minimum
 			endingCarbons = endingCarbons.stream().filter(endingCarbon ->
-					endingCarbon.getBondedAtomsCutOff().stream().noneMatch(bonded ->
+					endingCarbon.getBondedAtomsSeparated().stream().noneMatch(bonded ->
 							bonded.getElement() == Element.O)).collect(Collectors.toList());
 
 		return endingCarbons.stream().filter(endingCarbon -> isEtherCarbon(endingCarbon, false)).findAny();
@@ -187,7 +190,7 @@ public class Molecule extends Organic {
 	private boolean isEtherCarbon(Atom carbon, boolean hasFoundEther) {
 		boolean ether;
 
-		Set<Atom> nonSubstituentBondedAtoms = carbon.getBondedAtomsCutOff().stream().filter(bondedAtom ->
+		Set<Atom> nonSubstituentBondedAtoms = carbon.getBondedAtomsSeparated().stream().filter(bondedAtom ->
 				isNotSubstituent(bondedAtom, Ether.bondableAtoms)).collect(Collectors.toSet());
 
 		if (nonSubstituentBondedAtoms.size() == 1) {
@@ -198,15 +201,16 @@ public class Molecule extends Organic {
 			else if (nonSubstituent.getElement() == Element.O)
 				ether = !hasFoundEther && isEtherCarbon(nonSubstituent, true); // Recursion
 			else ether = false;
-		} else ether = nonSubstituentBondedAtoms.size() == 0;
+		}
+		else ether = nonSubstituentBondedAtoms.size() == 0;
 
 		return ether;
 	}
 
-	private void buildEtherFrom(Ether ether, Atom etherCarbon) {
+	private void buildEtherFrom(Ether ether, Atom etherCarbon) { // TODO runtime exceptions
 		Optional<Atom> nextAtom = Optional.empty();
 
-		for(Atom bondedAtom : etherCarbon.getBondedAtomsCutOff()) {
+		for(Atom bondedAtom : etherCarbon.getBondedAtomsSeparated()) {
 			if (isBondableAtom(bondedAtom, Ether.bondableAtoms))
 				ether.bond(bondedAtom.toFunctionalGroup());
 			else if(isRadicalCarbon(bondedAtom))
@@ -217,7 +221,7 @@ public class Molecule extends Organic {
 		if(nextAtom.isPresent()) {
 			if(nextAtom.get().getElement() == Element.O)  {
 				ether.bond(Group.ether);
-				nextAtom = Optional.of(nextAtom.get().getBondedAtomsCutOff().get(0));
+				nextAtom = Optional.of(nextAtom.get().getBondedAtomsSeparated().get(0));
 			}
 			else ether.bondCarbon(); // It's a carbon
 
@@ -242,9 +246,9 @@ public class Molecule extends Organic {
 		boolean radical;
 
 		// It must be one of the following: CH2-C..., CH3, CH(CH3)2
-		List<Atom> bondedAtomsCutOff = atom.getBondedAtomsCutOff();
+		List<Atom> bondedAtomsCutOff = atom.getBondedAtomsSeparated();
 		if(bondedAtomsCutOff.size() == 3) {
-			switch (atom.getBonded(Element.H).size()) {
+			switch (atom.getAmountOf(Element.H)) {
 				case 3:
 					radical = true; // CH3
 					break;
@@ -252,12 +256,12 @@ public class Molecule extends Organic {
 					Stream<Atom> bondedCarbons = bondedAtomsCutOff.stream().filter(bondedAtom ->
 							bondedAtom.getElement() == Element.C);
 
-					radical = atom.getBonded(Element.C).size() == 1 // CH2-C...
+					radical = atom.getAmountOf(Element.C) == 1 // CH2-C...
 							&& bondedCarbons.allMatch(this::isRadicalCarbon); // CH2-CH2-C... (recursive)
 					break;
 				case 1:
 					Stream<Atom> bondedCH3s = bondedAtomsCutOff.stream().filter(bondedAtom ->
-							bondedAtom.getBondedAtoms().size() == 3 && bondedAtom.getBonded(Element.H).size() == 3);
+							bondedAtom.getBondedAtoms().size() == 3 && bondedAtom.getAmountOf(Element.H) == 3);
 
 					radical = bondedCH3s.count() == 2; // CH(CH3)2
 					break;
@@ -270,16 +274,19 @@ public class Molecule extends Organic {
 		return radical;
 	}
 
-	private Substituent buildRadicalFrom(Atom radicalCarbon) {
+	private Substituent buildRadicalFrom(Atom radicalCarbon) { // TODO runtime exceptions
 		Substituent radical;
 
-		switch (radicalCarbon.getBonded(Element.H).size()) {
+		switch (radicalCarbon.getAmountOf(Element.H)) {
 			case 3: // -CH3
 				radical = new Substituent(1);
 				break;
 			case 2: // -CH2-
-				Atom nextCarbon = radicalCarbon.toAnonymous().getBonded(Element.C).get(0); // There must be one
+				List<Atom> bondedCarbons = radicalCarbon.getBondedAtomsSeparated();
+				bondedCarbons.removeIf(bondedAtom -> bondedAtom.getElement() != Element.C);
+				Atom nextCarbon = bondedCarbons.get(0); // There must be one
 				Substituent radicalEnd = buildRadicalFrom(nextCarbon); // Recursive
+
 				radical = new Substituent(1 + radicalEnd.getCarbonCount(), radicalEnd.isIso()); // Appended
 				break;
 			case 1: // -CH(CH3)2
