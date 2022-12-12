@@ -140,13 +140,16 @@ public final class Simple extends Organic implements OpenChain {
         // Se procesan los prefijos:
         List<Locator> prefixes = new ArrayList<>();
 
-        while (groupIndex++ < groups.size())
+        while (groupIndex < groups.size()) {
             if (groups.get(groupIndex) != Group.radical && !isBond(groups.get(groupIndex))) {
                 Group group = groups.get(groupIndex);
                 boolean redundant = isRedundantInName(group);
 
                 prefixes.add(Organic.getPrefixForIn(group, chain, redundant));
             }
+
+            groupIndex++;
+        }
 
         Set<Substituent> uniqueRadicals = new HashSet<>(chain.getSubstituents());
         uniqueRadicals.removeIf(substituent -> substituent.getGroup() != Group.radical);
