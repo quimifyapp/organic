@@ -128,24 +128,24 @@ public final class Simple extends Organic implements OpenChain {
 
         List<Group> groups = chain.getGroups();
         groups.removeIf(group -> group == Group.hydrogen);
-        int group = 0;
+        int groupIndex = 0;
 
         // Se procesa el sufijo:
         String suffix = "";
 
         if(groups.size() > 0 && !isHalogen(groups.get(0)) && !isBond(groups.get(0)))
             if(groups.get(0) != Group.nitro && groups.get(0) != Group.radical)
-                suffix = getSuffixNameFor(groups.get(group++));
+                suffix = getSuffixNameFor(groups.get(groupIndex++));
 
         // Se procesan los prefijos:
         List<Locator> prefixes = new ArrayList<>();
 
-        while (group < groups.size()) {
-            if (groups.get(group) != Group.radical && !isBond(groups.get(group)))
-                prefixes.add(getPrefixFor(groups.get(group)));
-
-            group++;
-        }
+        while (groupIndex++ < groups.size())
+            if (groups.get(groupIndex) != Group.radical && !isBond(groups.get(groupIndex))) {
+                Group group = groups.get(groupIndex);
+                boolean isRedundant = isRedundantInName(group);
+                prefixes.add(Organic.getPrefixForIn(group, chain, isRedundant));
+            }
 
         Set<Substituent> uniqueRadicals = new HashSet<>(chain.getSubstituents());
         uniqueRadicals.removeIf(substituent -> substituent.getGroup() != Group.radical);
@@ -168,22 +168,23 @@ public final class Simple extends Organic implements OpenChain {
         }
 
         // Se procesan los enlaces:
-        String enlaces = getBondNameFor(Group.alkene) + getBondNameFor(Group.alkyne);
+        String bonds = Organic.getBondNameForIn(Group.alkene, chain, isRedundantInName(Group.alkene)) +
+                Organic.getBondNameForIn(Group.alkyne, chain, isRedundantInName(Group.alkyne));
 
-        if (enlaces.equals(""))
-            enlaces = "an";
+        if (bonds.equals(""))
+            bonds = "an";
         if (suffix.equals("") || Organic.doesNotStartWithVowel(suffix))
-            enlaces += "o";
+            bonds += "o";
         if (!suffix.equals("") && Organic.startsWithDigit(suffix))
-            enlaces += "-";
+            bonds += "-";
 
         // Se procesa el cuantificador:
-        String cuantificador = quantifierFor(chain.getSize());
+        String quantifier = quantifierFor(chain.getSize());
 
-        if (Organic.doesNotStartWithVowel(enlaces))
-            cuantificador += "a";
+        if (Organic.doesNotStartWithVowel(bonds))
+            quantifier += "a";
 
-        return prefix + cuantificador + enlaces + suffix;
+        return prefix + quantifier + bonds + suffix;
     }
 
     public String getStructure() {
@@ -319,65 +320,30 @@ public final class Simple extends Organic implements OpenChain {
         return corrected;
     }
 
-    // TODO fix repeated code
-
     // Naming:
 
     private boolean isRedundantInName(Group group) {
-        boolean isRedundant;
+        if(group == Group.radical)
+            return false; // TODO reached?
 
-        if (group != Group.radical && !(isBond(group)) && new Substituent(group).getBondCount() == 3)
-            isRedundant = true; // Sustituyente terminal: solo puede ir en el primero y/o último
-        else if (chain.getSize() == 3) // Derivados del propeno
-            isRedundant = group == Group.alkene && chain.getAmountOf(Group.alkene) == 2; // Propadieno
-        else if (chain.getSize() == 2) { // Derivados del etano
-            if(!isBond(group) && !chain.isBondedTo(Group.alkyne)) {
-                List<Substituent> substituents = chain.getSubstituents();
-                substituents.removeIf(substituent -> substituent.getGroup() == Group.hydrogen);
-                isRedundant = substituents.size() == 1; // Hay uno, como cloroetino o etanol
-            }
-            else isRedundant = true; // Hay una posición posible
-        } else isRedundant = chain.getSize() == 1; // Derivados del metano
-
-        return isRedundant;
-    }
-
-    private Locator getPrefixFor(Group group) {
-        Locator prefix;
-
-        List<Integer> indexes = chain.getIndexesOf(group);
-        String name = prefixNameParticleFor(group);
-
-        if (isRedundantInName(group)) // Sobran los localizadores porque son evidentes
-            prefix = new Locator(multiplierFor(indexes.size()), name); // Como "difluoro"
-        else prefix = new Locator(indexes, name); // Como "1,2-difluoro"
-
-        return prefix;
-    }
-
-    private String getBondNameFor(Group bond) {
-        String bondName = "";
-
-        List<Integer> indexes = chain.getIndexesOf(bond);
-        String name = bondNameParticleFor(bond);
-
-        if (indexes.size() > 0) {
-            Locator locator;
-
-            if (isRedundantInName(bond)) // Sobran los localizadores porque son evidentes
-                locator = new Locator(multiplierFor(indexes.size()), name); // Como "dien"
-            else locator = new Locator(indexes, name); // Como "1,2-dien"
-
-            if (startsWithDigit(locator.toString()))
-                bondName += "-"; // Guion antes de los localizadores
-
-            bondName += locator.toString();
+        switch (chain.getSize()) {
+            case 1:
+                // Like methanol
+                return true;
+            case 2:
+                // Like ethanol, ethene, or chloroethyne
+                int substituentsWithoutHydrogen = chain.getSubstituents().size() - chain.getAmountOf(Group.hydrogen);
+                return substituentsWithoutHydrogen == 1 || isBond(group) || chain.isBondedTo(Group.alkyne);
+            case 3:
+                // It's propadiene
+                return group == Group.alkene && chain.getAmountOf(Group.alkene) == 2;
+            default:
+                // If it's a terminal, then it's either in first carbon or both first and last
+                return !isBond(group) && new Substituent(group).getBondCount() == 3;
         }
-
-        return bondName;
     }
 
-    private String getSuffixNameFor(Group bond) {
+    private String getSuffixNameFor(Group bond) { // TODO fix repeated code
         String suffixName;
 
         List<Integer> indexes = chain.getIndexesOf(bond);

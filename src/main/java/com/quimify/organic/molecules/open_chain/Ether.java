@@ -133,11 +133,9 @@ public final class Ether extends Organic implements OpenChain {
 		else return firstChain + secondChain.toString();
 	}
 
-	// TODO fix repeated code
-
 	// Naming:
 
-	private boolean isRedundantInName(Group group, Chain chain) {
+	private boolean isRedundantInNameIn(Group group, Chain chain) {
 		boolean isRedundant;
 
 		// Derivados del propil:
@@ -152,64 +150,28 @@ public final class Ether extends Organic implements OpenChain {
 		return isRedundant;
 	}
 
-	private Locator getPrefixFor(Group group, Chain chain) {
-		Locator prefix;
-
-		List<Integer> indexes = chain.getIndexesOf(group);
-		String name = prefixNameParticleFor(group);
-
-		if (isRedundantInName(group, chain)) // Sobran los localizadores porque son evidentes
-			prefix = new Locator(multiplierFor(indexes.size()), name); // Como "difluoro"
-		else prefix = new Locator(indexes, name); // Como "1,2-difluoro"
-
-		return prefix;
-	}
-
-	private String getBondNameForIn(Group bond, Chain chain) {
-		String bondName = "";
-
-		List<Integer> indexes = chain.getIndexesOf(bond);
-		String nameParticle = bondNameParticleFor(bond);
-
-		if (indexes.size() > 0) {
-			Locator locator;
-
-			if (isRedundantInName(bond, chain)) // Sobran los localizadores porque son evidentes
-				locator = new Locator(multiplierFor(indexes.size()), nameParticle); // Como "dien"
-			else locator = new Locator(indexes, nameParticle); // Como "1,2-dien"
-
-			String localizador_to_string = locator.toString();
-
-			if (startsWithDigit(localizador_to_string))
-				bondName += "-"; // Guion *antes* de los localizadores
-
-			bondName += localizador_to_string;
-		}
-
-		return bondName;
-	}
-
-	private String getNameFor(Chain chain) {
+	private String getNameFor(Chain chain) { // TODO fix repeated code
 		List<Group> groups = chain.getGroups();
 		groups.removeIf(group -> group == Group.hydrogen || group == Group.ether);
 
-		int groupsIndex = 0;
+		int groupIndex = 0;
 
 		// Se procesan los prefijos:
 		List<Locator> prefixes = new ArrayList<>();
 
-		while (groupsIndex < groups.size()) {
-			if (!isBond(groups.get(groupsIndex)) && groups.get(groupsIndex) != Group.radical)
-				prefixes.add(getPrefixFor(groups.get(groupsIndex), chain));
+		while (groupIndex++ < groups.size())
+			if (!isBond(groups.get(groupIndex)) && groups.get(groupIndex) != Group.radical) {
+				Group group = groups.get(groupIndex);
+				boolean isRedundant = isRedundantInNameIn(group, chain);
 
-			groupsIndex++;
-		}
+				prefixes.add(Organic.getPrefixForIn(group, chain, isRedundant));
+			}
 
 		Set<Substituent> uniqueRadicals = new HashSet<>(chain.getSubstituents());
 		uniqueRadicals.removeIf(substituent -> substituent.getGroup() != Group.radical);
 
 		for (Substituent radical : uniqueRadicals)
-			prefixes.add(new Locator(chain.getIndexesOf(radical), radicalNameParticleFor(radical)));
+			prefixes.add(new Locator(chain.getIndexesOf(radical), Organic.radicalNameParticleFor(radical)));
 
 		StringBuilder prefix = new StringBuilder(chain.isBondedTo(Group.acid) ? "ácido " : "");
 		if (prefixes.size() > 0) {
@@ -226,7 +188,8 @@ public final class Ether extends Organic implements OpenChain {
 		}
 
 		// Se procesan los enlaces:
-		String enlaces = getBondNameForIn(Group.alkene, chain) + getBondNameForIn(Group.alkyne, chain);
+		String enlaces = Organic.getBondNameForIn(Group.alkene, chain, isRedundantInNameIn(Group.alkene, chain)) +
+				Organic.getBondNameForIn(Group.alkyne, chain, isRedundantInNameIn(Group.alkyne, chain));
 
 		// Se procesa el cuantificador:
 		String cuantificador = quantifierFor(chain.getSize());

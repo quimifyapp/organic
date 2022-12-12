@@ -1,5 +1,6 @@
 package com.quimify.organic;
 
+import com.quimify.organic.components.Chain;
 import com.quimify.organic.components.Group;
 import com.quimify.organic.components.Substituent;
 
@@ -28,48 +29,7 @@ public class Organic {
         return group == Group.alkene || group ==  Group.alkyne;
     }
 
-    // Text:
-
-    private static String greekPrefixFor(int digit) {
-        String greekPrefix;
-
-        switch(digit) {
-            case 0:
-                greekPrefix = "";
-                break;
-            case 1:
-                greekPrefix = "hen";
-                break;
-            case 2:
-                greekPrefix = "do";
-                break;
-            case 3:
-                greekPrefix = "tri";
-                break;
-            case 4:
-                greekPrefix = "tetra";
-                break;
-            case 5:
-                greekPrefix = "pent";
-                break;
-            case 6:
-                greekPrefix = "hex";
-                break;
-            case 7:
-                greekPrefix = "hept";
-                break;
-            case 8:
-                greekPrefix = "oct";
-                break;
-            case 9:
-                greekPrefix = "non";
-                break;
-            default:
-                throw new IllegalArgumentException("There is no greek prefix for: " + digit + ".");
-        }
-
-        return greekPrefix;
-    }
+    // Text: TODO refactor, translation
 
     protected static String quantifierFor(int number) {
         String quantifier;
@@ -155,6 +115,47 @@ public class Organic {
         return quantifier;
     }
 
+    private static String greekPrefixFor(int digit) {
+        String greekPrefix;
+
+        switch(digit) {
+            case 0:
+                greekPrefix = "";
+                break;
+            case 1:
+                greekPrefix = "hen";
+                break;
+            case 2:
+                greekPrefix = "do";
+                break;
+            case 3:
+                greekPrefix = "tri";
+                break;
+            case 4:
+                greekPrefix = "tetra";
+                break;
+            case 5:
+                greekPrefix = "pent";
+                break;
+            case 6:
+                greekPrefix = "hex";
+                break;
+            case 7:
+                greekPrefix = "hept";
+                break;
+            case 8:
+                greekPrefix = "oct";
+                break;
+            case 9:
+                greekPrefix = "non";
+                break;
+            default:
+                throw new IllegalArgumentException("There is no greek prefix for: " + digit + ".");
+        }
+
+        return greekPrefix;
+    }
+
     protected static String multiplierFor(int number) {
         String multiplier;
 
@@ -237,6 +238,42 @@ public class Organic {
             return lexema;
         }
 
+    }
+
+    protected static Locator getPrefixForIn(Group group, Chain chain, boolean isRedundant) {
+        Locator prefix;
+
+        List<Integer> indexes = chain.getIndexesOf(group);
+        String name = prefixNameParticleFor(group);
+
+        if (isRedundant) // Sobran los localizadores porque son evidentes
+            prefix = new Locator(multiplierFor(indexes.size()), name); // Como "difluoro"
+        else prefix = new Locator(indexes, name); // Como "1,2-difluoro"
+
+        return prefix;
+    }
+
+    protected static String getBondNameForIn(Group bond, Chain chain, boolean isRedundant) {
+        String bondName = "";
+
+        List<Integer> indexes = chain.getIndexesOf(bond);
+
+        if (indexes.size() > 0) {
+            Locator locator;
+
+            if (isRedundant) // Sobran los localizadores porque son evidentes isRedundantInName(bond)
+                locator = new Locator(multiplierFor(indexes.size()), bondNameParticleFor(bond)); // Como "dien"
+            else locator = new Locator(indexes, bondNameParticleFor(bond)); // Como "1,2-dien"
+
+            String locatorName = locator.toString();
+
+            if (startsWithDigit(locatorName))
+                bondName += "-"; // Guion antes de los localizadores
+
+            bondName += locatorName;
+        }
+
+        return bondName;
     }
 
     protected static String radicalNameParticleFor(Substituent radical) {
@@ -368,15 +405,13 @@ public class Organic {
         return text.charAt(0) != firstLetterOf(text);
     }
 
-    protected static boolean startsWithDigit(String text) {
-        return text.matches("^\\d.*$");
-    }
-
-    // Private:
-
     private static char firstLetterOf(String text) {
         return (char) text.chars().filter(c -> String.valueOf((char) c).matches("[a-zA-Z]"))
                 .findFirst().orElse(0);
+    }
+
+    protected static boolean startsWithDigit(String text) {
+        return text.matches("^\\d.*$");
     }
 
 }
