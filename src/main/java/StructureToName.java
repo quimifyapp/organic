@@ -4,9 +4,11 @@ import com.quimify.organic.components.Substituent;
 import com.quimify.organic.molecules.open_chain.OpenChain;
 import com.quimify.organic.molecules.open_chain.Simple;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
 
-public class Main {
+public class StructureToName {
 
     public static void main(String[] args) {
         OpenChain openChain = new Simple();

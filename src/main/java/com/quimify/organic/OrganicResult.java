@@ -18,7 +18,7 @@ public class OrganicResult {
 
     // Getters y setters:
 
-    public Boolean getPresent() {
+    public Boolean getPresent() { // TODO rename isPresent
         return present;
     }
 
