@@ -53,8 +53,11 @@ public class Carbon extends Organic {
 
     @Override
     public int hashCode() {
-        return Objects.hash(freeBondCount, substituents);
-    }
+        List<Substituent> sortedSubstituents = substituents.stream()
+                .sorted(Substituent::compareTo).collect(Collectors.toList());
+
+        return Objects.hash(freeBondCount, sortedSubstituents);
+}
 
     @Override
     public boolean equals(Object other) {
@@ -66,15 +69,13 @@ public class Carbon extends Organic {
         if (freeBondCount != otherCarbon.freeBondCount)
             return false;
 
-        if (substituents.size() != otherCarbon.substituents.size())
-            return false;
+        List<Substituent> sortedSubstituents = substituents.stream()
+                .sorted(Substituent::compareTo).collect(Collectors.toList());
 
-        for (Substituent substituent : substituents)
-            if (Collections.frequency(substituents, substituent) !=
-                    Collections.frequency(otherCarbon.substituents, substituent))
-                return false;
+        List<Substituent> sortedOtherSubstituents = otherCarbon.substituents.stream()
+                .sorted(Substituent::compareTo).collect(Collectors.toList());
 
-        return true;
+        return sortedSubstituents.equals(sortedOtherSubstituents);
     }
 
     // Modifiers:
@@ -132,11 +133,11 @@ public class Carbon extends Organic {
         if(uniqueOrderedSubstituents.size() == 1) { // Only one kind except for hydrogen and ether
             Substituent substituent = uniqueOrderedSubstituents.get(0);
 
-            boolean isAldehyde = substituent.getGroup() == Group.aldehyde;
+            boolean aldehyde = substituent.getGroup() == Group.aldehyde;
 
-            if(substituent.getBondCount() == 3 && !isAldehyde)
+            if(substituent.getBondCount() == 3 && !aldehyde)
                 result.append(substituent); // CHOOH, CONH2...
-            else if(isAldehyde && hydrogenCount == 0)
+            else if(aldehyde && hydrogenCount == 0)
                 result.append(substituent); // CHO
             else if (Organic.isHalogen(substituent.getGroup()))
                 result.append(substituent); // CHCl2, CF3...
