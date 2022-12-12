@@ -93,19 +93,19 @@ public final class Simple extends Organic implements OpenChain {
     }
 
     public OpenChain bond(Substituent substituent) {
-        OpenChain bondedOpenChain;
+        OpenChain openChain;
 
         if(substituent.getGroup() == Group.ether) {
-            bondedOpenChain = new Ether(chain);
-            bondedOpenChain.bond(Group.ether);
+            openChain = new Ether(chain);
+            openChain.bond(Group.ether);
         }
         else if (bondableGroups.contains(substituent.getGroup())) {
-            bondedOpenChain = this;
+            openChain = this;
             chain.bond(substituent);
         }
         else throw new IllegalArgumentException("Can't bond " + substituent.getGroup() + " to a Simple.");
 
-        return bondedOpenChain;
+        return openChain;
     }
 
     public boolean canBondCarbon() {
@@ -126,25 +126,25 @@ public final class Simple extends Organic implements OpenChain {
         if (chain.getSize() == 1 && chain.getIndexesOf(Group.ketone).size() == 2)
             return "dióxido de carbono";
 
-        List<Group> bondedGroups = chain.getGroups();
-        bondedGroups.removeIf(group -> group == Group.hydrogen);
-        int functionalGroup = 0;
+        List<Group> groups = chain.getGroups();
+        groups.removeIf(group -> group == Group.hydrogen);
+        int group = 0;
 
         // Se procesa el sufijo:
         String suffix = "";
 
-        if(bondedGroups.size() > 0 && !isHalogen(bondedGroups.get(0)) && !isBond(bondedGroups.get(0)))
-            if(bondedGroups.get(0) != Group.nitro && bondedGroups.get(0) != Group.radical)
-                suffix = getSuffixNameFor(bondedGroups.get(functionalGroup++));
+        if(groups.size() > 0 && !isHalogen(groups.get(0)) && !isBond(groups.get(0)))
+            if(groups.get(0) != Group.nitro && groups.get(0) != Group.radical)
+                suffix = getSuffixNameFor(groups.get(group++));
 
         // Se procesan los prefijos:
         List<Locator> prefixes = new ArrayList<>();
 
-        while (functionalGroup < bondedGroups.size()) {
-            if (bondedGroups.get(functionalGroup) != Group.radical && !isBond(bondedGroups.get(functionalGroup)))
-                prefixes.add(getPrefixFor(bondedGroups.get(functionalGroup)));
+        while (group < groups.size()) {
+            if (groups.get(group) != Group.radical && !isBond(groups.get(group)))
+                prefixes.add(getPrefixFor(groups.get(group)));
 
-            functionalGroup++;
+            group++;
         }
 
         Set<Substituent> uniqueRadicals = new HashSet<>(chain.getSubstituents());
@@ -271,15 +271,16 @@ public final class Simple extends Organic implements OpenChain {
     private void correctChainOrientation() {
         Chain inverseOrientation = chain.getInverseOrientation();
 
-        List<Group> bondedGroups = chain.getGroups();
-        bondedGroups.removeIf(group -> group == Group.hydrogen);
+        List<Group> groups = chain.getGroups();
+        groups.removeIf(group -> group == Group.hydrogen);
 
         boolean corrected = false;
-        for (int i = 0; i < bondedGroups.size() && !corrected; i++) {
+        for (int i = 0; i < groups.size() && !corrected; i++) {
             // Se calculan las sumas de sus posiciones:
-            int normalSum = chain.getIndexesOf(bondedGroups.get(i))
+            int normalSum = chain.getIndexesOf(groups.get(i))
                     .stream().mapToInt(Integer::intValue).sum();
-            int inverseSum = inverseOrientation.getIndexesOf(bondedGroups.get(i))
+
+            int inverseSum = inverseOrientation.getIndexesOf(groups.get(i))
                     .stream().mapToInt(Integer::intValue).sum();
 
             // Se comparan las sumas de sus posiciones:
@@ -295,7 +296,7 @@ public final class Simple extends Organic implements OpenChain {
             List<String> radicalNames = radicals.stream()
                     .map(Organic::radicalNameParticleFor).collect(Collectors.toList());
 
-            List<Substituent> reversedRadicals = chain.getSubstituents();
+            List<Substituent> reversedRadicals = inverseOrientation.getSubstituents();
             reversedRadicals.removeIf(substituent -> substituent.getGroup() != Group.radical);
             List<String> reversedRadicalNames = radicals.stream()
                     .map(Organic::radicalNameParticleFor).collect(Collectors.toList());

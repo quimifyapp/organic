@@ -31,67 +31,33 @@ public class Organic {
     // Text:
 
     private static String greekPrefixFor(int digit) {
-        String greekPrefix;
-
-        switch(digit) {
-            case 0:
-                greekPrefix = "";
-                break;
-            case 1:
-                greekPrefix = "hen";
-                break;
-            case 2:
-                greekPrefix = "do";
-                break;
-            case 3:
-                greekPrefix = "tri";
-                break;
-            case 4:
-                greekPrefix = "tetra";
-                break;
-            case 5:
-                greekPrefix = "pent";
-                break;
-            case 6:
-                greekPrefix = "hex";
-                break;
-            case 7:
-                greekPrefix = "hept";
-                break;
-            case 8:
-                greekPrefix = "oct";
-                break;
-            case 9:
-                greekPrefix = "non";
-                break;
-            default:
-                throw new IllegalArgumentException("There is no greek prefix for: " + digit + ".");
-        }
-
-        return greekPrefix;
+        return switch (digit) {
+            case 0 -> "";
+            case 1 -> "hen";
+            case 2 -> "do";
+            case 3 -> "tri";
+            case 4 -> "tetra";
+            case 5 -> "pent";
+            case 6 -> "hex";
+            case 7 -> "hept";
+            case 8 -> "oct";
+            case 9 -> "non";
+            default -> throw new IllegalArgumentException("There is no greek prefix for: " + digit + ".");
+        };
     }
 
     protected static String quantifierFor(int number) {
         String quantifier;
 
         if(number < 10) { // [1, 9]
-            switch(number) {
-                case 1:
-                    quantifier = "met";
-                    break;
-                case 2:
-                    quantifier = "et";
-                    break;
-                case 3:
-                    quantifier = "prop";
-                    break;
-                case 4:
-                    quantifier = "but";
-                    break;
-                default: // 0, 5, 6, 7, 8, 9
-                    quantifier = greekPrefixFor(number);
-                    break;
-            }
+            quantifier = switch (number) {
+                case 1 -> "met";
+                case 2 -> "et";
+                case 3 -> "prop";
+                case 4 -> "but";
+                default -> // 0, 5, 6, 7, 8, 9
+                        greekPrefixFor(number);
+            };
         }
         else if(number == 11) // 11
             quantifier = "undec";
@@ -131,22 +97,12 @@ public class Organic {
 
                 quantifier = quantifierFor(10 * decenas + unidades); // Recursivo
 
-                switch(centenas) {
-                    case 1: // [101, 199]
-                        quantifier += "ahect";
-                        break;
-                    case 2: // [200, 299]
-                        quantifier += "adict";
-                        break;
-                    case 3: // [300, 399]
-                        quantifier += "atrict";
-                        break;
-                    case 4: // [400, 499]
-                        quantifier += "atetract";
-                        break;
-                    default: // [500, 999]
-                        quantifier += "a" + greekPrefixFor(centenas) + "act";
-                        break;
+                switch (centenas) {
+                    case 1 -> quantifier += "ahect"; // [101, 199]
+                    case 2 -> quantifier += "adict"; // [200, 299]
+                    case 3 -> quantifier += "atrict"; // [300, 399]
+                    case 4 -> quantifier += "atetract"; // [400, 499]
+                    default -> quantifier += "a" + greekPrefixFor(centenas) + "act"; // [500, 999]
                 }
             }
             else throw new IllegalArgumentException("Can't handle this amount of carbons: " + number + "."); // > 999
@@ -156,27 +112,13 @@ public class Organic {
     }
 
     protected static String multiplierFor(int number) {
-        String multiplier;
-
-        switch(number) {
-            case 1:
-                multiplier = "";
-                break;
-            case 2:
-                multiplier = "di";
-                break;
-            case 3:
-                multiplier = "tri";
-                break;
-            case 4:
-                multiplier = "tetra";
-                break;
-            default:
-                multiplier = quantifierFor(number) + "a";
-                break;
-        }
-
-        return multiplier;
+        return switch (number) {
+            case 1 -> "";
+            case 2 -> "di";
+            case 3 -> "tri";
+            case 4 -> "tetra";
+            default -> quantifierFor(number) + "a";
+        };
     }
 
     protected static class Locator {
@@ -252,106 +194,49 @@ public class Organic {
     }
 
     protected static String prefixNameParticleFor(Group group) {
-        String prefixNameParticle;
-
-        switch(group) {
-            case carbamoyl:
-                prefixNameParticle = "carbamoil";
-                break;
-            case cyanide:
-                prefixNameParticle = "ciano";
-                break;
-            case ketone:
-                prefixNameParticle = "oxo";
-                break;
-            case alcohol:
-                prefixNameParticle = "hidroxi";
-                break;
-            case amine:
-                prefixNameParticle = "amino";
-                break;
-            case nitro:
-                prefixNameParticle = "nitro";
-                break;
-            case bromine:
-                prefixNameParticle = "bromo";
-                break;
-            case chlorine:
-                prefixNameParticle = "cloro";
-                break;
-            case fluorine:
-                prefixNameParticle = "fluoro";
-                break;
-            case iodine:
-                prefixNameParticle = "yodo";
-                break;
-            default:
-                throw new IllegalArgumentException("No existen prefijos para la función " + group + ".");
-        }
-
-        return prefixNameParticle;
+        return switch (group) {
+            case carbamoyl -> "carbamoil";
+            case cyanide -> "ciano";
+            case ketone -> "oxo";
+            case alcohol -> "hidroxi";
+            case amine -> "amino";
+            case nitro -> "nitro";
+            case bromine -> "bromo";
+            case chlorine -> "cloro";
+            case fluorine -> "fluoro";
+            case iodine -> "yodo";
+            default -> throw new IllegalArgumentException("No existen prefijos para la función " + group + ".");
+        };
     }
 
     protected static String bondNameParticleFor(Group bond) {
-        String bondNameParticle;
-
-        switch(bond) {
-            case alkene:
-                bondNameParticle = "en";
-                break;
-            case alkyne:
-                bondNameParticle = "in";
-                break;
-            default:
-                throw new IllegalArgumentException("La función " + bond + " no es un tipo de enlace.");
-        }
-
-        return bondNameParticle;
+        return switch (bond) {
+            case alkene -> "en";
+            case alkyne -> "in";
+            default -> throw new IllegalArgumentException("La función " + bond + " no es un tipo de enlace.");
+        };
     }
 
     protected static String suffixNameParticleFor(Group group) {
-        String suffixNameParticle;
-
-        switch(group) {
-            case acid:
-                suffixNameParticle = "oico";
-                break;
-            case amide:
-                suffixNameParticle = "amida";
-                break;
-            case nitrile:
-                suffixNameParticle = "nitrilo";
-                break;
-            case aldehyde:
-                suffixNameParticle = "al";
-                break;
-            case ketone:
-                suffixNameParticle = "ona";
-                break;
-            case alcohol:
-                suffixNameParticle = "ol";
-                break;
-            case amine:
-                suffixNameParticle = "amina";
-                break;
-            default:
-                throw new IllegalArgumentException("No existen sufijos para la función " + group + ".");
-        }
-
-        return suffixNameParticle;
+        return switch (group) {
+            case acid -> "oico";
+            case amide -> "amida";
+            case nitrile -> "nitrilo";
+            case aldehyde -> "al";
+            case ketone -> "ona";
+            case alcohol -> "ol";
+            case amine -> "amina";
+            default -> throw new IllegalArgumentException("No existen sufijos para la función " + group + ".");
+        };
     }
 
     protected static String bondSymbolFor(int bondOrder) {
-        switch(bondOrder) {
-            case 0:
-                return "-";
-            case 1:
-                return "=";
-            case 2:
-                return "≡";
-            default:
-                throw new IllegalArgumentException("No existen enlaces de orden " + bondOrder + ".");
-        }
+        return switch (bondOrder) {
+            case 0 -> "-";
+            case 1 -> "=";
+            case 2 -> "≡";
+            default -> throw new IllegalArgumentException("No existen enlaces de orden " + bondOrder + ".");
+        };
     }
 
     protected static String molecularQuantifierFor(int count) {

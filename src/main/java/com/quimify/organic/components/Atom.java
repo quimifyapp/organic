@@ -29,32 +29,15 @@ public class Atom {
 		bondedAtoms = new ArrayList<>();
 
 		switch (symbol) {
-			case "C":
-				element = Element.C;
-				break;
-			case "H":
-				element = Element.H;
-				break;
-			case "N":
-				element = Element.N;
-				break;
-			case "O":
-				element = Element.O;
-				break;
-			case "Br":
-				element = Element.Br;
-				break;
-			case "Cl":
-				element = Element.Cl;
-				break;
-			case "F":
-				element = Element.F;
-				break;
-			case "I":
-				element = Element.I;
-				break;
-			default:
-				throw new IllegalArgumentException("No se contempla el átomo \"" + symbol + "\".");
+			case "C" -> element = Element.C;
+			case "H" -> element = Element.H;
+			case "N" -> element = Element.N;
+			case "O" -> element = Element.O;
+			case "Br" -> element = Element.Br;
+			case "Cl" -> element = Element.Cl;
+			case "F" -> element = Element.F;
+			case "I" -> element = Element.I;
+			default -> throw new IllegalArgumentException("No se contempla el átomo \"" + symbol + "\".");
 		}
 	}
 
