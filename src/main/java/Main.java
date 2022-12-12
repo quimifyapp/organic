@@ -1,5 +1,4 @@
 import com.quimify.organic.OrganicFactory;
-import com.quimify.organic.components.Carbon;
 import com.quimify.organic.components.Group;
 import com.quimify.organic.components.Substituent;
 import com.quimify.organic.molecules.open_chain.OpenChain;
@@ -10,35 +9,6 @@ import java.util.*;
 public class Main {
 
     public static void main(String[] args) {
-        new Substituent(Group.alkene);
-
-        List<Substituent> sus = new ArrayList<>();
-        sus.add(new Substituent(1));
-        sus.add(new Substituent(2));
-        sus.add(new Substituent(3, true));
-        sus.add(new Substituent(3));
-        sus.add(new Substituent(4, true));
-        sus.add(new Substituent(4));
-
-        sus.sort(Substituent::compareTo);
-        System.out.println(sus);
-
-        Carbon a = new Carbon(0);
-        a.bond(new Substituent(2));
-        a.bond(new Substituent(3, true));
-        a.bond(Group.hydrogen);
-        a.bond(Group.acid);
-
-        Carbon b = new Carbon(0);
-        b.bond(Group.acid);
-        b.bond(new Substituent(2));
-        b.bond(new Substituent(3, true));
-        b.bond(Group.hydrogen);
-
-        System.out.println(a.equals(b));
-        System.out.println(a.hashCode());
-        System.out.println(b.hashCode());
-
         OpenChain openChain = new Simple();
         List<Integer> inputSequence = new ArrayList<>();
 
