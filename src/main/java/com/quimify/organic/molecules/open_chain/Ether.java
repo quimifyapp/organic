@@ -136,18 +136,18 @@ public final class Ether extends Organic implements OpenChain {
 	// Naming:
 
 	private boolean isRedundantInNameIn(Group group, Chain chain) {
-		boolean isRedundant;
+		boolean redundant;
 
 		// Derivados del propil:
 		if (chain.getSize() == 3)
-			isRedundant = group == Group.alkene && chain.getAmountOf(Group.alkene) == 2; // Es propadienil
+			redundant = group == Group.alkene && chain.getAmountOf(Group.alkene) == 2; // Es propadienil
 			// Derivados del etil:
 		else if (chain.getSize() == 2)
-			isRedundant = isBond(group); // Solo hay una posición posible para el enlace
+			redundant = isBond(group); // Solo hay una posición posible para el enlace
 			// Derivados del metil:
-		else isRedundant = chain.getSize() == 1;
+		else redundant = chain.getSize() == 1;
 
-		return isRedundant;
+		return redundant;
 	}
 
 	private String getNameFor(Chain chain) { // TODO fix repeated code
@@ -162,9 +162,9 @@ public final class Ether extends Organic implements OpenChain {
 		while (groupIndex++ < groups.size())
 			if (!isBond(groups.get(groupIndex)) && groups.get(groupIndex) != Group.radical) {
 				Group group = groups.get(groupIndex);
-				boolean isRedundant = isRedundantInNameIn(group, chain);
+				boolean redundant = isRedundantInNameIn(group, chain);
 
-				prefixes.add(Organic.getPrefixForIn(group, chain, isRedundant));
+				prefixes.add(Organic.getPrefixForIn(group, chain, redundant));
 			}
 
 		Set<Substituent> uniqueRadicals = new HashSet<>(chain.getSubstituents());

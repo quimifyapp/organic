@@ -143,8 +143,9 @@ public final class Simple extends Organic implements OpenChain {
         while (groupIndex++ < groups.size())
             if (groups.get(groupIndex) != Group.radical && !isBond(groups.get(groupIndex))) {
                 Group group = groups.get(groupIndex);
-                boolean isRedundant = isRedundantInName(group);
-                prefixes.add(Organic.getPrefixForIn(group, chain, isRedundant));
+                boolean redundant = isRedundantInName(group);
+
+                prefixes.add(Organic.getPrefixForIn(group, chain, redundant));
             }
 
         Set<Substituent> uniqueRadicals = new HashSet<>(chain.getSubstituents());
