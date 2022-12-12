@@ -238,7 +238,7 @@ public class Molecule extends Organic {
 		return bondableAtoms.stream().anyMatch(atom.toAnonymous()::equals);
 	}
 
-	private boolean isRadicalCarbon(Atom atom) { // TODO more readable
+	private boolean isRadicalCarbon(Atom atom) {
 		if(atom.getElement() != Element.C)
 			return false;
 
@@ -248,19 +248,24 @@ public class Molecule extends Organic {
 		List<Atom> bondedAtomsCutOff = atom.getBondedAtomsCutOff();
 		if(bondedAtomsCutOff.size() == 3) {
 			switch (atom.getBonded(Element.H).size()) {
-				case 3 -> isRadicalCarbon = true; // CH3
-				case 2 -> {
+				case 3:
+					isRadicalCarbon = true; // CH3
+					break;
+				case 2:
 					Stream<Atom> bondedCarbons = bondedAtomsCutOff.stream().filter(bondedAtom ->
 							bondedAtom.getElement() == Element.C);
+
 					isRadicalCarbon = atom.getBonded(Element.C).size() == 1 // CH2-C...
 							&& bondedCarbons.allMatch(this::isRadicalCarbon); // CH2-CH2-C... (recursive)
-				}
-				case 1 -> {
+					break;
+				case 1:
 					Stream<Atom> bondedCH3s = bondedAtomsCutOff.stream().filter(bondedAtom ->
 							bondedAtom.getBondedAtoms().size() == 3 && bondedAtom.getBonded(Element.H).size() == 3);
+
 					isRadicalCarbon = bondedCH3s.count() == 2; // CH(CH3)2
-				}
-				default -> isRadicalCarbon = false; // No hydrogen
+					break;
+				default:
+					isRadicalCarbon = false; // No hydrogen
 			}
 		}
 		else isRadicalCarbon = false;
@@ -272,14 +277,20 @@ public class Molecule extends Organic {
 		Substituent radical;
 
 		switch (radicalCarbon.getBonded(Element.H).size()) {
-			case 3 -> radical = new Substituent(1); // -CH3
-			case 2 -> { // -CH2-
+			case 3: // -CH3
+				radical = new Substituent(1);
+				break;
+			case 2: // -CH2-
 				Atom nextCarbon = radicalCarbon.toAnonymous().getBonded(Element.C).get(0); // There must be one
 				Substituent radicalEnd = buildRadicalFrom(nextCarbon); // Recursive
 				radical = new Substituent(1 + radicalEnd.getCarbonCount(), radicalEnd.isIso()); // Appended
-			}
-			case 1 -> radical = new Substituent(3, true); // -CH(CH3)2
-			default -> radical = null;
+				break;
+			case 1: // -CH(CH3)2
+				radical = new Substituent(3, true);
+				break;
+			default:
+				radical = null;
+				break;
 		}
 
 		return radical;
