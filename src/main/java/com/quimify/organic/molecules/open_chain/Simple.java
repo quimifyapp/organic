@@ -273,7 +273,7 @@ public final class Simple extends Organic implements OpenChain {
         chain.correctChainToTheRight(); // CH3-CH2-CF(CH3) → CH3-CH2-CF-CH3
     }
 
-    private void correctChainOrientation() {
+    private void correctChainOrientation() { // TODO separate in more methods
         Chain inverseOrientation = chain.getInverseOrientation();
 
         List<Group> groups = chain.getGroups();
@@ -298,12 +298,14 @@ public final class Simple extends Organic implements OpenChain {
 
             List<Substituent> radicals = chain.getSubstituents();
             radicals.removeIf(substituent -> substituent.getGroup() != Group.radical);
-            List<String> radicalNames = radicals.stream()
-                    .map(Organic::radicalNameParticleFor).collect(Collectors.toList());
 
             List<Substituent> reversedRadicals = inverseOrientation.getSubstituents();
             reversedRadicals.removeIf(substituent -> substituent.getGroup() != Group.radical);
-            List<String> reversedRadicalNames = radicals.stream()
+
+            List<String> radicalNames = radicals.stream()
+                    .map(Organic::radicalNameParticleFor).collect(Collectors.toList());
+
+            List<String> reversedRadicalNames = reversedRadicals.stream()
                     .map(Organic::radicalNameParticleFor).collect(Collectors.toList());
 
             // Se comparan los radicales dos a dos desde ambos extremos alfabéticamente:
