@@ -192,7 +192,7 @@ public final class Simple extends Organic implements OpenChain {
     }
 
     public String getStructure() {
-        return chain.toString();
+        return chain.getInverseOrientation().toString();
     }
 
     // Private:
