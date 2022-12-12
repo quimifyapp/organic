@@ -127,18 +127,15 @@ public class Molecule extends Organic {
 	}
 
 	private boolean isSimpleCarbon(Atom carbon) {
-		boolean isSimpleCarbon;
-
 		Set<Atom> nonSubstituentBondedAtoms = carbon.getBondedAtomsCutOff().stream().filter(bondedAtom ->
 				isNotSubstituent(bondedAtom, Simple.bondableAtoms)).collect(Collectors.toSet());
 
 		if(nonSubstituentBondedAtoms.size() == 1) {
 			Atom nonSubstituent = nonSubstituentBondedAtoms.stream().findAny().get();
-			isSimpleCarbon = nonSubstituent.getElement() == Element.C && isSimpleCarbon(nonSubstituent); // Recursion
+			return nonSubstituent.getElement() == Element.C && isSimpleCarbon(nonSubstituent); // Recursion
 		}
-		else isSimpleCarbon = nonSubstituentBondedAtoms.size() == 0;
 
-		return isSimpleCarbon;
+		return nonSubstituentBondedAtoms.size() == 0;
 	}
 
 	private void buildSimpleFrom(Simple simple, Atom simpleCarbon) {
@@ -188,7 +185,7 @@ public class Molecule extends Organic {
 	}
 
 	private boolean isEtherCarbon(Atom carbon, boolean hasFoundEther) {
-		boolean isEtherCarbon;
+		boolean ether;
 
 		Set<Atom> nonSubstituentBondedAtoms = carbon.getBondedAtomsCutOff().stream().filter(bondedAtom ->
 				isNotSubstituent(bondedAtom, Ether.bondableAtoms)).collect(Collectors.toSet());
@@ -197,13 +194,13 @@ public class Molecule extends Organic {
 			Atom nonSubstituent = nonSubstituentBondedAtoms.stream().findAny().get();
 
 			if (nonSubstituent.getElement() == Element.C)
-				isEtherCarbon = isEtherCarbon(nonSubstituent, hasFoundEther); // Recursion
+				ether = isEtherCarbon(nonSubstituent, hasFoundEther); // Recursion
 			else if (nonSubstituent.getElement() == Element.O)
-				isEtherCarbon = !hasFoundEther && isEtherCarbon(nonSubstituent, true); // Recursion
-			else isEtherCarbon = false;
-		} else isEtherCarbon = nonSubstituentBondedAtoms.size() == 0;
+				ether = !hasFoundEther && isEtherCarbon(nonSubstituent, true); // Recursion
+			else ether = false;
+		} else ether = nonSubstituentBondedAtoms.size() == 0;
 
-		return isEtherCarbon;
+		return ether;
 	}
 
 	private void buildEtherFrom(Ether ether, Atom etherCarbon) {
@@ -242,35 +239,35 @@ public class Molecule extends Organic {
 		if(atom.getElement() != Element.C)
 			return false;
 
-		boolean isRadicalCarbon;
+		boolean radical;
 
 		// It must be one of the following: CH2-C..., CH3, CH(CH3)2
 		List<Atom> bondedAtomsCutOff = atom.getBondedAtomsCutOff();
 		if(bondedAtomsCutOff.size() == 3) {
 			switch (atom.getBonded(Element.H).size()) {
 				case 3:
-					isRadicalCarbon = true; // CH3
+					radical = true; // CH3
 					break;
 				case 2:
 					Stream<Atom> bondedCarbons = bondedAtomsCutOff.stream().filter(bondedAtom ->
 							bondedAtom.getElement() == Element.C);
 
-					isRadicalCarbon = atom.getBonded(Element.C).size() == 1 // CH2-C...
+					radical = atom.getBonded(Element.C).size() == 1 // CH2-C...
 							&& bondedCarbons.allMatch(this::isRadicalCarbon); // CH2-CH2-C... (recursive)
 					break;
 				case 1:
 					Stream<Atom> bondedCH3s = bondedAtomsCutOff.stream().filter(bondedAtom ->
 							bondedAtom.getBondedAtoms().size() == 3 && bondedAtom.getBonded(Element.H).size() == 3);
 
-					isRadicalCarbon = bondedCH3s.count() == 2; // CH(CH3)2
+					radical = bondedCH3s.count() == 2; // CH(CH3)2
 					break;
 				default:
-					isRadicalCarbon = false; // No hydrogen
+					radical = false; // No hydrogen
 			}
 		}
-		else isRadicalCarbon = false;
+		else radical = false;
 
-		return isRadicalCarbon;
+		return radical;
 	}
 
 	private Substituent buildRadicalFrom(Atom radicalCarbon) {
