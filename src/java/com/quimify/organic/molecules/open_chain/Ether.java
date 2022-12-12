@@ -126,11 +126,11 @@ public final class Ether extends Organic implements OpenChain {
 	}
 
 	public String getStructure() {
-		String firstChainStructure = firstChain.toString();
+		String firstChain = this.firstChain.toString();
 
-		return currentChain == firstChain
-				? firstChainStructure.substring(0, firstChainStructure.length() - 1) // CH-O-= -> CH-O-
-				: firstChainStructure + secondChain.toString();
+		if(currentChain == this.firstChain)
+			return firstChain.substring(0, firstChain.length() - 1); // CH-O-= -> CH-O-
+		else return firstChain + secondChain.toString();
 	}
 
 	// TODO fix repeated code
@@ -190,17 +190,17 @@ public final class Ether extends Organic implements OpenChain {
 	}
 
 	private String getNameFor(Chain chain) {
-		List<Group> bondedGroups = chain.getGroups();
-		bondedGroups.removeIf(group -> group == Group.hydrogen || group == Group.ether);
+		List<Group> groups = chain.getGroups();
+		groups.removeIf(group -> group == Group.hydrogen || group == Group.ether);
 
 		int groupsIndex = 0;
 
 		// Se procesan los prefijos:
 		List<Locator> prefixes = new ArrayList<>();
 
-		while (groupsIndex < bondedGroups.size()) {
-			if (!isBond(bondedGroups.get(groupsIndex)) && bondedGroups.get(groupsIndex) != Group.radical)
-				prefixes.add(getPrefixFor(bondedGroups.get(groupsIndex), chain));
+		while (groupsIndex < groups.size()) {
+			if (!isBond(groups.get(groupsIndex)) && groups.get(groupsIndex) != Group.radical)
+				prefixes.add(getPrefixFor(groups.get(groupsIndex), chain));
 
 			groupsIndex++;
 		}

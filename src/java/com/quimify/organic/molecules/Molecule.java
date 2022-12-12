@@ -238,7 +238,7 @@ public class Molecule extends Organic {
 		return bondableAtoms.stream().anyMatch(atom.toAnonymous()::equals);
 	}
 
-	private boolean isRadicalCarbon(Atom atom) {
+	private boolean isRadicalCarbon(Atom atom) { // TODO more readable
 		if(atom.getElement() != Element.C)
 			return false;
 
