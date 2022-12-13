@@ -8,15 +8,13 @@ public class OrganicResult {
     private Float molecularMass;
     private String url2D;
 
-    // --------------------------------------------------------------------------------
-
     // Constructor:
 
     OrganicResult(boolean present) {
         this.present = present;
     }
 
-    // Getters y setters:
+    // Getters and setters:
 
     public Boolean getPresent() { // TODO rename isPresent
         return present;
