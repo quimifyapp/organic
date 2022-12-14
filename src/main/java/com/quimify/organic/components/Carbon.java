@@ -133,12 +133,12 @@ public class Carbon extends Organic {
         if(uniqueOrderedSubstituents.size() == 1) { // Only one kind except for hydrogen and ether
             Substituent substituent = uniqueOrderedSubstituents.get(0);
 
-            boolean aldehyde = substituent.getGroup() == Group.aldehyde;
-
-            if(substituent.getBondCount() == 3 && !aldehyde)
+            if(substituent.getBondCount() == 3 && substituent.getGroup() != Group.aldehyde)
                 result.append(substituent); // CHOOH, CONH2...
-            else if(aldehyde && hydrogenCount == 0)
+            else if(substituent.getGroup() == Group.aldehyde && hydrogenCount == 0)
                 result.append(substituent); // CHO
+            else if(substituent.getGroup() == Group.ketone && hydrogenCount == 0)
+                result.append(substituent); // CO...
             else if (Organic.isHalogen(substituent.getGroup()))
                 result.append(substituent); // CHCl2, CF3...
             else result.append("(").append(substituent).append(")"); // CH(HO), CH(NO2)3, CH2(CH3)...
