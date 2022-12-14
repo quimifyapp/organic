@@ -159,7 +159,7 @@ public final class Ether extends Organic implements OpenChain {
 		// Se procesan los prefijos:
 		List<Locator> prefixes = new ArrayList<>();
 
-		while (groupIndex++ < groups.size()) {
+		while (groupIndex < groups.size()) {
 			if (!isBond(groups.get(groupIndex)) && groups.get(groupIndex) != Group.radical) {
 				Group group = groups.get(groupIndex);
 				boolean redundant = isRedundantInNameIn(group, chain);
