@@ -214,8 +214,9 @@ public final class Simple extends Organic implements OpenChain {
         groupKetoneWithToTerminal(Group.alcohol, Group.acid); // CH(O)(OH) → CHOOH
         groupKetoneWithToTerminal(Group.amine, Group.amide); // CH(O)(NH2) → CH(ONH2)
 
-        if(chain.getPriorityGroup().filter(group ->
-                group.ordinal() < Group.aldehyde.ordinal()).isPresent()) // Would be priority
+        Optional<Group> priorityGroup = chain.getPriorityGroup();
+
+        if(priorityGroup.isPresent() && priorityGroup.get().ordinal() > Group.aldehyde.ordinal()) // Would be priority
             groupKetoneWithToTerminal(Group.hydrogen, Group.aldehyde); // CH(O) → CHO
 
         // Moving out carbons into substituents:
