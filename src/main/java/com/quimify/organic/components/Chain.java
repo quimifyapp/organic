@@ -147,10 +147,9 @@ public class Chain extends Organic {
 	public void correctChainToTheRight() {
 		// -CH2-CH2(CH3) → -CH2-CH2-CH3
 		if(isBondedTo(Group.radical)) { // To avoid inverting orientation needlessly
-			Chain inverseOrientation = getInverseOrientation();
-			inverseOrientation.correctChainToTheLeft();
-
-			copyCarbons(inverseOrientation.carbons);
+			reverseOrientation();
+			correctChainToTheLeft();
+			reverseOrientation();
 		}
 	}
 
