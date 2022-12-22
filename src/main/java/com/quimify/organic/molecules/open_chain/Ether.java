@@ -191,16 +191,16 @@ public final class Ether extends Organic implements OpenChain {
 		}
 
 		// Se procesan los enlaces:
-		String enlaces = Organic.getBondNameForIn(Group.alkene, chain, isRedundantInNameIn(Group.alkene, chain)) +
+		String bonds = Organic.getBondNameForIn(Group.alkene, chain, isRedundantInNameIn(Group.alkene, chain)) +
 				Organic.getBondNameForIn(Group.alkyne, chain, isRedundantInNameIn(Group.alkyne, chain));
 
 		// Se procesa el cuantificador:
-		String cuantificador = quantifierFor(chain.getSize());
+		String quantifier = quantifierFor(chain.getSize());
 
-		if (!enlaces.equals("") && Organic.doesNotStartWithVowel(enlaces))
-			cuantificador += "a";
+		if (!bonds.isEmpty() && Organic.doesNotStartWithVowel(bonds))
+			quantifier += "a";
 
-		return prefix + cuantificador + enlaces + "il";
+		return prefix + quantifier + bonds + "il";
 	}
 
 }

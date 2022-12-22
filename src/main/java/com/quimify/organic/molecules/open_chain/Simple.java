@@ -117,7 +117,7 @@ public final class Simple extends Organic implements OpenChain {
     }
 
     public void correct() {
-        correctSubstituents(); // C(O)(OH) → COOH
+        correctSubstituents(); // C(O)(OH)- → COOH-
         correctChainStructure(); // CH2(CH3)-CH2- → CH3-CH2-CH2-
         correctChainOrientation(); // butan-3-ol → butan-2-ol
     }
@@ -128,6 +128,7 @@ public final class Simple extends Organic implements OpenChain {
 
         List<Group> groups = chain.getGroups();
         groups.removeIf(group -> group == Group.hydrogen);
+
         int groupIndex = 0;
 
         // Se procesa el sufijo:
@@ -141,7 +142,7 @@ public final class Simple extends Organic implements OpenChain {
         List<Locator> prefixes = new ArrayList<>();
 
         while (groupIndex < groups.size()) {
-            if (groups.get(groupIndex) != Group.radical && !isBond(groups.get(groupIndex))) {
+            if (!isBond(groups.get(groupIndex)) && groups.get(groupIndex) != Group.radical) {
                 Group group = groups.get(groupIndex);
                 boolean redundant = isRedundantInName(group);
 
@@ -330,23 +331,19 @@ public final class Simple extends Organic implements OpenChain {
     // Naming:
 
     private boolean isRedundantInName(Group group) {
-        if(group == Group.radical)
-            return false; // TODO reached?
+        if (group != Group.radical && !isBond(group) && new Substituent(group).getBondCount() == 3)
+            return true; // Terminal substituents are either in first carbon or both first and last
 
         switch (chain.getSize()) {
-            case 1:
-                // Like methanol
+            case 1: // Like methanol
                 return true;
-            case 2:
-                // Like ethanol, ethene, or chloroethyne
+            case 2: // Like ethanol, ethene, or chloroethyne
                 int substituentsWithoutHydrogen = chain.getSubstituents().size() - chain.getAmountOf(Group.hydrogen);
                 return substituentsWithoutHydrogen == 1 || isBond(group) || chain.isBondedTo(Group.alkyne);
-            case 3:
-                // It's propadiene
+            case 3: // It's propadiene
                 return group == Group.alkene && chain.getAmountOf(Group.alkene) == 2;
             default:
-                // If it's a terminal, then it's either in first carbon or both first and last
-                return !isBond(group) && new Substituent(group).getBondCount() == 3;
+                return false;
         }
     }
 
