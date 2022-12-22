@@ -3,6 +3,7 @@ import com.quimify.organic.components.Substituent;
 import com.quimify.organic.molecules.open_chain.OpenChain;
 import com.quimify.organic.molecules.open_chain.Simple;
 
+import java.io.PrintWriter;
 import java.util.List;
 import java.util.Random;
 
@@ -13,7 +14,7 @@ public class RandomStructureToName {
         StringBuilder names = new StringBuilder();
         int count = 0;
 
-        while (count < 262144) {
+        while (count <= 262144) {
             OpenChain openChain = new Simple();
 
             while(!openChain.isDone()) {
@@ -51,13 +52,25 @@ public class RandomStructureToName {
                 System.out.println(structure);
                 System.out.println(name);
                 System.out.println();
-                 */
+                */
 
                 count++;
             }
         }
 
-        System.out.println("Done");
+        try {
+            PrintWriter structuresFile = new PrintWriter("formulas.txt");
+            structuresFile.println(structures);
+
+            structuresFile.close();
+
+            PrintWriter namesFile = new PrintWriter("names.txt");
+            namesFile.println(names);
+
+            namesFile.close();
+        } catch (Exception exception) {
+            System.out.println(exception);
+        }
     }
 
 }

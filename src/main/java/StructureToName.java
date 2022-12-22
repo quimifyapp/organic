@@ -20,8 +20,10 @@ public class StructureToName {
             for(int i = 0; i < bondableGroups.size(); i++)
                 System.out.println(i + ": " + bondableGroups.get(i));
 
-            if(openChain.canBondCarbon())
-                System.out.println(-1 + ": -C");
+            boolean bondCarbon = openChain.canBondCarbon();
+
+            if(bondCarbon)
+                System.out.println("-1: -C");
 
             System.out.println();
             System.out.println(openChain.getStructure());
@@ -29,7 +31,7 @@ public class StructureToName {
             int input = new Scanner(System.in).nextInt();
             inputSequence.add(input);
 
-            if(input == -1)
+            if(input == -1 && bondCarbon)
                 openChain.bondCarbon();
             else if(bondableGroups.get(input) == Group.radical) {
                 System.out.print("Normal or iso? [0/1]: ");
