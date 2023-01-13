@@ -64,6 +64,16 @@ public class Substituent extends Organic {
         this.iso = false;
     }
 
+    public Substituent(int carbonCount) {
+        if(carbonCount < 1)
+            throw new IllegalArgumentException("Radicals must have at least 1 carbon.");
+
+        this.group = Group.radical;
+        this.bondCount = 1;
+        this.carbonCount = carbonCount;
+        this.iso = false;
+    }
+
     public Substituent(int carbonCount, boolean iso) {
         if(!iso && carbonCount < 1)
             throw new IllegalArgumentException(radicalTooShortError);
@@ -75,16 +85,6 @@ public class Substituent extends Organic {
         this.bondCount = 1;
         this.carbonCount = carbonCount;
         this.iso = iso;
-    }
-
-    public Substituent(int carbonCount) {
-        if(carbonCount < 1)
-            throw new IllegalArgumentException("Radicals must have at least 1 carbon.");
-
-        this.group = Group.radical;
-        this.bondCount = 1;
-        this.carbonCount = carbonCount;
-        this.iso = false;
     }
 
     Substituent(Substituent other) {
@@ -178,10 +178,10 @@ public class Substituent extends Organic {
         }
     }
 
-    private String getRadicalStructure(int carbonCount, boolean isIso) {
-        return isIso
-                ? "CH2".repeat(Math.max(0, carbonCount -  3)) + "CH(CH3)2"
-                : "CH2".repeat(Math.max(0, carbonCount -  1)) + "CH3";
+    private String getRadicalStructure(int carbonCount, boolean iso) {
+        if (iso)
+            return "CH2".repeat(Math.max(0, carbonCount - 3)) + "CH(CH3)2";
+        else return "CH2".repeat(Math.max(0, carbonCount - 1)) + "CH3";
     }
 
     @Override
