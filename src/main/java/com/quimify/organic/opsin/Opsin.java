@@ -1,8 +1,5 @@
 package com.quimify.organic.opsin;
 
-import com.quimify.organic.opsin.en.OpsinEN;
-import com.quimify.organic.opsin.es.OpsinES;
-
 import java.util.Optional;
 
 public class Opsin {
@@ -14,18 +11,6 @@ public class Opsin {
 
         opsinResult = opsinES.isPresent()
                 ? Optional.of(new OpsinResult(opsinES.getSmiles(), opsinES.getCml()))
-                : Optional.empty();
-
-        return opsinResult;
-    }
-
-    protected static Optional<OpsinResult> parseEnglishName(String name) {
-        Optional<OpsinResult> opsinResult;
-
-        OpsinEN opsinEN = new OpsinEN(name);
-
-        opsinResult = opsinEN.isPresent()
-                ? Optional.of(new OpsinResult(opsinEN.getSmiles(), opsinEN.getCml()))
                 : Optional.empty();
 
         return opsinResult;
