@@ -5,15 +5,12 @@ import java.util.Optional;
 public class Opsin {
 
     public static Optional<OpsinResult> parseSpanishName(String name) {
-        Optional<OpsinResult> opsinResult;
-
         OpsinES opsinES = new OpsinES(name);
 
-        opsinResult = opsinES.isPresent()
-                ? Optional.of(new OpsinResult(opsinES.getSmiles(), opsinES.getCml()))
-                : Optional.empty();
+        if (!opsinES.isPresent())
+            return Optional.empty();
 
-        return opsinResult;
+        return Optional.of(new OpsinResult(opsinES.getSmiles(), opsinES.getCml()));
     }
 
 }

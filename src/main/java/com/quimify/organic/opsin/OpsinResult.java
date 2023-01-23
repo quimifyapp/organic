@@ -18,6 +18,7 @@ public class OpsinResult {
     public String getSmiles() {
         return smiles;
     }
+
     public String getCml() {
         return cml;
     }
