@@ -22,7 +22,7 @@ public class OrganicFactory {
         if (structure.isEmpty())
             return Optional.empty();
 
-        return Optional.of(new Organic(smiles, structure.get(), name));
+        return Optional.of(new Organic(name, structure.get(), smiles));
     }
 
     public static Organic getFromOpenChain(OpenChain openChain) {
@@ -35,7 +35,7 @@ public class OrganicFactory {
 
         String structure = openChain.getStructure();
 
-        return new Organic(smiles, structure, name);
+        return new Organic(name, structure, smiles);
     }
 
 }

@@ -2,30 +2,31 @@ package com.quimify.organic;
 
 public class Organic {
 
-    private final String smiles; // I.E. "C=CC" (Simplified Molecular Input Line Entry Specification)
-    private final String structure; // I.E. "CH3-CH=CH2"
     private final String name;  // I.E. "prop-1-ene"
+    private final String structure; // I.E. "CH3-CH=CH2"
+    private final String smiles; // I.E. "C=CC" (Simplified Molecular Input Line Entry Specification)
+
 
     // Constructor:
 
-    protected Organic(String smiles, String structure, String name) {
-        this.smiles = smiles;
-        this.structure = structure;
+    protected Organic( String name, String structure, String smiles) {
         this.name = name;
+        this.structure = structure;
+        this.smiles = smiles;
     }
 
     // Getters:
 
-    public String getSmiles() {
-        return smiles;
+    public String getName() {
+        return name;
     }
 
     public String getStructure() {
         return structure;
     }
 
-    public String getName() {
-        return name;
+    public String getSmiles() {
+        return smiles;
     }
 
 }
