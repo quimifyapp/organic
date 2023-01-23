@@ -19,10 +19,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-// Esta clase representa una molécula cualquiera a partir de un CML en formato XML para intentar redactarle una fórmula.
-
-// Un compuesto genérico, químicamente hablando, podría ser de otro tipo ya contemplado en este programa (simple, éter,
-// éster, cíclico...), pero también podría no encajar en ninguno de esos tipos.
+// This class represents any molecule described by a CML to try to convert it into recognized molecule types.
 
 public class Molecule extends Nomenclature {
 
@@ -32,38 +29,40 @@ public class Molecule extends Nomenclature {
 	// Constructor:
 
 	public Molecule(String cml, String smiles) throws ParserConfigurationException, IOException, SAXException {
-		molecule = new HashSet<>();
+		this.molecule = new HashSet<>();
 		this.smiles = smiles;
 
-		// Se procesa el Chemical Markup Language:
 		DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-		Document xml = documentBuilder.parse(new InputSource(new StringReader(cml)));
+		Document cmlXML = documentBuilder.parse(new InputSource(new StringReader(cml)));
 
-		// Se recogen los átomos:
-		NodeList xmlAtoms = xml.getElementsByTagName("atom");
-		for(int i = 0; i < xmlAtoms.getLength(); i++) {
-			org.w3c.dom.Element atom = (org.w3c.dom.Element) xmlAtoms.item(i);
+		collectAtoms(cmlXML);
+		bondAtoms(cmlXML);
+	}
 
-			int id = Integer.parseInt(atom.getAttribute("id").replace("a", ""));
-			String elementType = atom.getAttribute("elementType");
+	private void collectAtoms(Document cmlXML) {
+		NodeList atomsXML = cmlXML.getElementsByTagName("atom");
+
+		for(int i = 0; i < atomsXML.getLength(); i++) {
+			org.w3c.dom.Element atomXML = (org.w3c.dom.Element) atomsXML.item(i);
+
+			int id = Integer.parseInt(atomXML.getAttribute("id").replace("a", ""));
+			String elementType = atomXML.getAttribute("elementType");
 
 			molecule.add(new Atom(id, elementType));
 		}
+	}
 
-		// Se enlazan entre sí:
-		NodeList xmlBonds = xml.getElementsByTagName("bond");
-		for(int i = 0; i < xmlBonds.getLength(); i++) {
-			org.w3c.dom.Element bond = (org.w3c.dom.Element) xmlBonds.item(i);
+	private void bondAtoms(Document cmlXML) {
+		NodeList bondsXML = cmlXML.getElementsByTagName("bond");
 
-			int[] ids = Arrays.stream(bond.getAttribute("id").replace("a", "").split("_"))
-					.mapToInt(Integer::valueOf).toArray();
+		for (int i = 0; i < bondsXML.getLength(); i++) {
+			org.w3c.dom.Element bondXML = (org.w3c.dom.Element) bondsXML.item(i);
 
-			Atom[] atoms = {
-					molecule.stream().filter(atom -> atom.getId().equals(ids[0])).findAny()
-							.orElseThrow(NoSuchElementException::new),
-					molecule.stream().filter(atom -> atom.getId().equals(ids[1])).findAny()
-							.orElseThrow(NoSuchElementException::new)
-			};
+			String[] idsAsStrings = bondXML.getAttribute("id").replace("a", "").split("_");
+			int[] ids = Arrays.stream(idsAsStrings).mapToInt(Integer::valueOf).toArray();
+
+			Stream<Atom> identified = molecule.stream().filter(atom -> List.of(ids[0], ids[1]).contains(atom.getId()));
+			Atom[] atoms = identified.toArray(Atom[]::new);
 
 			atoms[0].bond(atoms[1]);
 			atoms[1].bond(atoms[0]);
@@ -84,7 +83,7 @@ public class Molecule extends Nomenclature {
 		return openChain;
 	}
 
-	// Private methods:
+	// Private:
 
 	private boolean isCycle() {
 		return smiles.matches(".*[0-9].*"); // SMILES uses digits only for cycles
@@ -220,7 +219,7 @@ public class Molecule extends Nomenclature {
 		}
 	}
 
-	// Simple or ether structure:
+	// Open chain:
 
 	private boolean isNotSubstituent(Atom atom, Set<Atom> bondableAtoms) {
 		return !isBondableAtom(atom, bondableAtoms) && !isRadicalCarbon(atom);
