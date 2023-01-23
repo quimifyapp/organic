@@ -1,4 +1,4 @@
-package com.quimify.organic.bridges.opsin;
+package com.quimify.organic.opsin;
 
 import com.quimify.organic.opsin.en.OpsinEN;
 import com.quimify.organic.opsin.es.OpsinES;
@@ -19,7 +19,7 @@ public class Opsin {
         return opsinResult;
     }
 
-    public static Optional<OpsinResult> parseEnglishName(String name) {
+    protected static Optional<OpsinResult> parseEnglishName(String name) {
         Optional<OpsinResult> opsinResult;
 
         OpsinEN opsinEN = new OpsinEN(name);

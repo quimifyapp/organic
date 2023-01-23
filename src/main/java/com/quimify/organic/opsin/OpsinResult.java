@@ -1,4 +1,4 @@
-package com.quimify.organic.bridges.opsin;
+package com.quimify.organic.opsin;
 
 public class OpsinResult {
 
@@ -8,7 +8,7 @@ public class OpsinResult {
 
     // Constructor:
 
-    public OpsinResult(String smiles, String cml) {
+    protected OpsinResult(String smiles, String cml) {
         this.smiles = smiles;
         this.cml = cml;
     }
