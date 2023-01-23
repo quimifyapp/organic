@@ -3,6 +3,7 @@ package com.quimify.organic.molecules;
 import com.quimify.organic.Nomenclature;
 import com.quimify.organic.components.*;
 import com.quimify.organic.molecules.open_chain.Ether;
+import com.quimify.organic.molecules.open_chain.OpenChain;
 import com.quimify.organic.molecules.open_chain.Simple;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
@@ -69,20 +70,18 @@ public class Molecule extends Nomenclature {
 		}
 	}
 
-	// Text
+	// Queries:
 
-	public Optional<String> getStructure() {
-		Optional<String> structure;
+	public Optional<OpenChain> toOpenChain() {
+		if(!isOpenChain())
+			return Optional.empty();
 
-		if(isOpenChain()) {
-			structure = getSimpleStructure();
+		Optional<OpenChain> openChain = getSimpleOpenChain();
 
-			if(structure.isEmpty())
-				structure = getEtherStructure();
-		}
-		else structure = Optional.empty();
+		if(openChain.isEmpty())
+			openChain = getEtherOpenChain();
 
-		return structure;
+		return openChain;
 	}
 
 	// Private methods:
@@ -105,22 +104,19 @@ public class Molecule extends Nomenclature {
 		return getCarbons().stream().filter(carbon -> carbon.getAmountOf(Element.C) < 2).collect(Collectors.toList());
 	}
 
-	// Simple structure:
+	// Simple open chain:
 
-	private Optional<String> getSimpleStructure() {
-		Optional<String> simpleStructure;
+	private Optional<OpenChain> getSimpleOpenChain() {
+		Optional<Atom> simpleEndingCarbon = getSimpleEndingCarbon();
 
-		Optional<Atom> endingCarbon = getSimpleEndingCarbon();
-		if(endingCarbon.isPresent()) {
-			Simple simple = new Simple();
-			buildSimpleFrom(simple, endingCarbon.get());
-			simple.correct();
+		if(simpleEndingCarbon.isEmpty())
+			return Optional.empty();
 
-			simpleStructure = Optional.of(simple.getStructure());
-		}
-		else simpleStructure = Optional.empty();
+		Simple simple = new Simple();
+		buildSimpleFrom(simple, simpleEndingCarbon.get());
+		simple.correct();
 
-		return simpleStructure;
+		return Optional.of(simple);
 	}
 
 	private Optional<Atom> getSimpleEndingCarbon() {
@@ -156,22 +152,19 @@ public class Molecule extends Nomenclature {
 		}
 	}
 
-	// Ether structure:
+	// Ether open chain:
 
-	private Optional<String> getEtherStructure() {
-		Optional<String> etherStructure;
+	private Optional<OpenChain> getEtherOpenChain() {
+		Optional<Atom> etherEndingCarbon = getEtherEndingCarbon();
 
-		Optional<Atom> endingCarbon = getEtherEndingCarbon();
-		if(endingCarbon.isPresent()) {
-			Ether ether = new Ether();
-			buildEtherFrom(ether, endingCarbon.get());
-			ether.correct();
+		if (etherEndingCarbon.isEmpty())
+			return Optional.empty();
 
-			etherStructure = Optional.of(ether.getStructure());
-		}
-		else etherStructure = Optional.empty();
+		Ether ether = new Ether();
+		buildEtherFrom(ether, etherEndingCarbon.get());
+		ether.correct();
 
-		return etherStructure;
+		return Optional.of(ether);
 	}
 
 	private Optional<Atom> getEtherEndingCarbon() {

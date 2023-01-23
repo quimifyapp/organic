@@ -17,12 +17,12 @@ public class OrganicFactory {
         String smiles = opsinResult.get().getSmiles();
 
         Molecule molecule = new Molecule(opsinResult.get().getCml(), smiles);
-        Optional<String> structure = molecule.getStructure();
+        Optional<OpenChain> openChain = molecule.toOpenChain();
 
-        if (structure.isEmpty())
+        if (openChain.isEmpty())
             return Optional.empty();
 
-        return Optional.of(new Organic(name, structure.get(), smiles));
+        return Optional.of(new Organic(name, openChain.get().getStructure(), smiles));
     }
 
     public static Organic getFromOpenChain(OpenChain openChain) {

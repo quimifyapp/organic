@@ -47,12 +47,10 @@ public class RandomStructureToName {
                 structures.append('\n').append(structure);
                 names.append('\n').append(name);
 
-                /*
-                System.out.println(count);
-                System.out.println(structure);
-                System.out.println(name);
-                System.out.println();
-                */
+                //System.out.println(count);
+                //System.out.println(structure);
+                //System.out.println(name);
+                //System.out.println();
 
                 count++;
             }
@@ -69,7 +67,7 @@ public class RandomStructureToName {
 
             namesFile.close();
         } catch (Exception exception) {
-            System.out.println(exception);
+            exception.printStackTrace();
         }
     }
 

@@ -2,10 +2,9 @@ package com.quimify.organic;
 
 public class Organic {
 
-    private final String name;  // I.E. "prop-1-ene"
+    private final String name; // I.E. "prop-1-ene"
     private final String structure; // I.E. "CH3-CH=CH2"
     private final String smiles; // I.E. "C=CC" (Simplified Molecular Input Line Entry Specification)
-
 
     // Constructor:
 
