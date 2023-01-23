@@ -71,7 +71,7 @@ public class StructureToName {
             Optional<Organic> organicFromName = OrganicFactory.getFromName(name);
 
             if (organicFromName.isPresent())
-                System.out.print(organicFromName.get().getName());
+                System.out.print(organicFromName.get().getStructure());
             else System.out.print("Not found");
         } catch (Exception exception) {
             exception.printStackTrace();
