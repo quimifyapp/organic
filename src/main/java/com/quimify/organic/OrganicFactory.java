@@ -1,84 +1,41 @@
 package com.quimify.organic;
 
-import com.quimify.organic.bridges.opsin.Opsin;
-import com.quimify.organic.bridges.opsin.OpsinResult;
-import com.quimify.organic.bridges.pubchem.PubChem;
-import com.quimify.organic.bridges.pubchem.PubChemResult;
+import com.quimify.organic.opsin.Opsin;
+import com.quimify.organic.opsin.OpsinResult;
 import com.quimify.organic.molecules.Molecule;
 import com.quimify.organic.molecules.open_chain.OpenChain;
-
 import java.util.Optional;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class OrganicFactory {
 
-    private static final Logger logger = Logger.getLogger(OrganicFactory.class.getName());
-
-    // Constants:
-
-    public static final OrganicResult organicNotFound = new OrganicResult(false);
-
-    // Public:
-
-    public static OrganicResult getFromName(String name) {
-        OrganicResult organicResult;
-
+    public static Optional<Organic> getFromName(String name) throws Exception {
         Optional<OpsinResult> opsinResult = Opsin.parseSpanishName(name);
-        if(opsinResult.isPresent()) {
-            organicResult = new OrganicResult(true);
 
-            organicResult.setName(name); // User's input (might be wrong)
+        if (opsinResult.isEmpty())
+            return Optional.empty();
 
-            // Structure:
-            try {
-                Molecule molecule = new Molecule(opsinResult.get().getCml(), opsinResult.get().getSmiles());
+        String smiles = opsinResult.get().getSmiles();
 
-                Optional<String> structure = molecule.getStructure();
-                structure.ifPresent(organicResult::setStructure);
-            }
-            catch(IllegalArgumentException exception) {
-                logger.warning("Excepción al generar la fórmula de \"" + name + "\": " + exception); // It happens often
-            }
-            catch (Exception exception) {
-                logger.log(Level.SEVERE, "Excepción al generar la fórmula de \"" + name + "\": " + exception);
-            }
+        Molecule molecule = new Molecule(opsinResult.get().getCml(), smiles);
+        Optional<String> structure = molecule.getStructure();
 
-            complementViaPubChem(organicResult, opsinResult.get().getSmiles()); // Características
-        }
-        else organicResult = organicNotFound;
+        if (structure.isEmpty())
+            return Optional.empty();
 
-        return organicResult;
+        return Optional.of(new Organic(smiles, structure.get(), name));
     }
 
-    public static OrganicResult getFromOpenChain(OpenChain openChain) {
-        OrganicResult organicResult = new OrganicResult(true);
+    public static Organic getFromOpenChain(OpenChain openChain) {
+        openChain.correct();
 
-        openChain.correct(); // It´s necessary
-
-        // Name:
         String name = openChain.getName();
-        organicResult.setName(name);
 
-        // Properties:
         Optional<OpsinResult> opsinResult = Opsin.parseSpanishName(name);
-        opsinResult.ifPresent(result -> complementViaPubChem(organicResult, result.getSmiles()));
+        String smiles = opsinResult.map(OpsinResult::getSmiles).orElse(null);
 
-        // Structure:
-        organicResult.setStructure(openChain.getStructure());
+        String structure = openChain.getStructure();
 
-        return organicResult;
-    }
-
-    // Private:
-
-    private static void complementViaPubChem(OrganicResult organicResult, String smiles) {
-        PubChemResult pubChemResult = new PubChem(smiles).getResult();
-
-        if(pubChemResult.getMass() != null)
-            organicResult.setMolecularMass(Float.valueOf(pubChemResult.getMass()));
-
-        organicResult.setUrl2D(pubChemResult.getUrl2D());
+        return new Organic(smiles, structure, name);
     }
 
 }

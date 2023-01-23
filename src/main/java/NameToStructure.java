@@ -1,6 +1,7 @@
+import com.quimify.organic.Organic;
 import com.quimify.organic.OrganicFactory;
-import com.quimify.organic.OrganicResult;
 
+import java.util.Optional;
 import java.util.Scanner;
 
 public class NameToStructure {
@@ -10,9 +11,19 @@ public class NameToStructure {
             System.out.print("Name: ");
             String name = new Scanner(System.in).nextLine();
 
-            OrganicResult organicResult = OrganicFactory.getFromName(name);
+            try {
+                Optional<Organic> organic = OrganicFactory.getFromName(name);
 
-            System.out.println("Structure: " + organicResult.getStructure());
+                if (organic.isPresent()) {
+                    System.out.println("Smiles: " + organic.get().getSmiles());
+                    System.out.println("Structure: " + organic.get().getStructure());
+                }
+                else System.out.println("Not found");
+
+            } catch (Exception exception) {
+                exception.printStackTrace();
+            }
+
             System.out.println();
         }
     }

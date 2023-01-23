@@ -1,3 +1,4 @@
+import com.quimify.organic.Organic;
 import com.quimify.organic.OrganicFactory;
 import com.quimify.organic.components.Group;
 import com.quimify.organic.components.Substituent;
@@ -6,6 +7,7 @@ import com.quimify.organic.molecules.open_chain.Simple;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Scanner;
 
 public class StructureToName {
@@ -54,15 +56,28 @@ public class StructureToName {
         System.out.print("Input structure: \t\t\t");
         System.out.println(openChain.getStructure());
 
-        openChain.correct();
-        System.out.print("Corrected input structure:\t");
-        System.out.println(openChain.getStructure());
+        Organic organic = OrganicFactory.getFromOpenChain(openChain);
 
-        String name = openChain.getName();
+        System.out.print("Corrected input structure:\t");
+        System.out.println(organic.getStructure());
+
+        String name = organic.getName();
         System.out.print("Name given structure:\t\t");
         System.out.println(name);
+
         System.out.print("Structure given name:\t\t");
-        System.out.println(OrganicFactory.getFromName(name).getStructure());
+
+        try {
+            Optional<Organic> organicFromName = OrganicFactory.getFromName(name);
+
+            if (organicFromName.isPresent())
+                System.out.print(organicFromName.get().getName());
+            else System.out.print("Not found");
+        } catch (Exception exception) {
+            exception.printStackTrace();
+        }
+
+        System.out.println();
     }
 
 }

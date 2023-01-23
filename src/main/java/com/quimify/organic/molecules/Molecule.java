@@ -1,6 +1,6 @@
 package com.quimify.organic.molecules;
 
-import com.quimify.organic.Organic;
+import com.quimify.organic.Nomenclature;
 import com.quimify.organic.components.*;
 import com.quimify.organic.molecules.open_chain.Ether;
 import com.quimify.organic.molecules.open_chain.Simple;
@@ -23,7 +23,7 @@ import java.util.stream.Stream;
 // Un compuesto genérico, químicamente hablando, podría ser de otro tipo ya contemplado en este programa (simple, éter,
 // éster, cíclico...), pero también podría no encajar en ninguno de esos tipos.
 
-public class Molecule extends Organic {
+public class Molecule extends Nomenclature {
 
 	private final String smiles;
 	private final Set<Atom> molecule;
@@ -102,9 +102,7 @@ public class Molecule extends Organic {
 	}
 
 	private List<Atom> getEndingCarbons() {
-		return getCarbons().stream().filter(carbon ->
-				carbon.getAmountOf(Element.C) < 2)
-				.collect(Collectors.toList());
+		return getCarbons().stream().filter(carbon -> carbon.getAmountOf(Element.C) < 2).collect(Collectors.toList());
 	}
 
 	// Simple structure:

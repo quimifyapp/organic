@@ -1,6 +1,6 @@
 package com.quimify.organic.molecules.open_chain;
 
-import com.quimify.organic.Organic;
+import com.quimify.organic.Nomenclature;
 import com.quimify.organic.components.Atom;
 import com.quimify.organic.components.Chain;
 import com.quimify.organic.components.Group;
@@ -10,7 +10,7 @@ import java.util.*;
 
 // Esta clase representa éteres: dos cadenas con funciones de prioridad menor a la función éter unidas por un oxígeno.
 
-public final class Ether extends Organic implements OpenChain {
+public final class Ether extends Nomenclature implements OpenChain {
 
 	private final Chain firstChain; // R
 	private final Chain secondChain; // R'
@@ -164,7 +164,7 @@ public final class Ether extends Organic implements OpenChain {
 				Group group = groups.get(groupIndex);
 				boolean redundant = isRedundantInNameIn(group, chain);
 
-				prefixes.add(Organic.getPrefixForIn(group, chain, redundant));
+				prefixes.add(Nomenclature.getPrefixForIn(group, chain, redundant));
 			}
 
 			groupIndex++;
@@ -174,11 +174,11 @@ public final class Ether extends Organic implements OpenChain {
 		uniqueRadicals.removeIf(substituent -> substituent.getGroup() != Group.radical);
 
 		for (Substituent radical : uniqueRadicals)
-			prefixes.add(new Locator(chain.getIndexesOf(radical), Organic.radicalNameParticleFor(radical)));
+			prefixes.add(new Locator(chain.getIndexesOf(radical), Nomenclature.radicalNameParticleFor(radical)));
 
 		StringBuilder prefix = new StringBuilder(chain.isBondedTo(Group.acid) ? "ácido " : "");
 		if (prefixes.size() > 0) {
-			Locator.ordenarAlfabeticamente(prefixes);
+			Locator.orderAplhabetically(prefixes);
 
 			for (int i = 0; i < prefixes.size() - 1; i++) {
 				prefix.append(prefixes.get(i).toString());
@@ -191,13 +191,13 @@ public final class Ether extends Organic implements OpenChain {
 		}
 
 		// Se procesan los enlaces:
-		String bonds = Organic.getBondNameForIn(Group.alkene, chain, isRedundantInNameIn(Group.alkene, chain)) +
-				Organic.getBondNameForIn(Group.alkyne, chain, isRedundantInNameIn(Group.alkyne, chain));
+		String bonds = Nomenclature.getBondNameForIn(Group.alkene, chain, isRedundantInNameIn(Group.alkene, chain)) +
+				Nomenclature.getBondNameForIn(Group.alkyne, chain, isRedundantInNameIn(Group.alkyne, chain));
 
 		// Se procesa el cuantificador:
 		String quantifier = quantifierFor(chain.getSize());
 
-		if (!bonds.isEmpty() && Organic.doesNotStartWithVowel(bonds))
+		if (!bonds.isEmpty() && Nomenclature.doesNotStartWithVowel(bonds))
 			quantifier += "a";
 
 		return prefix + quantifier + bonds + "il";

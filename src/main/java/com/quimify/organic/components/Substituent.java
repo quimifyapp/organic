@@ -1,10 +1,10 @@
 package com.quimify.organic.components;
 
-import com.quimify.organic.Organic;
+import com.quimify.organic.Nomenclature;
 
 import java.util.Objects;
 
-public class Substituent extends Organic {
+public class Substituent extends Nomenclature {
 
     private final Group group;
     private final int bondCount;
@@ -96,7 +96,7 @@ public class Substituent extends Organic {
 
     // Queries:
 
-    public int compareTo(Substituent other) {
+    protected int compareTo(Substituent other) {
         // OOH < Cl < CH(CH3)2 < CH2CH3 < CH2CH2CH3 < H
         if(group == Group.radical && other.group == Group.radical)
             return compareToRadical(other); // CH(CH3)2 < CH2CH3 < CH2CH2CH3

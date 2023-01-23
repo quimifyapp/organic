@@ -1,11 +1,11 @@
 package com.quimify.organic.components;
 
-import com.quimify.organic.Organic;
+import com.quimify.organic.Nomenclature;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class Chain extends Organic {
+public class Chain extends Nomenclature {
 
 	private final List<Carbon> carbons;
 

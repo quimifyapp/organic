@@ -1,6 +1,6 @@
 package com.quimify.organic.molecules.open_chain;
 
-import com.quimify.organic.Organic;
+import com.quimify.organic.Nomenclature;
 import com.quimify.organic.components.*;
 
 import java.util.*;
@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 
 // Esta clase representa compuestos formados por una sola cadena carbonada finita con sustituyentes.
 
-public final class Simple extends Organic implements OpenChain {
+public final class Simple extends Nomenclature implements OpenChain {
 
     private final Chain chain;
 
@@ -146,7 +146,7 @@ public final class Simple extends Organic implements OpenChain {
                 Group group = groups.get(groupIndex);
                 boolean redundant = isRedundantInName(group);
 
-                prefixes.add(Organic.getPrefixForIn(group, chain, redundant));
+                prefixes.add(Nomenclature.getPrefixForIn(group, chain, redundant));
             }
 
             groupIndex++;
@@ -160,7 +160,7 @@ public final class Simple extends Organic implements OpenChain {
 
         StringBuilder prefix = new StringBuilder(chain.isBondedTo(Group.acid) ? "ácido " : "");
         if (prefixes.size() > 0) {
-            Locator.ordenarAlfabeticamente(prefixes);
+            Locator.orderAplhabetically(prefixes);
 
             for (int i = 0; i < prefixes.size() - 1; i++) {
                 prefix.append(prefixes.get(i).toString());
@@ -173,20 +173,20 @@ public final class Simple extends Organic implements OpenChain {
         }
 
         // Se procesan los enlaces:
-        String bonds = Organic.getBondNameForIn(Group.alkene, chain, isRedundantInName(Group.alkene)) +
-                Organic.getBondNameForIn(Group.alkyne, chain, isRedundantInName(Group.alkyne));
+        String bonds = Nomenclature.getBondNameForIn(Group.alkene, chain, isRedundantInName(Group.alkene)) +
+                Nomenclature.getBondNameForIn(Group.alkyne, chain, isRedundantInName(Group.alkyne));
 
         if (bonds.equals(""))
             bonds = "an";
-        if (suffix.equals("") || Organic.doesNotStartWithVowel(suffix))
+        if (suffix.equals("") || Nomenclature.doesNotStartWithVowel(suffix))
             bonds += "o";
-        if (!suffix.equals("") && Organic.startsWithDigit(suffix))
+        if (!suffix.equals("") && Nomenclature.startsWithDigit(suffix))
             bonds += "-";
 
         // Se procesa el cuantificador:
         String quantifier = quantifierFor(chain.getSize());
 
-        if (Organic.doesNotStartWithVowel(bonds))
+        if (Nomenclature.doesNotStartWithVowel(bonds))
             quantifier += "a";
 
         return prefix + quantifier + bonds + suffix;
@@ -305,10 +305,10 @@ public final class Simple extends Organic implements OpenChain {
             reversedRadicals.removeIf(substituent -> substituent.getGroup() != Group.radical);
 
             List<String> radicalNames = radicals.stream()
-                    .map(Organic::radicalNameParticleFor).collect(Collectors.toList());
+                    .map(Nomenclature::radicalNameParticleFor).collect(Collectors.toList());
 
             List<String> reversedRadicalNames = reversedRadicals.stream()
-                    .map(Organic::radicalNameParticleFor).collect(Collectors.toList());
+                    .map(Nomenclature::radicalNameParticleFor).collect(Collectors.toList());
 
             // Se comparan los radicales dos a dos desde ambos extremos alfabéticamente:
             for (int i = 0; i < radicalNames.size() && !corrected; i++)

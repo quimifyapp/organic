@@ -60,13 +60,13 @@ public class Atom {
 		}
 	}
 
-	public Atom(Element element, List<Atom> bondedAtoms) {
+	protected Atom(Element element, List<Atom> bondedAtoms) {
 		this.id = null;
 		this.element = element;
 		this.bondedAtoms = bondedAtoms;
 	}
 
-	public Atom(Element element) {
+	protected Atom(Element element) {
 		this.id = null;
 		this.element = element;
 		this.bondedAtoms = new ArrayList<>();

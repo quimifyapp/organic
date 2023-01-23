@@ -1,18 +1,18 @@
 package com.quimify.organic.components;
 
-import com.quimify.organic.Organic;
+import com.quimify.organic.Nomenclature;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class Carbon extends Organic {
+public class Carbon extends Nomenclature {
 
     private int freeBondCount;
     private final List<Substituent> substituents;
 
     // Constructor:
 
-    public Carbon(int usedBondCount) {
+    protected Carbon(int usedBondCount) {
         freeBondCount = 4 - usedBondCount;
         substituents = new ArrayList<>();
     }
@@ -40,14 +40,14 @@ public class Carbon extends Organic {
         }
     }
 
-    public int getAmountOf(Group group) {
-        if(Organic.isBond(group))
+    protected int getAmountOf(Group group) {
+        if(Nomenclature.isBond(group))
             return isBondedTo(group) ? 1 : 0;
 
         return (int) substituents.stream().filter(s -> s.getGroup() == group).count();
     }
 
-    public int getAmountOf(Substituent substituent) {
+    protected int getAmountOf(Substituent substituent) {
         return Collections.frequency(substituents, substituent);
     }
 
@@ -84,7 +84,7 @@ public class Carbon extends Organic {
         bond(new Substituent(group));
     }
 
-    public void bond(Substituent substituent) {
+    protected void bond(Substituent substituent) {
         substituents.add(substituent);
         freeBondCount -= substituent.getBondCount();
     }
@@ -93,16 +93,16 @@ public class Carbon extends Organic {
         unbond(new Substituent(group));
     }
 
-    public void unbond(Substituent substituent) {
+    protected void unbond(Substituent substituent) {
         freeBondCount += substituent.getBondCount();
         remove(substituent);
     }
 
-    public void remove(Substituent substituent) {
+    protected void remove(Substituent substituent) {
         substituents.remove(substituent);
     }
 
-    public void useBond() {
+    protected void useBond() {
         freeBondCount--;
     }
 
@@ -140,7 +140,7 @@ public class Carbon extends Organic {
                 result.append(substituent); // CHO
             else if(group == Group.ketone && hydrogenCount == 0)
                 result.append(substituent); // -CO-
-            else if (Organic.isHalogen(group))
+            else if (Nomenclature.isHalogen(group))
                 result.append(substituent); // CHCl2, CF3-...
             else result.append("(").append(substituent).append(")"); // CH(HO), CH(NO2)3, CH2(CH3)-...
 
@@ -166,15 +166,15 @@ public class Carbon extends Organic {
 
     // Getters and setters:
 
-    public List<Substituent> getSubstituents() {
+    protected List<Substituent> getSubstituents() {
         return substituents;
     }
 
-    public int getFreeBondCount() {
+    protected int getFreeBondCount() {
         return freeBondCount;
     }
 
-    public void setFreeBondCount(int freeBondCount) {
+    protected void setFreeBondCount(int freeBondCount) {
         this.freeBondCount = freeBondCount;
     }
 
