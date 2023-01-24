@@ -229,65 +229,50 @@ public class Molecule extends Nomenclature {
 		return bondableAtoms.stream().anyMatch(atom.toAnonymous()::equals);
 	}
 
-	private boolean isRadicalCarbon(Atom atom) { // TODO more readable
-		if(atom.getElement() != Element.C)
+	private boolean isRadicalCarbon(Atom atom) {
+		if (atom.getElement() != Element.C)
+			return false;
+
+		List<Atom> bondedAtomsCutOff = atom.getBondedAtomsSeparated();
+
+		if (bondedAtomsCutOff.size() != 3)
 			return false;
 
 		boolean radical;
 
-		// It must be one of the following: CH2-C..., CH3, CH(CH3)2
-		List<Atom> bondedAtomsCutOff = atom.getBondedAtomsSeparated();
-		if(bondedAtomsCutOff.size() == 3) {
-			switch (atom.getAmountOf(Element.H)) {
-				case 3:
-					radical = true; // CH3
-					break;
-				case 2:
-					Stream<Atom> bondedCarbons = bondedAtomsCutOff.stream().filter(bondedAtom ->
-							bondedAtom.getElement() == Element.C);
+		int hydrogenCount = atom.getAmountOf(Element.H);
 
-					radical = atom.getAmountOf(Element.C) == 1 // CH2-C...
-							&& bondedCarbons.allMatch(this::isRadicalCarbon); // CH2-CH2-C... (recursive)
-					break;
-				case 1:
-					Stream<Atom> bondedCH3s = bondedAtomsCutOff.stream().filter(bondedAtom ->
-							bondedAtom.getBondedAtoms().size() == 3 && bondedAtom.getAmountOf(Element.H) == 3);
-
-					radical = bondedCH3s.count() == 2; // CH(CH3)2
-					break;
-				default:
-					radical = false; // No hydrogen
-			}
+		if(hydrogenCount == 1) { // -CH(CH3)2
+			Stream<Atom> bondedCH3s = bondedAtomsCutOff.stream().filter(bonded -> bonded.getAmountOf(Element.H) == 3);
+			bondedCH3s = bondedCH3s.filter(bonded -> bonded.getBondedAtoms().size() == 3);
+			radical = bondedCH3s.count() == 2;
 		}
-		else radical = false;
+		else if(hydrogenCount == 2) { // -CH2-C
+			Stream<Atom> bondedCarbons = bondedAtomsCutOff.stream().filter(bonded -> bonded.getElement() == Element.C);
+			radical = atom.getAmountOf(Element.C) != 1 && bondedCarbons.allMatch(this::isRadicalCarbon); // Recursive
+		}
+		else radical = hydrogenCount == 3; // -CH3
 
 		return radical;
 	}
 
-	private Substituent buildRadicalFrom(Atom radicalCarbon) { // TODO runtime exceptions
-		Substituent radical;
+	private Substituent buildRadicalFrom(Atom radicalCarbon) {
+		int hydrogenCount = radicalCarbon.getAmountOf(Element.H);
 
-		switch (radicalCarbon.getAmountOf(Element.H)) {
-			case 3: // -CH3
-				radical = new Substituent(1);
-				break;
-			case 2: // -CH2-
-				List<Atom> bondedCarbons = radicalCarbon.getBondedAtomsSeparated();
-				bondedCarbons.removeIf(bondedAtom -> bondedAtom.getElement() != Element.C);
-				Atom nextCarbon = bondedCarbons.get(0); // There must be one
-				Substituent radicalEnd = buildRadicalFrom(nextCarbon); // Recursive
+		if (hydrogenCount == 3)
+			return new Substituent(1);
 
-				radical = new Substituent(1 + radicalEnd.getCarbonCount(), radicalEnd.isIso()); // Appended
-				break;
-			case 1: // -CH(CH3)2
-				radical = new Substituent(3, true);
-				break;
-			default:
-				radical = null;
-				break;
-		}
+		if (hydrogenCount == 1)
+			return new Substituent(3, true);
 
-		return radical;
+		List<Atom> bondedCarbons = radicalCarbon.getBondedAtomsSeparated();
+		bondedCarbons.removeIf(bondedAtom -> bondedAtom.getElement() != Element.C);
+
+		Atom nextCarbon = bondedCarbons.get(0); // There must be one
+
+		Substituent radicalEnd = buildRadicalFrom(nextCarbon); // Recursive
+
+		return new Substituent(1 + radicalEnd.getCarbonCount(), radicalEnd.isIso()); // Appended
 	}
 
 }
