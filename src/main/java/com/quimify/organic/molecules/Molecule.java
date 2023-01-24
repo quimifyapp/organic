@@ -90,7 +90,7 @@ public class Molecule extends Nomenclature {
 	}
 
 	private boolean isOpenChain() {
-		return !isCycle(); // By definition
+		return !isCycle(); // By definition of an open chain
 	}
 
 	private List<Atom> getCarbons() {
