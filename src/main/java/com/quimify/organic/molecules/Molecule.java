@@ -42,7 +42,7 @@ public class Molecule extends Nomenclature {
 	private void collectAtoms(Document cmlXML) {
 		NodeList atomsXML = cmlXML.getElementsByTagName("atom");
 
-		for(int i = 0; i < atomsXML.getLength(); i++) {
+		for (int i = 0; i < atomsXML.getLength(); i++) {
 			org.w3c.dom.Element atomXML = (org.w3c.dom.Element) atomsXML.item(i);
 
 			int id = Integer.parseInt(atomXML.getAttribute("id").replace("a", ""));
@@ -72,12 +72,12 @@ public class Molecule extends Nomenclature {
 	// Queries:
 
 	public Optional<OpenChain> toOpenChain() {
-		if(!isOpenChain())
+		if (!isOpenChain())
 			return Optional.empty();
 
 		Optional<OpenChain> openChain = getSimpleOpenChain();
 
-		if(openChain.isEmpty())
+		if (openChain.isEmpty())
 			openChain = getEtherOpenChain();
 
 		return openChain;
@@ -95,7 +95,7 @@ public class Molecule extends Nomenclature {
 
 	private List<Atom> getCarbons() {
 		return molecule.stream().filter(atom ->
-				atom.getElement() == Element.C)
+						atom.getElement() == Element.C)
 				.collect(Collectors.toList());
 	}
 
@@ -108,7 +108,7 @@ public class Molecule extends Nomenclature {
 	private Optional<OpenChain> getSimpleOpenChain() {
 		Optional<Atom> simpleEndingCarbon = getSimpleEndingCarbon();
 
-		if(simpleEndingCarbon.isEmpty())
+		if (simpleEndingCarbon.isEmpty())
 			return Optional.empty();
 
 		Simple simple = new Simple();
@@ -126,7 +126,7 @@ public class Molecule extends Nomenclature {
 		Set<Atom> nonSubstituentBondedAtoms = carbon.getBondedAtomsSeparated().stream().filter(bondedAtom ->
 				isNotSubstituent(bondedAtom, Simple.bondableAtoms)).collect(Collectors.toSet());
 
-		if(nonSubstituentBondedAtoms.size() == 1) {
+		if (nonSubstituentBondedAtoms.size() == 1) {
 			Atom nonSubstituent = nonSubstituentBondedAtoms.stream().findAny().get();
 			return nonSubstituent.getElement() == Element.C && isSimpleCarbon(nonSubstituent); // Recursion
 		}
@@ -137,15 +137,15 @@ public class Molecule extends Nomenclature {
 	private void buildSimpleFrom(Simple simple, Atom simpleCarbon) { // TODO runtime exceptions
 		Optional<Atom> nextCarbon = Optional.empty();
 
-		for(Atom bondedAtom : simpleCarbon.getBondedAtomsSeparated()) {
+		for (Atom bondedAtom : simpleCarbon.getBondedAtomsSeparated()) {
 			if (isBondableAtom(bondedAtom, Simple.bondableAtoms))
 				simple.bond(bondedAtom.toFunctionalGroup());
-			else if(isRadicalCarbon(bondedAtom))
+			else if (isRadicalCarbon(bondedAtom))
 				simple.bond(buildRadicalFrom(bondedAtom));
 			else nextCarbon = Optional.of(bondedAtom);
 		}
 
-		if(nextCarbon.isPresent()) {
+		if (nextCarbon.isPresent()) {
 			simple.bondCarbon();
 			buildSimpleFrom(simple, nextCarbon.get()); // Recursion
 		}
@@ -169,7 +169,7 @@ public class Molecule extends Nomenclature {
 	private Optional<Atom> getEtherEndingCarbon() {
 		List<Atom> endingCarbons = getEndingCarbons();
 
-		if(endingCarbons.size() > 2) // -C-O-C- minimum
+		if (endingCarbons.size() > 2) // -C-O-C- minimum
 			endingCarbons = endingCarbons.stream().filter(endingCarbon ->
 					endingCarbon.getBondedAtomsSeparated().stream().noneMatch(bonded ->
 							bonded.getElement() == Element.O)).collect(Collectors.toList());
@@ -200,16 +200,16 @@ public class Molecule extends Nomenclature {
 	private void buildEtherFrom(Ether ether, Atom etherCarbon) { // TODO runtime exceptions
 		Optional<Atom> nextAtom = Optional.empty();
 
-		for(Atom bondedAtom : etherCarbon.getBondedAtomsSeparated()) {
+		for (Atom bondedAtom : etherCarbon.getBondedAtomsSeparated()) {
 			if (isBondableAtom(bondedAtom, Ether.bondableAtoms))
 				ether.bond(bondedAtom.toFunctionalGroup());
-			else if(isRadicalCarbon(bondedAtom))
+			else if (isRadicalCarbon(bondedAtom))
 				ether.bond(buildRadicalFrom(bondedAtom));
 			else nextAtom = Optional.of(bondedAtom);
 		}
 
-		if(nextAtom.isPresent()) {
-			if(nextAtom.get().getElement() == Element.O)  {
+		if (nextAtom.isPresent()) {
+			if (nextAtom.get().getElement() == Element.O) {
 				ether.bond(Group.ether);
 				nextAtom = Optional.of(nextAtom.get().getBondedAtomsSeparated().get(0));
 			}
@@ -242,12 +242,12 @@ public class Molecule extends Nomenclature {
 
 		int hydrogenCount = atom.getAmountOf(Element.H);
 
-		if(hydrogenCount == 1) { // -CH(CH3)2
+		if (hydrogenCount == 1) { // -CH(CH3)2
 			Stream<Atom> bondedCH3s = bondedAtomsCutOff.stream().filter(bonded -> bonded.getAmountOf(Element.H) == 3);
 			bondedCH3s = bondedCH3s.filter(bonded -> bonded.getBondedAtoms().size() == 3);
 			radical = bondedCH3s.count() == 2;
 		}
-		else if(hydrogenCount == 2) { // -CH2-C
+		else if (hydrogenCount == 2) { // -CH2-C
 			Stream<Atom> bondedCarbons = bondedAtomsCutOff.stream().filter(bonded -> bonded.getElement() == Element.C);
 			radical = atom.getAmountOf(Element.C) != 1 && bondedCarbons.allMatch(this::isRadicalCarbon); // Recursive
 		}
