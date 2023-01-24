@@ -8,7 +8,7 @@ public class Organic {
 
     // Constructor:
 
-    protected Organic( String name, String structure, String smiles) {
+    protected Organic(String name, String structure, String smiles) {
         this.name = name;
         this.structure = structure;
         this.smiles = smiles;
