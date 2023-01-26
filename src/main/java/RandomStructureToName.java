@@ -9,7 +9,7 @@ import java.util.Random;
 
 public class RandomStructureToName {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) { // TODO break up
         StringBuilder structures = new StringBuilder();
         StringBuilder names = new StringBuilder();
         int count = 0;

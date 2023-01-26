@@ -58,7 +58,7 @@ public class StructureToName {
 
         Organic organic = OrganicFactory.getFromOpenChain(openChain);
 
-        System.out.print("Corrected input structure:\t");
+        System.out.print("Corrected structure:\t");
         System.out.println(organic.getStructure());
 
         String name = organic.getName();
