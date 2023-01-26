@@ -22,61 +22,34 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.4.1</version>
+                <version>3.2.4</version>
                 <executions>
                     <execution>
-                        <configuration>
-                            <filters>
-                                <filter>
-                                    <artifact>*:*</artifact>
-                                    <excludes>
-                                        <exclude>NameToStructure.class</exclude>
-                                        <exclude>StructureToName.class</exclude>
-                                        <exclude>RandomStructureToName.class</exclude>
-                                    </excludes>
-                                </filter>
-                            </filters>
-                        </configuration>
                         <phase>package</phase>
                         <goals>
                             <goal>shade</goal>
                         </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <version>2.8</version>
-                <configuration>
-
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>copy-dependencies</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>copy-dependencies</goal>
-                        </goals>
                         <configuration>
-                            <outputDirectory>${project.build.directory}/classes/lib</outputDirectory>
-                            <includeScope>system</includeScope>
+                            <filters>
+                                <filter>
+                                    <artifact>com.quimify.organic:*</artifact>
+                                    <includes>
+                                        <include>com/quimify/organic/**</include>
+                                    </includes>
+                                </filter>
+                            </filters>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
-
         </plugins>
     </build>
 
     <dependencies>
         <dependency>
-            <version>${opsin-version}</version>
             <groupId>com.quimify.organic.opsin</groupId>
             <artifactId>quimify-opsin</artifactId>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/quimify-opsin-es-${opsin-version}-with-dependencies.jar</systemPath>
+            <version>2.7.0</version>
         </dependency>
     </dependencies>
 
