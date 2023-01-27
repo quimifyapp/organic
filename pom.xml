@@ -13,7 +13,7 @@
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <!-- Needs to be manually updated: -->
-        <version>3.0.1</version>
+        <version>3.0.2</version>
         <opsin.version>2.7.0</opsin.version>
     </properties>
 
