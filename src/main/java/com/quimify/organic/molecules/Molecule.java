@@ -249,7 +249,7 @@ public class Molecule extends Nomenclature {
 		}
 		else if (hydrogenCount == 2) { // -CH2-C
 			Stream<Atom> bondedCarbons = bondedAtomsCutOff.stream().filter(bonded -> bonded.getElement() == Element.C);
-			radical = atom.getAmountOf(Element.C) != 1 && bondedCarbons.allMatch(this::isRadicalCarbon); // Recursive
+			radical = atom.getAmountOf(Element.C) == 1 && bondedCarbons.allMatch(this::isRadicalCarbon); // Recursive
 		}
 		else radical = hydrogenCount == 3; // -CH3
 
