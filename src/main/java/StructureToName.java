@@ -51,9 +51,9 @@ public class StructureToName {
             System.out.println();
         }
 
-        System.out.print("Input sequence:\t\t\t\t");
+        System.out.print("Input sequence:\t\t\t");
         System.out.println(inputSequence);
-        System.out.print("Input structure: \t\t\t");
+        System.out.print("Input structure: \t\t");
         System.out.println(openChain.getStructure());
 
         Organic organic = OrganicFactory.getFromOpenChain(openChain);
@@ -62,10 +62,10 @@ public class StructureToName {
         System.out.println(organic.getStructure());
 
         String name = organic.getName();
-        System.out.print("Name given structure:\t\t");
+        System.out.print("Name given structure:\t");
         System.out.println(name);
 
-        System.out.print("Structure given name:\t\t");
+        System.out.print("Structure given name:\t");
 
         try {
             Optional<Organic> organicFromName = OrganicFactory.getFromName(name);
