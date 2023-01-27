@@ -19,10 +19,9 @@ public class OrganicFactory {
         Molecule molecule = new Molecule(opsinResult.get().getCml(), smiles);
         Optional<OpenChain> openChain = molecule.toOpenChain();
 
-        if (openChain.isEmpty())
-            return Optional.empty();
+        String structure = openChain.map(OpenChain::getStructure).orElse(null);
 
-        return Optional.of(new Organic(name, openChain.get().getStructure(), smiles));
+        return Optional.of(new Organic(name, structure, smiles));
     }
 
     public static Organic getFromOpenChain(OpenChain openChain) {
