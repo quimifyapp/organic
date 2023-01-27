@@ -12,10 +12,25 @@
         <opsin.version>2.7.0</opsin.version>
     </properties>
 
+    <!-- How to update quimify-opsin dependency:
+    1. Edit <opsin.version> property above
+    2. Replace JAR file
+    3. Run (replacing X.X.X with the version):
+    mvn install:install-file -Dfile=lib/quimify-opsin-es-X.X.X-with-dependencies.jar -DgroupId=com.quimify.organic.opsin -DartifactId=quimify-opsin -Dversion=X.X.X -Dpackaging=jar
+    !-->
+
     <groupId>com.quimify.organic</groupId>
     <artifactId>quimify-organic</artifactId>
     <version>${version}</version>
     <name>Quimify Organic</name>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.quimify.organic.opsin</groupId>
+            <artifactId>quimify-opsin</artifactId>
+            <version>${opsin.version}</version>
+        </dependency>
+    </dependencies>
 
     <build>
         <plugins>
@@ -51,13 +66,5 @@
             </plugin>
         </plugins>
     </build>
-
-    <dependencies>
-        <dependency>
-            <groupId>com.quimify.organic.opsin</groupId>
-            <artifactId>quimify-opsin</artifactId>
-            <version>${opsin.version}</version>
-        </dependency>
-    </dependencies>
 
 </project>
