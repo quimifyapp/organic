@@ -4,11 +4,12 @@ import com.quimify.organic.Nomenclature;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Carbon extends Nomenclature {
 
     private int freeBondCount;
-    private final List<Substituent> substituents;
+    private final List<Substituent> substituents; // TODO set?
 
     // Constructor:
 
@@ -20,24 +21,19 @@ public class Carbon extends Nomenclature {
     Carbon(Carbon other) {
         freeBondCount = other.freeBondCount;
         substituents = new ArrayList<>();
-        other.substituents.forEach(substituent -> substituents.add(new Substituent(substituent)));
+        other.substituents.forEach(s -> substituents.add(new Substituent(s)));
     }
 
     // Queries:
 
     public boolean isBondedTo(Group group) {
-        switch(group) {
-            case alkene:
-                return freeBondCount == 1; // -CO=
-            case alkyne:
-                return freeBondCount == 2; // -CH≡
-            default:
-                for(Substituent substituent : substituents)
-                    if(substituent.getGroup() == group)
-                        return true;
+        if(group == Group.alkene)
+            return freeBondCount == 1; // -CO=
 
-                return false;
-        }
+        if(group == Group.alkyne)
+            return freeBondCount == 2; // -CH≡
+
+        return substituents.stream().anyMatch(s -> s.getGroup() == group);
     }
 
     protected int getAmountOf(Group group) {
@@ -53,11 +49,9 @@ public class Carbon extends Nomenclature {
 
     @Override
     public int hashCode() {
-        List<Substituent> sortedSubstituents = substituents.stream()
-                .sorted(Substituent::compareTo).collect(Collectors.toList());
-
-        return Objects.hash(freeBondCount, sortedSubstituents);
-}
+        Stream<Substituent> sortedSubstituents = substituents.stream().sorted(Substituent::compareTo);
+        return Objects.hash(freeBondCount, sortedSubstituents.collect(Collectors.toList()));
+    }
 
     @Override
     public boolean equals(Object other) {
