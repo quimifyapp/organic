@@ -19,8 +19,8 @@
 
     <!-- How to update quimify-opsin dependency:
     1. Edit <opsin.version> property above
-    2. Replace JAR file
-    3. Run (replacing X.X.X with the version):
+    2. Put the new JAR file inside /lib
+    3. Run by replacing X.X.X with version (may not work in IntelliJ terminal):
     mvn install:install-file -Dfile=lib/quimify-opsin-es-X.X.X-with-dependencies.jar -DgroupId=com.quimify.organic.opsin -DartifactId=quimify-opsin -Dversion=X.X.X -Dpackaging=jar
     !-->
 
