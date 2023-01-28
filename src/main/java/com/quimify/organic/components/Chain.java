@@ -9,6 +9,8 @@ public class Chain extends Nomenclature {
 
 	private final List<Carbon> carbons;
 
+	// Error messages:
+
 	private static final String cannotBondCarbonError = "Cannot bond carbon to the right of chain: %s.";
 	private static final String noRadicalBondedError = "There are no radicals bonded to carbon: %s.";
 	private static final String nothingToTheLeftError = "No first carbon can have more chain to its left.";
@@ -93,12 +95,12 @@ public class Chain extends Nomenclature {
 	}
 
 	public void bondCarbon() {
-		if (canBondCarbon()) {
-			Carbon lastCarbon = getLastCarbon();
-			lastCarbon.useBond();
-			carbons.add(new Carbon(lastCarbon.getFreeBondCount() + 1));
-		}
-		else throw new IllegalStateException(String.format(cannotBondCarbonError, getStructure()));
+		if (!canBondCarbon())
+			throw new IllegalStateException(String.format(cannotBondCarbonError, getStructure()));
+
+		Carbon lastCarbon = getLastCarbon();
+		lastCarbon.useBond();
+		carbons.add(new Carbon(lastCarbon.getFreeBondCount() + 1));
 	}
 
 	public void removeCarbon(Carbon carbon) {
