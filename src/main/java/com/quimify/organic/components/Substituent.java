@@ -18,7 +18,7 @@ public class Substituent extends Nomenclature {
 	// -CH2-CH2-CH3    →   { Group.radical,  bondCount: 1, carbonCount: 3, iso: false }
 	// -CH(CH3)-CH3    →   { Group.radical,  bondCount: 1, carbonCount: 3, iso: true  }
 
-    // Constants:
+    // Error messages:
 
     private static final String noUniqueError = "There is no unique substituent with functional group: %s.";
     private static final String noSuchError = "There is no substituent with functional group: %s.";
@@ -181,7 +181,8 @@ public class Substituent extends Nomenclature {
     private String getRadicalStructure(int carbonCount, boolean iso) {
         if (iso)
             return "CH2".repeat(Math.max(0, carbonCount - 3)) + "CH(CH3)2";
-        else return "CH2".repeat(Math.max(0, carbonCount - 1)) + "CH3";
+
+        return "CH2".repeat(Math.max(0, carbonCount - 1)) + "CH3";
     }
 
     @Override

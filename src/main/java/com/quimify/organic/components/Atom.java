@@ -13,13 +13,15 @@ public class Atom {
 	public static final Atom H = new Atom(Element.H);
 	public static final Atom N = new Atom(Element.N);
 	public static final Atom O = new Atom(Element.O);
-	public static final Atom OH = new Atom(Element.O, List.of(H));
+	public static final Atom OH = new Atom(Element.O, List.of(H)); // TODO set?
 	public static final Atom NH2 = new Atom(Element.N, List.of(H, H));
 	public static final Atom NO2 = new Atom(Element.N, List.of(O, O));
 	public static final Atom Br = new Atom(Element.Br);
 	public static final Atom Cl = new Atom(Element.Cl);
 	public static final Atom F = new Atom(Element.F);
 	public static final Atom I = new Atom(Element.I);
+
+	// Error messages:
 
 	private static final String unknownAtomError = "Unknown organic atom: %s.";
 	private static final String unknownFunctionalGroupError = "Unknown functional group given atom: %s.";
@@ -60,12 +62,6 @@ public class Atom {
 		}
 	}
 
-	protected Atom(Element element, List<Atom> bondedAtoms) {
-		this.id = null;
-		this.element = element;
-		this.bondedAtoms = bondedAtoms;
-	}
-
 	protected Atom(Element element) {
 		this.id = null;
 		this.element = element;
@@ -76,6 +72,12 @@ public class Atom {
 		this.id = other.id;
 		this.element = other.element;
 		this.bondedAtoms = new ArrayList<>(other.bondedAtoms);
+	}
+
+	private Atom(Element element, List<Atom> bondedAtoms) {
+		this.id = null;
+		this.element = element;
+		this.bondedAtoms = bondedAtoms;
 	}
 
 	// Modifiers:
@@ -114,6 +116,7 @@ public class Atom {
 		Group group;
 
 		Atom anonymousAtom = toAnonymous();
+
 		if (anonymousAtom.equals(Atom.H))
 			group = Group.hydrogen;
 		else if (anonymousAtom.equals(Atom.N))
