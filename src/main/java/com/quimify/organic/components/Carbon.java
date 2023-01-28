@@ -11,6 +11,10 @@ public class Carbon extends Nomenclature {
     private int freeBondCount;
     private final List<Substituent> substituents; // TODO set?
 
+    // Error messages:
+
+    private static final String cannotBondError = "Cannot bond %s to carbon: %s.";
+
     // Constants:
 
     protected static final Carbon CH3 = new Carbon(1);
@@ -39,7 +43,7 @@ public class Carbon extends Nomenclature {
         substituents = new ArrayList<>();
     }
 
-    Carbon(Carbon other) {
+    protected Carbon(Carbon other) {
         freeBondCount = other.freeBondCount;
         substituents = new ArrayList<>();
         other.substituents.forEach(s -> substituents.add(new Substituent(s)));
@@ -100,6 +104,9 @@ public class Carbon extends Nomenclature {
     }
 
     protected void bond(Substituent substituent) {
+        if(substituent.getBondCount() > freeBondCount)
+            throw new IllegalStateException(String.format(cannotBondError, substituent, getStructure()));
+
         substituents.add(substituent);
         freeBondCount -= substituent.getBondCount();
     }
