@@ -11,6 +11,27 @@ public class Carbon extends Nomenclature {
     private int freeBondCount;
     private final List<Substituent> substituents; // TODO set?
 
+    // Constants:
+
+    protected static final Carbon CH3 = new Carbon(1);
+    static {
+        CH3.bond(Group.hydrogen);
+        CH3.bond(Group.hydrogen);
+        CH3.bond(Group.hydrogen);
+    }
+
+    protected static final Carbon CHCH3 = new Carbon(2);
+    static {
+        CHCH3.bond(Group.hydrogen);
+        CHCH3.bond(new Substituent(1));
+    }
+
+    protected static final Carbon CH2 = new Carbon(2);
+    static {
+        CH2.bond(Group.hydrogen);
+        CH2.bond(Group.hydrogen);
+    }
+
     // Constructor:
 
     protected Carbon(int usedBondCount) {

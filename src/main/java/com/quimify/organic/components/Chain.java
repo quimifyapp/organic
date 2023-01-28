@@ -9,30 +9,6 @@ public class Chain extends Nomenclature {
 
 	private final List<Carbon> carbons;
 
-	// Constants:
-
-	private static final Carbon CH3 = new Carbon(1);
-
-	static {
-		CH3.bond(Group.hydrogen);
-		CH3.bond(Group.hydrogen);
-		CH3.bond(Group.hydrogen);
-	}
-
-	private static final Carbon CHCH3 = new Carbon(2);
-
-	static {
-		CHCH3.bond(Group.hydrogen);
-		CHCH3.bond(new Substituent(1));
-	}
-
-	private static final Carbon CH2 = new Carbon(2);
-
-	static {
-		CH2.bond(Group.hydrogen);
-		CH2.bond(Group.hydrogen);
-	}
-
 	private static final String cannotBondCarbonError = "Cannot bond carbon to the right of chain: %s.";
 	private static final String noRadicalBondedError = "There are no radicals bonded to carbon: %s.";
 	private static final String nothingToTheLeftError = "No first carbon can have more chain to its left.";
@@ -95,9 +71,7 @@ public class Chain extends Nomenclature {
 	}
 
 	public List<Integer> getIndexesOf(Group group) {
-		return getIndexesOf(carbons.stream()
-				.map(carbon -> carbon.getAmountOf(group))
-				.collect(Collectors.toList()));
+		return getIndexesOf(carbons.stream().map(c -> c.getAmountOf(group)).collect(Collectors.toList()));
 	}
 
 	public void bond(Substituent substituent) {
@@ -111,9 +85,7 @@ public class Chain extends Nomenclature {
 	}
 
 	public List<Integer> getIndexesOf(Substituent substituent) {
-		return getIndexesOf(carbons.stream()
-				.map(carbon -> carbon.getAmountOf(substituent))
-				.collect(Collectors.toList()));
+		return getIndexesOf(carbons.stream().map(c -> c.getAmountOf(substituent)).collect(Collectors.toList()));
 	}
 
 	public boolean canBondCarbon() {
@@ -122,10 +94,11 @@ public class Chain extends Nomenclature {
 
 	public void bondCarbon() {
 		if (canBondCarbon()) {
-			Carbon ultimo = getLastCarbon();
-			ultimo.useBond();
-			carbons.add(new Carbon(ultimo.getFreeBondCount() + 1));
-		} else throw new IllegalStateException(String.format(cannotBondCarbonError, getStructure()));
+			Carbon lastCarbon = getLastCarbon();
+			lastCarbon.useBond();
+			carbons.add(new Carbon(lastCarbon.getFreeBondCount() + 1));
+		}
+		else throw new IllegalStateException(String.format(cannotBondCarbonError, getStructure()));
 	}
 
 	public void removeCarbon(Carbon carbon) {
@@ -261,9 +234,10 @@ public class Chain extends Nomenclature {
 		if (carbonIndex == 0)
 			throw new IllegalArgumentException(nothingToTheLeftError);
 
-		if (carbonIndex > 1 && carbons.get(1).equals(CHCH3))
+		if (carbonIndex > 1 && carbons.get(1).equals(Carbon.CHCH3))
 			return new Substituent(carbonIndex + 1, true);
-		else return new Substituent(carbonIndex);
+
+		return new Substituent(carbonIndex);
 	}
 
 	private List<Carbon> getCarbonsInRadical(Substituent radical) {
@@ -271,17 +245,17 @@ public class Chain extends Nomenclature {
 			throw new IllegalArgumentException(String.format(notRadicalError, radical.getGroup()));
 
 		List<Carbon> carbonsInRadical = new ArrayList<>();
-		carbonsInRadical.add(CH3);
+		carbonsInRadical.add(Carbon.CH3);
 
 		int carbonCount = 1; // CH3-
 
 		if (radical.isIso()) {
-			carbonsInRadical.add(CHCH3); // CH3-CH(CH3)-
+			carbonsInRadical.add(Carbon.CHCH3); // CH3-CH(CH3)-
 			carbonCount += 2; // It had a methyl bonded to it
 		}
 
 		int remaining = radical.getCarbonCount() - carbonCount;
-		carbonsInRadical.addAll(Collections.nCopies(remaining, CH2)); // CH3-CH(CH3)-CH2-
+		carbonsInRadical.addAll(Collections.nCopies(remaining, Carbon.CH2)); // CH3-CH(CH3)-CH2-
 
 		return carbonsInRadical;
 	}
@@ -289,30 +263,13 @@ public class Chain extends Nomenclature {
 	private boolean couldBePartOfARadical(int carbonIndex) {
 		Carbon carbon = carbons.get(carbonIndex);
 
-		if(carbon.isBondedTo(Group.alkene) || carbon.isBondedTo(Group.alkyne))
-			return false;
+		if(carbonIndex == 0)
+			return carbon.equals(Carbon.CH3);
 
-		Carbon CH3 = new Carbon(1);
-		CH3.bond(Group.hydrogen);
-		CH3.bond(Group.hydrogen);
-		CH3.bond(Group.hydrogen);
+		if(carbonIndex == 1)
+			return carbon.equals(Carbon.CH2) || carbon == Carbon.CHCH3;
 
-		Carbon CH2 = new Carbon(2);
-		CH2.bond(Group.hydrogen);
-		CH2.bond(Group.hydrogen);
-
-		switch (carbonIndex) {
-			case 0:
-				return carbon.equals(CH3);
-			case 1: // Could be part of a 'iso' radical
-				Carbon CHCH3 = new Carbon(2);
-				CHCH3.bond(Group.hydrogen);
-				CHCH3.bond(new Substituent(1));
-
-				return Set.of(CH2, CHCH3).contains(carbon);
-			default:
-				return carbon.equals(CH2);
-		}
+		return carbon.equals(Carbon.CH2);
 	}
 
 	// Text:
