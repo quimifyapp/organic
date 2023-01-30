@@ -104,7 +104,7 @@ public class Carbon extends Nomenclature {
     }
 
     protected void bond(Substituent substituent) {
-        if(substituent.getBondCount() > freeBondCount)
+        if(substituent.getBondCount() > freeBondCount) // TODO test NameToStructure
             throw new IllegalStateException(String.format(cannotBondError, substituent, getStructure()));
 
         substituents.add(substituent);
