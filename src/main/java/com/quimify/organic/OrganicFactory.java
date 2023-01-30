@@ -41,7 +41,7 @@ public class OrganicFactory {
 
         String structure = openChain.getStructure();
 
-        return new Organic(name, structure, smiles);
+        return new Organic(name, smiles, structure);
     }
 
 }
