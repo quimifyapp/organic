@@ -346,3 +346,7 @@ healthchecksdb
 /quimify-organic.iml
 /out/
 /dependency-reduced-pom.xml
+/build/
+/.gradle/
+/gradlew.bat
+/gradlew
