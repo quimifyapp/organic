@@ -13,8 +13,10 @@ public class RandomStructureToName {
 
     // Settings:
 
-    private static final boolean printToConsole = true;
+    private static final boolean allowDuplicates = false;
     private static final long numberOfOpenChains = 1 << 18; // 2 ^ 18
+
+    private static final boolean printToConsole = true;
 
     private static final String structuresOutputPath = "structures.txt";
     private static final String namesOutputPath = "names.txt";
@@ -36,21 +38,22 @@ public class RandomStructureToName {
 
             String structure = openChain.getStructure();
 
-            if(!structures.toString().contains(structure)) {
-                String name = openChain.getName();
+            if (!allowDuplicates && structures.toString().contains(structure))
+                continue;
 
-                structures.append('\n').append(structure);
-                names.append('\n').append(name);
+            String name = openChain.getName();
 
-                if(printToConsole) {
-                    System.out.println(openChainCount);
-                    System.out.println(structure);
-                    System.out.println(name);
-                    System.out.println();
-                }
+            structures.append('\n').append(structure);
+            names.append('\n').append(name);
 
-                openChainCount++;
+            if (printToConsole) {
+                System.out.println(openChainCount);
+                System.out.println(structure);
+                System.out.println(name);
+                System.out.println();
             }
+
+            openChainCount++;
         }
 
         try {
@@ -94,9 +97,15 @@ public class RandomStructureToName {
                 continue;
             }
 
-            if (random.nextInt(bondHydrogenPeriod) == 0)
+            if (random.nextInt(bondHydrogenPeriod) == 0) {
                 openChain = openChain.bond(new Substituent(Group.hydrogen));
-            else openChain = openChain.bond(getRandomSubstituent(openChain.getBondableGroups()));
+                continue;
+            }
+
+            List<Group> bondableGroups = openChain.getBondableGroups();
+            Substituent randomSubstituent = getRandomSubstituent(bondableGroups);
+
+            openChain = openChain.bond(randomSubstituent);
         }
 
         openChain.correct();
