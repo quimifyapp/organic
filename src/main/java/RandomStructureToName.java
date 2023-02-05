@@ -4,6 +4,7 @@ import com.quimify.organic.molecules.open_chain.OpenChain;
 import com.quimify.organic.molecules.open_chain.Simple;
 
 import java.io.PrintWriter;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 
@@ -28,7 +29,8 @@ public class RandomStructureToName {
     private static final int maximumCarbonsInRadicals = 6;
 
     public static void main(String[] args) {
-        StringBuilder structures = new StringBuilder();
+        HashSet<String> structures = new HashSet<>();
+
         StringBuilder names = new StringBuilder();
 
         int openChainCount = 0;
@@ -38,12 +40,12 @@ public class RandomStructureToName {
 
             String structure = openChain.getStructure();
 
-            if (!allowDuplicates && structures.toString().contains(structure))
+            if (!allowDuplicates && structures.contains(structure))
                 continue;
 
-            String name = openChain.getName();
+            structures.add(structure);
 
-            structures.append('\n').append(structure);
+            String name = openChain.getName();
             names.append('\n').append(name);
 
             if (printToConsole) {
@@ -58,7 +60,10 @@ public class RandomStructureToName {
 
         try {
             PrintWriter structuresFile = new PrintWriter(structuresOutputPath);
-            structuresFile.println(structures);
+
+            for (String structure : structures)
+                structuresFile.println(structure);
+
             structuresFile.close();
 
             System.out.println("Structures saved to: " + structuresOutputPath);
@@ -71,6 +76,7 @@ public class RandomStructureToName {
         } catch (Exception exception) {
             exception.printStackTrace();
         }
+
     }
 
     // Private:
