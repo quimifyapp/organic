@@ -1,8 +1,8 @@
 package com.quimify.organic.molecules.open_chain;
 
-// Esta interfaz implementa compuestos orgánicos no cíclicos:
-//  - Simple: R
-//  - Éter: R - O - R' (con funciones de prioridad menor a la función éter)
+// This interface implements non-cyclic organic compounds:
+// - Simple: R
+// - Ether: R - O - R' (with lower priority functional groups than the ether function)
 
 import com.quimify.organic.components.Group;
 import com.quimify.organic.components.Substituent;

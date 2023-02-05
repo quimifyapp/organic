@@ -8,7 +8,8 @@ import com.quimify.organic.components.Substituent;
 
 import java.util.*;
 
-// Esta clase representa éteres: dos cadenas con funciones de prioridad menor a la función éter unidas por un oxígeno.
+// This class represents ethers, which are compounds composed of two carbon chains, with lower priority functions than
+// the ether function, linked by an oxygen.
 
 public final class Ether extends Nomenclature implements OpenChain {
 
