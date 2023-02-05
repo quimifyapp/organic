@@ -6,7 +6,7 @@ import com.quimify.organic.components.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
-// Esta clase representa compuestos formados por una sola cadena carbonada finita con sustituyentes.
+// This class represents compounds composed of a single finite carbon chain with substituents.
 
 public final class Simple extends Nomenclature implements OpenChain {
 
@@ -317,15 +317,13 @@ public final class Simple extends Nomenclature implements OpenChain {
     }
 
     private boolean correctChainOrientationBy(int comparaison) {
-        boolean corrected;
+        if (comparaison == 0)
+            return false; // Undecided
 
-        if (comparaison != 0) { // No son iguales
-            if (comparaison > 0) // El inverso va antes alfabéticamente
-                chain.reverseOrientation();
-            corrected = true; // Ya se ha corregido el orden según los radicales alfabéticamente
-        } else corrected = false; // Indecidible
+        if (comparaison > 0)
+            chain.reverseOrientation();
 
-        return corrected;
+        return true; // Correction has been done
     }
 
     // Naming:
@@ -348,16 +346,14 @@ public final class Simple extends Nomenclature implements OpenChain {
     }
 
     private String getSuffixNameFor(Group bond) { // TODO fix repeated code
-        String suffixName;
-
-        List<Integer> indexes = chain.getIndexesOf(bond);
         String name = suffixNameParticleFor(bond);
 
-        if (isRedundantInName(bond)) // Sobran los localizadores porque son evidentes
-            suffixName = multiplierFor(indexes.size()) + name; // Como "dioico"
-        else suffixName = new Locator(indexes, name).toString(); // Como "2-3-diona"
+        List<Integer> indexes = chain.getIndexesOf(bond);
 
-        return suffixName;
+        if (isRedundantInName(bond)) // The locators are unnecessary
+            return multiplierFor(indexes.size()) + name; // I.E. "dioico"
+
+        return new Locator(indexes, name).toString(); // I.E. "2-3-diona"
     }
 
 }
