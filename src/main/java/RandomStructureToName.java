@@ -9,36 +9,31 @@ import java.util.Random;
 
 public class RandomStructureToName {
 
-    public static void main(String[] args) { // TODO break up
+    private static final Random random = new Random();
+
+    // Settings:
+
+    private static final boolean printToConsole = true;
+    private static final long numberOfOpenChains = 1 << 18; // 2 ^ 18
+
+    private static final String structuresOutputPath = "structures.txt";
+    private static final String namesOutputPath = "names.txt";
+
+    private static final int bondCarbonPeriod = 3;
+    private static final int bondHydrogenPeriod = 2;
+    private static final int bondIsoRadicalPeriod = 10;
+
+    private static final int maximumCarbonsInRadicals = 6;
+
+    public static void main(String[] args) {
         StringBuilder structures = new StringBuilder();
         StringBuilder names = new StringBuilder();
-        int count = 0;
 
-        while (count <= 262144) {
-            OpenChain openChain = new Simple();
+        int openChainCount = 0;
 
-            while(!openChain.isDone()) {
-                if(openChain.canBondCarbon() && new Random().nextInt(3) == 0) {
-                    openChain.bondCarbon();
-                    continue;
-                }
+        while (openChainCount <= numberOfOpenChains) {
+            OpenChain openChain = getRandomOpenChain();
 
-                if(new Random().nextBoolean()) {
-                    List<Group> bondableGroups = openChain.getBondableGroups();
-
-                    Group group = bondableGroups.get(new Random().nextInt(bondableGroups.size()));
-
-                    if(group == Group.radical) {
-                        if(new Random().nextInt(10) == 0)
-                            openChain = openChain.bond(new Substituent(new Random().nextInt(3) + 3, true));
-                        else openChain = openChain.bond(new Substituent(new Random().nextInt(5) + 1));
-                    }
-                    else openChain = openChain.bond(group);
-                }
-                else openChain = openChain.bond(Group.hydrogen);
-            }
-
-            openChain.correct();
             String structure = openChain.getStructure();
 
             if(!structures.toString().contains(structure)) {
@@ -47,28 +42,66 @@ public class RandomStructureToName {
                 structures.append('\n').append(structure);
                 names.append('\n').append(name);
 
-                //System.out.println(count);
-                //System.out.println(structure);
-                //System.out.println(name);
-                //System.out.println();
+                if(printToConsole) {
+                    System.out.println(openChainCount);
+                    System.out.println(structure);
+                    System.out.println(name);
+                    System.out.println();
+                }
 
-                count++;
+                openChainCount++;
             }
         }
 
         try {
-            PrintWriter structuresFile = new PrintWriter("formulas.txt");
+            PrintWriter structuresFile = new PrintWriter(structuresOutputPath);
             structuresFile.println(structures);
-
             structuresFile.close();
 
-            PrintWriter namesFile = new PrintWriter("names.txt");
-            namesFile.println(names);
+            System.out.println("Structures saved to: " + structuresOutputPath);
 
+            PrintWriter namesFile = new PrintWriter(namesOutputPath);
+            namesFile.println(names);
             namesFile.close();
+
+            System.out.println("Names saved to: " + namesOutputPath);
         } catch (Exception exception) {
             exception.printStackTrace();
         }
+    }
+
+    // Private:
+
+    private static Substituent getRandomSubstituent(List<Group> bondableGroups) {
+
+        Group group = bondableGroups.get(random.nextInt(bondableGroups.size()));
+
+        if (group != Group.radical)
+            return new Substituent(group);
+
+        if (random.nextInt(bondIsoRadicalPeriod) == 0)
+            return new Substituent(3 + random.nextInt(maximumCarbonsInRadicals - 3), true);
+
+        return new Substituent(1 + random.nextInt(maximumCarbonsInRadicals - 1));
+    }
+
+    private static OpenChain getRandomOpenChain() {
+        OpenChain openChain = new Simple();
+
+        while(!openChain.isDone()) {
+            if(openChain.canBondCarbon() && random.nextInt(bondCarbonPeriod) == 0) {
+                openChain.bondCarbon();
+                continue;
+            }
+
+            if (random.nextInt(bondHydrogenPeriod) == 0)
+                openChain = openChain.bond(new Substituent(Group.hydrogen));
+            else openChain = openChain.bond(getRandomSubstituent(openChain.getBondableGroups()));
+        }
+
+        openChain.correct();
+
+        return openChain;
     }
 
 }
