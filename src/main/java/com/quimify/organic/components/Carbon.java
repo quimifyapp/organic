@@ -13,7 +13,7 @@ public class Carbon extends Nomenclature {
 
     // Error messages:
 
-    private static final String cannotBondError = "Cannot bond %s to carbon: %s.";
+    private static final String cantBondError = "Can't bond %s to carbon: %s.";
 
     // Constants:
 
@@ -105,7 +105,7 @@ public class Carbon extends Nomenclature {
 
     protected void bond(Substituent substituent) {
         if(substituent.getBondCount() > freeBondCount) // TODO test NameToStructure
-            throw new IllegalStateException(String.format(cannotBondError, substituent, getStructure()));
+            throw new IllegalStateException(String.format(cantBondError, substituent, getStructure()));
 
         substituents.add(substituent);
         freeBondCount -= substituent.getBondCount();
