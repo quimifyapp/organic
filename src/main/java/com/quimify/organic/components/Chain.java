@@ -11,7 +11,7 @@ public class Chain extends Nomenclature {
 
 	// Error messages:
 
-	private static final String cannotBondCarbonError = "Cannot bond carbon to the right of chain: %s.";
+	private static final String cantBondCarbonError = "Can't bond carbon to the right of chain: %s.";
 	private static final String noRadicalBondedError = "There are no radicals bonded to carbon: %s.";
 	private static final String nothingToTheLeftError = "No first carbon can have more chain to its left.";
 	private static final String notRadicalError = "Substituent with functional group %s is not a radical.";
@@ -96,7 +96,7 @@ public class Chain extends Nomenclature {
 
 	public void bondCarbon() {
 		if (!canBondCarbon())
-			throw new IllegalStateException(String.format(cannotBondCarbonError, getStructure()));
+			throw new IllegalStateException(String.format(cantBondCarbonError, getStructure()));
 
 		Carbon lastCarbon = getLastCarbon();
 		lastCarbon.useBond();
@@ -140,7 +140,7 @@ public class Chain extends Nomenclature {
 				// If a correction was performed, start again at the beginning
 				// Otherwise, move to the next carbon
 				carbonIndex = correctionPerformed ? 0 : carbonIndex + 1;
-			else break; // Stop the loop if the current carbon cannot be part of a radical
+			else break; // Stop the loop if the current carbon can't be part of a radical
 		}
 	}
 
