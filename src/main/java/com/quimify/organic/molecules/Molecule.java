@@ -75,10 +75,10 @@ public class Molecule extends Nomenclature {
 		if (!isOpenChain())
 			return Optional.empty();
 
-		Optional<OpenChain> openChain = getSimpleOpenChain();
+		Optional<OpenChain> openChain = toSimpleOpenChain();
 
 		if (openChain.isEmpty())
-			openChain = getEtherOpenChain();
+			openChain = toEtherOpenChain();
 
 		return openChain;
 	}
@@ -94,9 +94,7 @@ public class Molecule extends Nomenclature {
 	}
 
 	private List<Atom> getCarbons() {
-		return molecule.stream().filter(atom ->
-						atom.getElement() == Element.C)
-				.collect(Collectors.toList());
+		return molecule.stream().filter(atom -> atom.getElement() == Element.C).collect(Collectors.toList());
 	}
 
 	private List<Atom> getEndingCarbons() {
@@ -105,7 +103,7 @@ public class Molecule extends Nomenclature {
 
 	// Simple open chain:
 
-	private Optional<OpenChain> getSimpleOpenChain() {
+	private Optional<OpenChain> toSimpleOpenChain() {
 		Optional<Atom> simpleEndingCarbon = getSimpleEndingCarbon();
 
 		if (simpleEndingCarbon.isEmpty())
@@ -153,7 +151,7 @@ public class Molecule extends Nomenclature {
 
 	// Ether open chain:
 
-	private Optional<OpenChain> getEtherOpenChain() {
+	private Optional<OpenChain> toEtherOpenChain() {
 		Optional<Atom> etherEndingCarbon = getEtherEndingCarbon();
 
 		if (etherEndingCarbon.isEmpty())
@@ -191,8 +189,7 @@ public class Molecule extends Nomenclature {
 			else if (nonSubstituent.getElement() == Element.O)
 				ether = !hasFoundEther && isEtherCarbon(nonSubstituent, true); // Recursion
 			else ether = false;
-		}
-		else ether = nonSubstituentBondedAtoms.size() == 0;
+		} else ether = nonSubstituentBondedAtoms.size() == 0;
 
 		return ether;
 	}
@@ -212,8 +209,7 @@ public class Molecule extends Nomenclature {
 			if (nextAtom.get().getElement() == Element.O) {
 				ether.bond(Group.ether);
 				nextAtom = Optional.of(nextAtom.get().getBondedAtomsSeparated().get(0));
-			}
-			else ether.bondCarbon(); // It's a carbon
+			} else ether.bondCarbon(); // It's a carbon
 
 			buildEtherFrom(ether, nextAtom.get()); // Recursion
 		}

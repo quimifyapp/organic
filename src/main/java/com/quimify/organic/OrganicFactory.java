@@ -8,20 +8,27 @@ import java.util.Optional;
 
 public class OrganicFactory {
 
-    public static Optional<Organic> getFromName(String name) throws Exception {
+    public static Optional<Organic> getFromName(String name) {
         Optional<OpsinResult> opsinResult = Opsin.parseSpanishName(name);
 
         if (opsinResult.isEmpty())
             return Optional.empty();
 
+        Organic organic;
+
         String smiles = opsinResult.get().getSmiles();
 
-        Molecule molecule = new Molecule(opsinResult.get().getCml(), smiles);
-        Optional<OpenChain> openChain = molecule.toOpenChain();
+        try {
+            Molecule molecule = new Molecule(opsinResult.get().getCml(), smiles);
+            Optional<OpenChain> openChain = molecule.toOpenChain();
+            String structure = openChain.map(OpenChain::getStructure).orElse(null);
 
-        String structure = openChain.map(OpenChain::getStructure).orElse(null);
+            organic = new Organic(name, smiles, structure);
+        } catch (Exception exception) {
+            organic = new Organic(name, smiles, exception);
+        }
 
-        return Optional.of(new Organic(name, structure, smiles));
+        return Optional.of(organic);
     }
 
     public static Organic getFromOpenChain(OpenChain openChain) {
@@ -34,7 +41,7 @@ public class OrganicFactory {
 
         String structure = openChain.getStructure();
 
-        return new Organic(name, structure, smiles);
+        return new Organic(name, smiles, structure);
     }
 
 }

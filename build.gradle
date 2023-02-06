@@ -1,0 +1,23 @@
+plugins {
+    id 'java'
+    id "com.github.johnrengelman.shadow" version "7.1.2"
+}
+
+repositories {
+    mavenCentral()
+}
+
+group 'com.quimify.organic'
+version '3.0.4'
+
+dependencies {
+    implementation(files("lib/quimify-opsin-es-2.7.0-with-dependencies.jar"))
+}
+
+shadowJar {
+    exclude {
+        // Classes not in a package (I/O classes) to make it a library:
+        it.path.endsWith(".class") && !it.path.contains("/")
+    }
+    classifier = null // Removes "-all" suffix from name
+}

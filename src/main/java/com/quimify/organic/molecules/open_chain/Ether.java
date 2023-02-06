@@ -8,7 +8,8 @@ import com.quimify.organic.components.Substituent;
 
 import java.util.*;
 
-// Esta clase representa éteres: dos cadenas con funciones de prioridad menor a la función éter unidas por un oxígeno.
+// This class represents ethers, which are compounds composed of two carbon chains, with lower priority functions than
+// the ether function, linked by an oxygen.
 
 public final class Ether extends Nomenclature implements OpenChain {
 
@@ -82,13 +83,13 @@ public final class Ether extends Nomenclature implements OpenChain {
 	}
 
 	public OpenChain bond(Substituent substituent) {
-		if (bondableGroups.contains(substituent.getGroup())) {
-			currentChain.bond(substituent);
+		if (!bondableGroups.contains(substituent.getGroup()))
+			throw new IllegalArgumentException("Couldn't bond " + substituent.getGroup() + " to an Ether.");
 
-			if (currentChain == firstChain && firstChain.isDone())
-				currentChain = secondChain;
-		}
-		else throw new IllegalArgumentException("Couldn't bond " + substituent.getGroup() + " to an Ether.");
+		currentChain.bond(substituent);
+
+		if (currentChain == firstChain && firstChain.isDone())
+			currentChain = secondChain;
 
 		return this;
 	}
@@ -96,7 +97,8 @@ public final class Ether extends Nomenclature implements OpenChain {
 	public boolean canBondCarbon() {
 		if(currentChain == firstChain)
 			return !firstChain.isBondedTo(Group.ether) && firstChain.canBondCarbon();
-		else return secondChain.canBondCarbon();
+
+		return secondChain.canBondCarbon();
 	}
 
 	public void bondCarbon() {
@@ -130,7 +132,8 @@ public final class Ether extends Nomenclature implements OpenChain {
 
 		if(currentChain == this.firstChain)
 			return firstChain.substring(0, firstChain.length() - 1); // CH-O-= -> CH-O-
-		else return firstChain + secondChain.toString();
+
+		return firstChain + secondChain.toString();
 	}
 
 	// Naming:
