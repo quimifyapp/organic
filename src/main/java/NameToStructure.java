@@ -1,12 +1,16 @@
 import com.quimify.organic.Organic;
 import com.quimify.organic.OrganicFactory;
 
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.Scanner;
 
 public class NameToStructure {
 
     public static void main(String[] args) {
+        System.setOut(new PrintStream(System.out, true, StandardCharsets.UTF_8));
+
         while (true) {
             System.out.print("Name: ");
             String name = new Scanner(System.in).nextLine();

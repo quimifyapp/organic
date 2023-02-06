@@ -5,6 +5,8 @@ import com.quimify.organic.components.Substituent;
 import com.quimify.organic.molecules.open_chain.OpenChain;
 import com.quimify.organic.molecules.open_chain.Simple;
 
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -13,29 +15,38 @@ import java.util.Scanner;
 public class StructureToName {
 
     public static void main(String[] args) {
+        System.setOut(new PrintStream(System.out, true, StandardCharsets.UTF_8));
+
         OpenChain openChain = new Simple();
         List<Integer> inputSequence = new ArrayList<>();
 
         while(!openChain.isDone()) {
             List<Group> bondableGroups = openChain.getBondableGroups();
 
-            for(int i = 0; i < bondableGroups.size(); i++)
-                System.out.println(i + ": " + bondableGroups.get(i));
+            for (Group bondableGroup : bondableGroups)
+                System.out.println(bondableGroup.ordinal() + ": " + bondableGroup);
 
-            boolean bondCarbon = openChain.canBondCarbon();
+            boolean canBondCarbon = openChain.canBondCarbon();
 
-            if(bondCarbon)
+            if(canBondCarbon)
                 System.out.println("-1: -C");
 
             System.out.println();
             System.out.println(openChain.getStructure());
+
             System.out.print("Bond: ");
             int input = new Scanner(System.in).nextInt();
             inputSequence.add(input);
 
-            if(input == -1 && bondCarbon)
+            if(input == -1 && canBondCarbon) {
                 openChain.bondCarbon();
-            else if(bondableGroups.get(input) == Group.radical) {
+                System.out.println();
+                continue;
+            }
+
+            Group group = Group.values()[input];
+
+            if(group == Group.radical) {
                 System.out.print("Normal or iso? [0/1]: ");
                 int isoCode = new Scanner(System.in).nextInt();
                 inputSequence.add(isoCode);
@@ -46,9 +57,8 @@ public class StructureToName {
 
                 openChain = openChain.bond(new Substituent(carbons, isoCode == 1));
             }
-            else openChain = openChain.bond(bondableGroups.get(input));
+            else openChain = openChain.bond(group);
 
-            System.out.println();
         }
 
         System.out.print("Input sequence:\t\t\t");

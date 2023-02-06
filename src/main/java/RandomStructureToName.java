@@ -3,7 +3,9 @@ import com.quimify.organic.components.Substituent;
 import com.quimify.organic.molecules.open_chain.OpenChain;
 import com.quimify.organic.molecules.open_chain.Simple;
 
+import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
@@ -29,6 +31,8 @@ public class RandomStructureToName {
     private static final int maximumCarbonsInRadicals = 6;
 
     public static void main(String[] args) {
+        System.setOut(new PrintStream(System.out, true, StandardCharsets.UTF_8));
+
         HashSet<String> structures = new HashSet<>();
 
         StringBuilder names = new StringBuilder();
