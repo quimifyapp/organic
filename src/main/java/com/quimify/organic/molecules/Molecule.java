@@ -2,9 +2,9 @@ package com.quimify.organic.molecules;
 
 import com.quimify.organic.Nomenclature;
 import com.quimify.organic.components.*;
-import com.quimify.organic.molecules.open_chain.Ether;
-import com.quimify.organic.molecules.open_chain.OpenChain;
-import com.quimify.organic.molecules.open_chain.Simple;
+import com.quimify.organic.molecules.openchain.Ether;
+import com.quimify.organic.molecules.openchain.OpenChain;
+import com.quimify.organic.molecules.openchain.Simple;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;

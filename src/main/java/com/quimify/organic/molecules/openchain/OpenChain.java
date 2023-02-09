@@ -1,4 +1,4 @@
-package com.quimify.organic.molecules.open_chain;
+package com.quimify.organic.molecules.openchain;
 
 // This interface implements non-cyclic organic compounds:
 // - Simple: R

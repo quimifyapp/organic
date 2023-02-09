@@ -2,8 +2,8 @@ import com.quimify.organic.Organic;
 import com.quimify.organic.OrganicFactory;
 import com.quimify.organic.components.Group;
 import com.quimify.organic.components.Substituent;
-import com.quimify.organic.molecules.open_chain.OpenChain;
-import com.quimify.organic.molecules.open_chain.Simple;
+import com.quimify.organic.molecules.openchain.OpenChain;
+import com.quimify.organic.molecules.openchain.Simple;
 
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;

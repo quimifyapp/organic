@@ -3,7 +3,7 @@ package com.quimify.organic;
 import com.quimify.organic.opsin.Opsin;
 import com.quimify.organic.opsin.OpsinResult;
 import com.quimify.organic.molecules.Molecule;
-import com.quimify.organic.molecules.open_chain.OpenChain;
+import com.quimify.organic.molecules.openchain.OpenChain;
 import java.util.Optional;
 
 public class OrganicFactory {

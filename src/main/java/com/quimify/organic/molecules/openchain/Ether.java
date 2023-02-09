@@ -1,4 +1,4 @@
-package com.quimify.organic.molecules.open_chain;
+package com.quimify.organic.molecules.openchain;
 
 import com.quimify.organic.Nomenclature;
 import com.quimify.organic.components.Atom;
