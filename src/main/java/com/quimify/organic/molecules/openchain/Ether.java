@@ -108,13 +108,14 @@ public final class Ether extends Nomenclature implements OpenChain {
 	public void correct() {
 		firstChain.correctChainToTheLeft(); // CF(CH3)-O- → CH3-CF-O-
 		secondChain.correctChainToTheRight(); // -O-CHF(CH3) → -O-CHF-CH3
+		// TODO based on chains names? gpt?
 	}
 
 	public String getName() {
 		String name;
 
-		String firstChainName = getNameFor(firstChain.getInverseOrientation()); // Se empieza a contar desde el oxígeno
-		String secondChainName = getNameFor(secondChain); // La secundaria ya está en el orden bueno
+		String firstChainName = getNameFor(firstChain.getInverseOrientation()); // First carbon is not the ending
+		String secondChainName = getNameFor(secondChain); // This is already well oriented
 
 		if (!firstChainName.equals(secondChainName)) {
 			// Chains are alphabetically ordered:
