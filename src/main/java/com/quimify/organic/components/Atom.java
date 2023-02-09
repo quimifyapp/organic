@@ -163,12 +163,20 @@ public class Atom {
 		if (bondedAtoms.size() != otherAtom.bondedAtoms.size())
 			return false;
 
+		// Equality check between bonded atoms, one node deep and regardless of order:
+
 		List<Atom> bondedAtomsCutOff = getBondedAtomsSeparated();
 		List<Atom> othersBondedAtomsCutOff = otherAtom.getBondedAtomsSeparated();
 
-		return bondedAtomsCutOff.stream().allMatch(bondedAtom ->
-				Collections.frequency(bondedAtomsCutOff, bondedAtom) ==
-						Collections.frequency(othersBondedAtomsCutOff, bondedAtom));
+		for (Atom bondedAtom : bondedAtomsCutOff) {
+			int frequency = Collections.frequency(bondedAtomsCutOff, bondedAtom);
+			int otherFrequency = Collections.frequency(othersBondedAtomsCutOff, bondedAtom);
+
+			if (frequency != otherFrequency)
+				return false;
+		}
+
+		return true;
 	}
 
 	// Getters:
