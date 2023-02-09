@@ -23,8 +23,13 @@ public class StructureToName {
         while(!openChain.isDone()) {
             List<Group> bondableGroups = openChain.getBondableGroups();
 
-            for (Group bondableGroup : bondableGroups)
-                System.out.println(bondableGroup.ordinal() + ": " + bondableGroup);
+            for (Group bondableGroup : bondableGroups) {
+                System.out.print(bondableGroup.ordinal() + ": ");
+
+                if(bondableGroup != Group.radical)
+                    System.out.println(new Substituent(bondableGroup));
+                else System.out.println("-CH2-CH3");
+            }
 
             boolean canBondCarbon = openChain.canBondCarbon();
 
