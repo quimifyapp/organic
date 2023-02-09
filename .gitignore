@@ -348,7 +348,5 @@ healthchecksdb
 /dependency-reduced-pom.xml
 /build/
 /.gradle/
-/gradlew.bat
-/gradlew
 /names.txt
 /structures.txt
