@@ -9,7 +9,6 @@ import java.util.Scanner;
 
 public class NameToStructure {
 
-
     public static void main(String[] args) {
         Scanner scanner = new Scanner(new InputStreamReader(System.in, StandardCharsets.UTF_8));
         System.setOut(new PrintStream(System.out, true, StandardCharsets.UTF_8));
