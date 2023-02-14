@@ -57,10 +57,10 @@ public class StructureToName {
                 inputSequence.add(isoCode);
 
                 System.out.print("Carbons: ");
-                int carbons = new Scanner(System.in).nextInt();
-                inputSequence.add(carbons);
+                int carbonCount = new Scanner(System.in).nextInt();
+                inputSequence.add(carbonCount);
 
-                openChain = openChain.bond(new Substituent(carbons, isoCode == 1));
+                openChain = openChain.bond(Substituent.radical(carbonCount, isoCode == 1));
             }
             else openChain = openChain.bond(group);
 

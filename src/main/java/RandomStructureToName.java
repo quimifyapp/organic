@@ -119,8 +119,8 @@ public class RandomStructureToName {
         if (group != Group.radical)
             substituent = new Substituent(group);
         else if (random.nextInt(bondIsoRadicalPeriod) == 0)
-            substituent = new Substituent(3 + random.nextInt(maximumCarbonsInRadicals - 3), true);
-        else substituent = new Substituent(1 + random.nextInt(maximumCarbonsInRadicals - 1));
+            substituent = Substituent.radical(3 + random.nextInt(maximumCarbonsInRadicals - 3), true);
+        else substituent = Substituent.radical(1 + random.nextInt(maximumCarbonsInRadicals - 1));
 
         return substituent;
     }

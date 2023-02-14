@@ -27,7 +27,7 @@ public class Carbon extends Nomenclature {
     protected static final Carbon CHCH3 = new Carbon(2);
     static {
         CHCH3.bond(Group.hydrogen);
-        CHCH3.bond(new Substituent(1));
+        CHCH3.bond(Substituent.radical(1));
     }
 
     protected static final Carbon CH2 = new Carbon(2);

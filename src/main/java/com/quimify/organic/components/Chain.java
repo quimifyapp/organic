@@ -237,9 +237,9 @@ public class Chain extends Nomenclature {
 			throw new IllegalArgumentException(nothingToTheLeftError);
 
 		if (carbonIndex > 1 && carbons.get(1).equals(Carbon.CHCH3))
-			return new Substituent(carbonIndex + 1, true);
+			return Substituent.radical(carbonIndex + 1, true);
 
-		return new Substituent(carbonIndex);
+		return Substituent.radical(carbonIndex);
 	}
 
 	private List<Carbon> getCarbonsInRadical(Substituent radical) {

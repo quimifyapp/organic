@@ -256,10 +256,10 @@ public class Molecule extends Nomenclature {
 		int hydrogenCount = radicalCarbon.getAmountOf(Element.H);
 
 		if (hydrogenCount == 3)
-			return new Substituent(1);
+			return Substituent.radical(1);
 
 		if (hydrogenCount == 1)
-			return new Substituent(3, true);
+			return Substituent.radical(3, true);
 
 		List<Atom> bondedCarbons = radicalCarbon.getBondedAtomsSeparated();
 		bondedCarbons.removeIf(bondedAtom -> bondedAtom.getElement() != Element.C);
@@ -268,7 +268,7 @@ public class Molecule extends Nomenclature {
 
 		Substituent radicalEnd = buildRadicalFrom(nextCarbon); // Recursive
 
-		return new Substituent(1 + radicalEnd.getCarbonCount(), radicalEnd.isIso()); // Appended
+		return Substituent.radical(1 + radicalEnd.getCarbonCount(), radicalEnd.isIso()); // Appended
 	}
 
 }

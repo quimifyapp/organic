@@ -64,27 +64,21 @@ public class Substituent extends Nomenclature {
         this.iso = false;
     }
 
-    public Substituent(int carbonCount) {
+    public static Substituent radical(int carbonCount) {
         if(carbonCount < 1)
-            throw new IllegalArgumentException("Radicals must have at least 1 carbon.");
+            throw new IllegalArgumentException(radicalTooShortError);
 
-        this.group = Group.radical;
-        this.bondCount = 1;
-        this.carbonCount = carbonCount;
-        this.iso = false;
+        return new Substituent(Group.radical, 1, carbonCount, false);
     }
 
-    public Substituent(int carbonCount, boolean iso) {
+    public static Substituent radical(int carbonCount, boolean iso) {
         if(!iso && carbonCount < 1)
             throw new IllegalArgumentException(radicalTooShortError);
 
         if(iso && carbonCount < 3)
             throw new IllegalArgumentException(isoRadicalTooShortError);
 
-        this.group = Group.radical;
-        this.bondCount = 1;
-        this.carbonCount = carbonCount;
-        this.iso = iso;
+        return new Substituent(Group.radical, 1, carbonCount, iso);
     }
 
     Substituent(Substituent other) {
@@ -92,6 +86,13 @@ public class Substituent extends Nomenclature {
         this.bondCount = other.bondCount;
         this.carbonCount = other.carbonCount;
         this.iso = other.iso;
+    }
+
+    private Substituent(Group group, int bondCount, int carbonCount, boolean iso) {
+        this.group = group;
+        this.bondCount = bondCount;
+        this.carbonCount = carbonCount;
+        this.iso = iso;
     }
 
     // Queries:
