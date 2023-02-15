@@ -2,58 +2,52 @@
 
 ## Overview
 
-Quimify Organic is a high-school level organic nomenclature module in [Quimify](https://quimify.com/). It provides name-to-structure and structure-to-name conversion tools, currently written in Spanish.
+Quimify Organic is a high-school level organic nomenclature module in [Quimify](https://quimify.com/). It provides name-to-structure and structure-to-name conversion tools, currently supporting Spanish.
 
 ## Usage Examples
 
 ### Name-to-structure conversion
 
-```java
-Optional<Organic> organic = OrganicFactory.getFromName("ácido 2-metilpropanoico");
+Build it:
 
-organic.get().getStructure(); // CH3-CH(CH3)-COOH
-organic.get().getSmiles(); // CC(C(=O)O)C
+```java
+String name = "ácido 2-metilpropanoico";
+Optional<Organic> organic = OrganicFactory.getFromName(name);
+```
+
+Result:
+
+```java
+organic.get().getStructure(); // "CH3-CH(CH3)-COOH"
+organic.get().getSmiles(); // "CC(C(=O)O)C"
 ```
   
 ### Structure-to-name conversion
-  
+
+Build it:  
+
 ```java
-OpenChain openChain = new Simple();
-openChain.getStructure(); // C
+OpenChain openChain = new Simple(); // C
 
-openChain = openChain.bond(Group.hydrogen);
-openChain.getStructure(); // CH≡
+openChain = openChain.bond(Group.hydrogen); // CH≡
 
-Substituent methyl = Substituent.radical(1);
-methyl.toString(); // CH3
-
-openChain = openChain.bond(methyl);
-openChain.getStructure(); // CH(CH3)=
-
-openChain = openChain.bond(methyl);
-openChain.getStructure(); // CH(CH3)2-
-
-openChain.bondCarbon();
-openChain.getStructure(); // CH(CH3)2-C≡
-
-openChain = openChain.bond(Group.acid);
-openChain.getStructure(); // CH(CH3)2-COOH
+Substituent methyl = Substituent.radical(1); // CH3
+openChain = openChain.bond(methyl); // CH(CH3)=
+openChain = openChain.bond(methyl); // CH(CH3)2-
+        
+openChain.bondCarbon(); // CH(CH3)2-C≡
+        
+openChain = openChain.bond(Group.acid); // CH(CH3)2-COOH 
 ```
 
-To check if the molecule is done:
+Result:
 
 ```java
 if(openChain.isDone()) {
-  // ...
+    openChain.correct(); // CH3-CH(CH3)-COOH
+    openChain.getStructure(); // "CH3-CH(CH3)-COOH"
+    openChain.getName(); // "ácido 2-metilpropanoico"
 }
-```
-
-Finally:
-
-```java
-openChain.correct();
-openChain.getStructure(); // CH3-CH(CH3)-COOH
-openChain.getName(); // ácido 2-metilpropanoico
 ```
 
 ## How it works
