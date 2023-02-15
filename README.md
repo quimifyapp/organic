@@ -2,7 +2,7 @@
 
 ## Overview
 
-Quimify Organic is a high-school level organic nomenclature module in [Quimify](https://quimify.com/). It provides name-to-structure and structure-to-name conversion tools, currently supporting Spanish.
+Quimify Organic is a high-school level organic nomenclature module used in [Quimify](https://quimify.com/). It provides name-to-structure and structure-to-name conversion tools, currently supporting Spanish.
 
 ## Usage Examples
 
