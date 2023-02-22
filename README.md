@@ -67,3 +67,10 @@ Alternatively, download the latest [release](https://github.com/quimifyapp/organ
 ## Dependencies
   
 Quimify Organic uses the `quimify-opsin-es` module from [quimifyapp/opsin](https://github.com/quimifyapp/opsin).
+
+## License
+
+Do whatever you want with this code.
+
+However, please be aware that our code relies on open-source dependencies, each with their own licenses and usage terms. Non-compliance with their licenses could have legal consequences.
+
