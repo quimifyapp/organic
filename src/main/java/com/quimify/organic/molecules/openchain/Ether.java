@@ -105,7 +105,7 @@ public final class Ether extends Nomenclature implements OpenChain {
 		currentChain.bondCarbon();
 	}
 
-	public void correct() {
+	public void standardize() {
 		firstChain.correctChainToTheLeft(); // CF(CH3)-O- → CH3-CF-O-
 		secondChain.correctChainToTheRight(); // -O-CHF(CH3) → -O-CHF-CH3
 		// TODO based on chains names? gpt?

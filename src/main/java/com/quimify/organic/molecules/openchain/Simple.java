@@ -116,7 +116,7 @@ public final class Simple extends Nomenclature implements OpenChain {
         chain.bondCarbon();
     }
 
-    public void correct() {
+    public void standardize() {
         correctSubstituents(); // C(O)(OH)- → COOH-
         correctChainStructure(); // CH2(CH3)-CH2- → CH3-CH2-CH2-
         correctChainOrientation(); // butan-3-ol → butan-2-ol

@@ -23,7 +23,7 @@ public interface OpenChain {
 
     void bondCarbon();
 
-    void correct();
+    void standardize();
 
     String getName();
 

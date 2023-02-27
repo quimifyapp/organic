@@ -32,7 +32,7 @@ public class OrganicFactory {
     }
 
     public static Organic getFromOpenChain(OpenChain openChain) {
-        openChain.correct();
+        openChain.standardize();
 
         String name = openChain.getName();
 

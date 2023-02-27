@@ -111,7 +111,7 @@ public class Molecule extends Nomenclature {
 
 		Simple simple = new Simple();
 		buildSimpleFrom(simple, simpleEndingCarbon.get());
-		simple.correct();
+		simple.standardize();
 
 		return Optional.of(simple);
 	}
@@ -159,7 +159,7 @@ public class Molecule extends Nomenclature {
 
 		Ether ether = new Ether();
 		buildEtherFrom(ether, etherEndingCarbon.get());
-		ether.correct();
+		ether.standardize();
 
 		return Optional.of(ether);
 	}

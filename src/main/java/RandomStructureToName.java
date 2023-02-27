@@ -106,7 +106,7 @@ public class RandomStructureToName {
             openChain = openChain.bond(randomSubstituent);
         }
 
-        openChain.correct();
+        openChain.standardize();
 
         return openChain;
     }
