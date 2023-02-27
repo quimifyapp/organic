@@ -2,7 +2,7 @@
 
 ## Overview
 
-Quimify Organic is a high-school level organic nomenclature module in [Quimify](https://quimify.com/). It provides name-to-structure and structure-to-name conversion tools, currently supporting Spanish.
+Quimify Organic is a high-school level organic nomenclature module that provides name-to-structure and structure-to-name conversion tools, currently supporting Spanish. It is used in [Quimify](https://quimify.com/).
 
 ## Usage Examples
 
@@ -67,3 +67,10 @@ Alternatively, download the latest [release](https://github.com/quimifyapp/organ
 ## Dependencies
   
 Quimify Organic uses the `quimify-opsin-es` module from [quimifyapp/opsin](https://github.com/quimifyapp/opsin).
+
+## License?
+
+Do whatever you want with this code.
+
+However, please be aware that our code relies on open-source dependencies, each with their own licenses and usage terms. Non-compliance with their licenses could have legal consequences.
+
