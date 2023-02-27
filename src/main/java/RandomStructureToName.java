@@ -17,18 +17,18 @@ public class RandomStructureToName {
     // Settings:
 
     private static final boolean allowDuplicates = false;
-    private static final long numberOfOpenChains = 1 << 6; // 2 ^ 18
+    private static final long numberOfOpenChains = 1 << 14; // 2^N
 
     private static final boolean printToConsole = true;
 
     private static final String structuresOutputPath = "structures.txt";
     private static final String namesOutputPath = "names.txt";
 
-    private static final int bondCarbonPeriod = 3;
+    private static final int bondCarbonPeriod = 8;
     private static final int bondHydrogenPeriod = 2;
     private static final int bondIsoRadicalPeriod = 10;
 
-    private static final int maximumCarbonsInRadicals = 6;
+    private static final int maximumCarbonsInRadicals = 3;
 
     public static void main(String[] args) {
         System.setOut(new PrintStream(System.out, true, StandardCharsets.UTF_8));
@@ -118,8 +118,10 @@ public class RandomStructureToName {
 
         if (group != Group.radical)
             substituent = new Substituent(group);
-        else if (random.nextInt(bondIsoRadicalPeriod) == 0)
-            substituent = Substituent.radical(3 + random.nextInt(maximumCarbonsInRadicals - 3), true);
+        else if (random.nextInt(bondIsoRadicalPeriod) == 0 && maximumCarbonsInRadicals >= 3) {
+            int extraCarbons = maximumCarbonsInRadicals - 3;
+            substituent = Substituent.radical(3 + (extraCarbons == 0 ? 0 : random.nextInt(extraCarbons)), true);
+        }
         else substituent = Substituent.radical(1 + random.nextInt(maximumCarbonsInRadicals - 1));
 
         return substituent;
