@@ -13,10 +13,10 @@ public class Substituent extends Nomenclature {
 
     // Examples:
 
-	// -Cl             →   { Group.chlorine, bondCount: 1, carbonCount: 0, iso: false }
-	// =O              →   { Group.ketone,   bondCount: 2, carbonCount: 0, iso: false }
-	// -CH2-CH2-CH3    →   { Group.radical,  bondCount: 1, carbonCount: 3, iso: false }
-	// -CH(CH3)-CH3    →   { Group.radical,  bondCount: 1, carbonCount: 3, iso: true  }
+    // -Cl             →   { Group.chlorine, bondCount: 1, carbonCount: 0, iso: false }
+    // =O              →   { Group.ketone,   bondCount: 2, carbonCount: 0, iso: false }
+    // -CH2-CH2-CH3    →   { Group.radical,  bondCount: 1, carbonCount: 3, iso: false }
+    // -CH(CH3)-CH3    →   { Group.radical,  bondCount: 1, carbonCount: 3, iso: true  }
 
     // Error messages:
 
