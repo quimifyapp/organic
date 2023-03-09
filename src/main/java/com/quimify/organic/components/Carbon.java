@@ -18,6 +18,7 @@ public class Carbon extends Nomenclature {
     // Constants:
 
     protected static final Carbon CH3 = new Carbon(1);
+
     static {
         CH3.bond(Group.hydrogen);
         CH3.bond(Group.hydrogen);
@@ -25,18 +26,20 @@ public class Carbon extends Nomenclature {
     }
 
     protected static final Carbon CHCH3 = new Carbon(2);
+
     static {
         CHCH3.bond(Group.hydrogen);
         CHCH3.bond(Substituent.radical(1));
     }
 
     protected static final Carbon CH2 = new Carbon(2);
+
     static {
         CH2.bond(Group.hydrogen);
         CH2.bond(Group.hydrogen);
     }
 
-    // Constructor:
+    // Constructors:
 
     protected Carbon(int usedBondCount) {
         freeBondCount = 4 - usedBondCount;
@@ -52,17 +55,17 @@ public class Carbon extends Nomenclature {
     // Queries:
 
     public boolean isBondedTo(Group group) {
-        if(group == Group.alkene)
+        if (group == Group.alkene)
             return freeBondCount == 1; // -CO=
 
-        if(group == Group.alkyne)
+        if (group == Group.alkyne)
             return freeBondCount == 2; // -CH≡
 
         return substituents.stream().anyMatch(s -> s.getGroup() == group);
     }
 
     protected int getAmountOf(Group group) {
-        if(Nomenclature.isBond(group))
+        if (Nomenclature.isBond(group))
             return isBondedTo(group) ? 1 : 0;
 
         return (int) substituents.stream().filter(s -> s.getGroup() == group).count();
@@ -104,7 +107,7 @@ public class Carbon extends Nomenclature {
     }
 
     protected void bond(Substituent substituent) {
-        if(substituent.getBondCount() > freeBondCount) // TODO test NameToStructure
+        if (substituent.getBondCount() > freeBondCount) // TODO test NameToStructure
             throw new IllegalStateException(String.format(cantBondError, substituent, getStructure()));
 
         substituents.add(substituent);
@@ -142,7 +145,7 @@ public class Carbon extends Nomenclature {
     private String getHydrogenStructure() {
         int hydrogenCount = getAmountOf(Group.hydrogen);
 
-        if(hydrogenCount == 0)
+        if (hydrogenCount == 0)
             return "";
 
         // "H", "H2", "H3"
@@ -199,7 +202,7 @@ public class Carbon extends Nomenclature {
     }
 
     private String getEtherStructure() {
-        if(!isBondedTo(Group.ether))
+        if (!isBondedTo(Group.ether))
             return "";
 
         // -O-

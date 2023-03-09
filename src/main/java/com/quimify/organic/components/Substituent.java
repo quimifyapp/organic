@@ -28,9 +28,18 @@ public class Substituent extends Nomenclature {
 
     // Constructors:
 
+    private Substituent(Group group, int bondCount, int carbonCount, boolean iso) {
+        this.group = group;
+        this.bondCount = bondCount;
+        this.carbonCount = carbonCount;
+        this.iso = iso;
+    }
+
     public Substituent(Group group) {
         if(group == Group.radical)
             throw new IllegalArgumentException(String.format(noUniqueError, Group.radical));
+
+        this.group = group;
 
         switch (group) {
             case acid:
@@ -59,16 +68,8 @@ public class Substituent extends Nomenclature {
                 throw new IllegalArgumentException(String.format(noSuchError, group));
         }
 
-        this.group = group;
         this.carbonCount = 0;
         this.iso = false;
-    }
-
-    public static Substituent radical(int carbonCount) {
-        if(carbonCount < 1)
-            throw new IllegalArgumentException(radicalTooShortError);
-
-        return new Substituent(Group.radical, 1, carbonCount, false);
     }
 
     public static Substituent radical(int carbonCount, boolean iso) {
@@ -81,18 +82,15 @@ public class Substituent extends Nomenclature {
         return new Substituent(Group.radical, 1, carbonCount, iso);
     }
 
-    Substituent(Substituent other) {
-        this.group = other.group;
-        this.bondCount = other.bondCount;
-        this.carbonCount = other.carbonCount;
-        this.iso = other.iso;
+    public static Substituent radical(int carbonCount) {
+        if(carbonCount < 1)
+            throw new IllegalArgumentException(radicalTooShortError);
+
+        return Substituent.radical(carbonCount, false);
     }
 
-    private Substituent(Group group, int bondCount, int carbonCount, boolean iso) {
-        this.group = group;
-        this.bondCount = bondCount;
-        this.carbonCount = carbonCount;
-        this.iso = iso;
+    Substituent(Substituent other) {
+        this(other.group, other.bondCount, other.carbonCount, other.iso);
     }
 
     // Queries:

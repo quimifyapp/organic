@@ -28,9 +28,14 @@ public class Atom {
 
 	// Constructor:
 
+	private Atom(Integer id, Element element, List<Atom> bondedAtoms) {
+		this.id = id;
+		this.element = element;
+		this.bondedAtoms = bondedAtoms;
+	}
+
 	public Atom(int id, String symbol) {
 		this.id = id;
-		this.bondedAtoms = new ArrayList<>();
 
 		switch (symbol) {
 			case "C":
@@ -60,24 +65,20 @@ public class Atom {
 			default:
 				throw new IllegalArgumentException(String.format(unknownAtomError, symbol));
 		}
-	}
 
-	protected Atom(Element element) {
-		this.id = null;
-		this.element = element;
 		this.bondedAtoms = new ArrayList<>();
 	}
 
-	private Atom(Atom other) {
-		this.id = other.id;
-		this.element = other.element;
-		this.bondedAtoms = new ArrayList<>(other.bondedAtoms);
+	private Atom(Element element, List<Atom> bondedAtoms) {
+		this(null, element, bondedAtoms);
 	}
 
-	private Atom(Element element, List<Atom> bondedAtoms) {
-		this.id = null;
-		this.element = element;
-		this.bondedAtoms = bondedAtoms;
+	protected Atom(Element element) {
+		this(element, new ArrayList<>());
+	}
+
+	private Atom(Atom other) {
+		this(other.id, other.element, new ArrayList<>(other.bondedAtoms));
 	}
 
 	// Modifiers:
