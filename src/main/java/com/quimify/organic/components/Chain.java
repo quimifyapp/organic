@@ -269,7 +269,7 @@ public class Chain extends Nomenclature {
 			return carbon.equals(Carbon.CH3);
 
 		if(carbonIndex == 1)
-			return carbon.equals(Carbon.CH2) || carbon == Carbon.CHCH3;
+			return carbon.equals(Carbon.CH2) || carbon.equals(Carbon.CHCH3);
 
 		return carbon.equals(Carbon.CH2);
 	}
