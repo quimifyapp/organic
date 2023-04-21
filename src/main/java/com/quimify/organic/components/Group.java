@@ -1,7 +1,6 @@
 package com.quimify.organic.components;
 
 // This enum represents functional groups.
-
 public enum Group { // Ordered by naming priority:
     acid,       // =O, -OH  (0)
     amide,      // =O, -NH2 (1)

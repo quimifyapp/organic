@@ -20,20 +20,20 @@ public class StructureToName {
         OpenChain openChain = new Simple();
         List<Integer> inputSequence = new ArrayList<>();
 
-        while(!openChain.isDone()) {
+        while (!openChain.isDone()) {
             List<Group> bondableGroups = openChain.getBondableGroups();
 
             for (Group bondableGroup : bondableGroups) {
                 System.out.print(bondableGroup.ordinal() + ": ");
 
-                if(bondableGroup != Group.radical)
+                if (bondableGroup != Group.radical)
                     System.out.println(new Substituent(bondableGroup));
                 else System.out.println("-CH2-CH3");
             }
 
             boolean canBondCarbon = openChain.canBondCarbon();
 
-            if(canBondCarbon)
+            if (canBondCarbon)
                 System.out.println("-1: -C");
 
             System.out.println();
@@ -43,7 +43,7 @@ public class StructureToName {
             int input = new Scanner(System.in).nextInt();
             inputSequence.add(input);
 
-            if(input == -1 && canBondCarbon) {
+            if (input == -1 && canBondCarbon) {
                 openChain.bondCarbon();
                 System.out.println();
                 continue;
@@ -51,7 +51,7 @@ public class StructureToName {
 
             Group group = Group.values()[input];
 
-            if(group == Group.radical) {
+            if (group == Group.radical) {
                 System.out.print("Normal or iso? [0/1]: ");
                 int isoCode = new Scanner(System.in).nextInt();
                 inputSequence.add(isoCode);
@@ -63,7 +63,6 @@ public class StructureToName {
                 openChain = openChain.bond(Substituent.radical(carbonCount, isoCode == 1));
             }
             else openChain = openChain.bond(group);
-
         }
 
         System.out.print("Input sequence:\t\t\t");
