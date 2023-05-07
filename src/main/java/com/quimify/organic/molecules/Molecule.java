@@ -229,7 +229,7 @@ public class Molecule extends Nomenclature {
 		if (atom.getElement() != Element.C)
 			return false;
 
-		List<Atom> bondedAtomsCutOff = atom.getBondedAtomsSeparated();
+		List<Atom> bondedAtomsCutOff = atom.getBondedAtomsSeparated(); // TODO rename
 
 		if (bondedAtomsCutOff.size() != 3)
 			return false;

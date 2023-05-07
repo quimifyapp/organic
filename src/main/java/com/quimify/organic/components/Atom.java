@@ -24,7 +24,7 @@ public class Atom {
 	// Error messages:
 
 	private static final String unknownAtomError = "Unknown organic atom: %s.";
-	private static final String unknownFunctionalGroupError = "Unknown functional group given atom: %s.";
+	private static final String unknownFunctionalGroupError = "Unknown functional group of atom: %s.";
 
 	// Constructor:
 
@@ -93,7 +93,7 @@ public class Atom {
 		return (int) bondedAtoms.stream().filter(bondedAtom -> bondedAtom.getElement() == element).count();
 	}
 
-	public List<Atom> getBondedAtomsSeparated() {
+	public List<Atom> getBondedAtomsSeparated() { // TODO rename and reconsider
 		List<Atom> bondedAtomsCutOff = new ArrayList<>();
 
 		for (Atom bondedAtom : bondedAtoms)
@@ -107,7 +107,7 @@ public class Atom {
 		return bondedAtomsCutOff;
 	}
 
-	public Atom toAnonymous() {
+	public Atom toAnonymous() { // TODO rename and reconsider
 		Atom anonymousAtom = new Atom(element, getBondedAtomsSeparated());
 		anonymousAtom.bondedAtoms.replaceAll(Atom::toAnonymous);
 		return anonymousAtom;
@@ -116,7 +116,7 @@ public class Atom {
 	public Group toFunctionalGroup() {
 		Group group;
 
-		Atom anonymousAtom = toAnonymous();
+		Atom anonymousAtom = toAnonymous(); // TODO rename
 
 		if (anonymousAtom.equals(Atom.H))
 			group = Group.hydrogen;
@@ -166,8 +166,8 @@ public class Atom {
 
 		// Equality check between bonded atoms, one node deep and regardless of order:
 
-		List<Atom> bondedAtomsCutOff = getBondedAtomsSeparated();
-		List<Atom> othersBondedAtomsCutOff = otherAtom.getBondedAtomsSeparated();
+		List<Atom> bondedAtomsCutOff = getBondedAtomsSeparated(); // TODO rename
+		List<Atom> othersBondedAtomsCutOff = otherAtom.getBondedAtomsSeparated(); // TODO rename
 
 		for (Atom bondedAtom : bondedAtomsCutOff) {
 			int frequency = Collections.frequency(bondedAtomsCutOff, bondedAtom);
