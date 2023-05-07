@@ -8,7 +8,7 @@ public class OpsinResult {
 
     // Constructor:
 
-    protected OpsinResult(String smiles, String cml) {
+    OpsinResult(String smiles, String cml) {
         this.smiles = smiles;
         this.cml = cml;
     }

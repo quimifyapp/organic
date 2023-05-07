@@ -12,7 +12,7 @@ import java.util.Set;
 
 public class Nomenclature {
 
-    protected static final Set<Group> halogenGroups = Set.of(
+    static final Set<Group> halogenGroups = Set.of(
             Group.bromine,
             Group.chlorine,
             Group.fluorine,
@@ -199,7 +199,7 @@ public class Nomenclature {
             this.lexema = nombre;
         }
 
-        protected Locator(String multiplicador, String lexema) {
+        Locator(String multiplicador, String lexema) {
             construir("", multiplicador, lexema);
         }
 
@@ -212,7 +212,7 @@ public class Nomenclature {
                 auxiliar.append(posiciones.get(posiciones.size() - 1) + 1);
             }
 
-            construir(auxiliar.toString(), Nomenclature.multiplierFor(posiciones.size()), lexema);
+            construir(auxiliar.toString(), multiplierFor(posiciones.size()), lexema);
         }
 
         // No se tienen en cuenta los multiplicadores ni las posiciones, como propone la IUPAC.
@@ -234,7 +234,7 @@ public class Nomenclature {
 
         // Getters y setters:
 
-        protected String getLexema() {
+        String getLexema() {
             return lexema;
         }
 
@@ -288,7 +288,7 @@ public class Nomenclature {
         return nameParticle;
     }
 
-    protected static String prefixNameParticleFor(Group group) {
+    static String prefixNameParticleFor(Group group) {
         String prefixNameParticle;
 
         switch(group) {
@@ -329,7 +329,7 @@ public class Nomenclature {
         return prefixNameParticle;
     }
 
-    protected static String bondNameParticleFor(Group bond) {
+    static String bondNameParticleFor(Group bond) {
         String bondNameParticle;
 
         switch(bond) {

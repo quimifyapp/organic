@@ -146,7 +146,7 @@ public final class Simple extends Nomenclature implements OpenChain {
                 Group group = groups.get(groupIndex);
                 boolean redundant = isRedundantInName(group);
 
-                prefixes.add(Nomenclature.getPrefixForIn(group, chain, redundant));
+                prefixes.add(getPrefixForIn(group, chain, redundant));
             }
 
             groupIndex++;
@@ -173,20 +173,20 @@ public final class Simple extends Nomenclature implements OpenChain {
         }
 
         // Se procesan los enlaces:
-        String bonds = Nomenclature.getBondNameForIn(Group.alkene, chain, isRedundantInName(Group.alkene)) +
-                Nomenclature.getBondNameForIn(Group.alkyne, chain, isRedundantInName(Group.alkyne));
+        String bonds = getBondNameForIn(Group.alkene, chain, isRedundantInName(Group.alkene)) +
+                getBondNameForIn(Group.alkyne, chain, isRedundantInName(Group.alkyne));
 
         if (bonds.equals(""))
             bonds = "an";
-        if (suffix.equals("") || Nomenclature.doesNotStartWithVowel(suffix))
+        if (suffix.equals("") || doesNotStartWithVowel(suffix))
             bonds += "o";
-        if (!suffix.equals("") && Nomenclature.startsWithDigit(suffix))
+        if (!suffix.equals("") && startsWithDigit(suffix))
             bonds += "-";
 
         // Se procesa el cuantificador:
         String quantifier = quantifierFor(chain.getSize());
 
-        if (Nomenclature.doesNotStartWithVowel(bonds))
+        if (doesNotStartWithVowel(bonds))
             quantifier += "a";
 
         return prefix + quantifier + bonds + suffix;

@@ -73,7 +73,7 @@ public class Atom {
 		this(null, element, bondedAtoms);
 	}
 
-	protected Atom(Element element) {
+	Atom(Element element) {
 		this(element, new ArrayList<>());
 	}
 

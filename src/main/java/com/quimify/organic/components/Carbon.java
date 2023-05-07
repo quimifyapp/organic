@@ -17,7 +17,7 @@ public class Carbon extends Nomenclature {
 
     // Constants:
 
-    protected static final Carbon CH3 = new Carbon(1);
+    static final Carbon CH3 = new Carbon(1);
 
     static {
         CH3.bond(Group.hydrogen);
@@ -25,14 +25,14 @@ public class Carbon extends Nomenclature {
         CH3.bond(Group.hydrogen);
     }
 
-    protected static final Carbon CHCH3 = new Carbon(2);
+    static final Carbon CHCH3 = new Carbon(2);
 
     static {
         CHCH3.bond(Group.hydrogen);
         CHCH3.bond(Substituent.radical(1));
     }
 
-    protected static final Carbon CH2 = new Carbon(2);
+    static final Carbon CH2 = new Carbon(2);
 
     static {
         CH2.bond(Group.hydrogen);
@@ -41,12 +41,12 @@ public class Carbon extends Nomenclature {
 
     // Constructors:
 
-    protected Carbon(int usedBondCount) {
+    Carbon(int usedBondCount) {
         freeBondCount = 4 - usedBondCount;
         substituents = new ArrayList<>();
     }
 
-    protected Carbon(Carbon other) {
+    Carbon(Carbon other) {
         freeBondCount = other.freeBondCount;
         substituents = new ArrayList<>();
         other.substituents.forEach(s -> substituents.add(new Substituent(s)));
@@ -64,14 +64,14 @@ public class Carbon extends Nomenclature {
         return substituents.stream().anyMatch(s -> s.getGroup() == group);
     }
 
-    protected int getAmountOf(Group group) {
-        if (Nomenclature.isBond(group))
+    int getAmountOf(Group group) {
+        if (isBond(group))
             return isBondedTo(group) ? 1 : 0;
 
         return (int) substituents.stream().filter(s -> s.getGroup() == group).count();
     }
 
-    protected int getAmountOf(Substituent substituent) {
+    int getAmountOf(Substituent substituent) {
         return Collections.frequency(substituents, substituent);
     }
 
@@ -106,7 +106,7 @@ public class Carbon extends Nomenclature {
         bond(new Substituent(group));
     }
 
-    protected void bond(Substituent substituent) {
+    void bond(Substituent substituent) {
         if (substituent.getBondCount() > freeBondCount) // TODO test NameToStructure
             throw new IllegalStateException(String.format(cantBondError, substituent, getStructure()));
 
@@ -118,16 +118,16 @@ public class Carbon extends Nomenclature {
         unbond(new Substituent(group));
     }
 
-    protected void unbond(Substituent substituent) {
+    void unbond(Substituent substituent) {
         freeBondCount += substituent.getBondCount();
         remove(substituent);
     }
 
-    protected void remove(Substituent substituent) {
+    void remove(Substituent substituent) {
         substituents.remove(substituent);
     }
 
-    protected void useBond() {
+    void useBond() {
         freeBondCount--;
     }
 
@@ -180,7 +180,7 @@ public class Carbon extends Nomenclature {
             otherGroupsStructure.append(substituent); // CHO
         else if (group == Group.ketone && hydrogenCount == 0)
             otherGroupsStructure.append(substituent); // -CO-
-        else if (Nomenclature.isHalogen(group))
+        else if (isHalogen(group))
             otherGroupsStructure.append(substituent); // CHCl2, CF3-...
         else otherGroupsStructure.append("(").append(substituent).append(")"); // CH(HO), CH(NO2)3, CH2(CH3)-...
 
@@ -216,15 +216,15 @@ public class Carbon extends Nomenclature {
 
     // Getters and setters:
 
-    protected List<Substituent> getSubstituents() {
+    List<Substituent> getSubstituents() {
         return substituents;
     }
 
-    protected int getFreeBondCount() {
+    int getFreeBondCount() {
         return freeBondCount;
     }
 
-    protected void setFreeBondCount(int freeBondCount) {
+    void setFreeBondCount(int freeBondCount) {
         this.freeBondCount = freeBondCount;
     }
 

@@ -95,7 +95,7 @@ public class Substituent extends Nomenclature {
 
     // Queries:
 
-    protected int compareTo(Substituent other) {
+    int compareTo(Substituent other) {
         // OOH < Cl < CH(CH3)2 < CH2CH3 < CH2CH2CH3 < H
         if(group == Group.radical && other.group == Group.radical)
             return compareToRadical(other); // CH(CH3)2 < CH2CH3 < CH2CH2CH3

@@ -12,14 +12,14 @@ public class Organic {
 
     // Constructors:
 
-    protected Organic(String name, String smiles, String structure) {
+    Organic(String name, String smiles, String structure) {
         this.name = name;
         this.smiles = smiles;
         this.structure = structure;
         this.structureException = null;
     }
 
-    protected Organic(String name, String smiles, Exception structureException) {
+    Organic(String name, String smiles, Exception structureException) {
         this.name = name;
         this.smiles = smiles;
         this.structure = null;

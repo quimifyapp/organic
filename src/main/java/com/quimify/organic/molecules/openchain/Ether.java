@@ -168,7 +168,7 @@ public final class Ether extends Nomenclature implements OpenChain {
 				Group group = groups.get(groupIndex);
 				boolean redundant = isRedundantInNameIn(group, chain);
 
-				prefixes.add(Nomenclature.getPrefixForIn(group, chain, redundant));
+				prefixes.add(getPrefixForIn(group, chain, redundant));
 			}
 
 			groupIndex++;
@@ -178,7 +178,7 @@ public final class Ether extends Nomenclature implements OpenChain {
 		uniqueRadicals.removeIf(substituent -> substituent.getGroup() != Group.radical);
 
 		for (Substituent radical : uniqueRadicals)
-			prefixes.add(new Locator(chain.getIndexesOf(radical), Nomenclature.radicalNameParticleFor(radical)));
+			prefixes.add(new Locator(chain.getIndexesOf(radical), radicalNameParticleFor(radical)));
 
 		StringBuilder prefix = new StringBuilder(chain.isBondedTo(Group.acid) ? "ácido " : "");
 		if (prefixes.size() > 0) {
@@ -195,13 +195,13 @@ public final class Ether extends Nomenclature implements OpenChain {
 		}
 
 		// Se procesan los enlaces:
-		String bonds = Nomenclature.getBondNameForIn(Group.alkene, chain, isRedundantInNameIn(Group.alkene, chain)) +
-				Nomenclature.getBondNameForIn(Group.alkyne, chain, isRedundantInNameIn(Group.alkyne, chain));
+		String bonds = getBondNameForIn(Group.alkene, chain, isRedundantInNameIn(Group.alkene, chain)) +
+				getBondNameForIn(Group.alkyne, chain, isRedundantInNameIn(Group.alkyne, chain));
 
 		// Se procesa el cuantificador:
 		String quantifier = quantifierFor(chain.getSize());
 
-		if (!bonds.isEmpty() && Nomenclature.doesNotStartWithVowel(bonds))
+		if (!bonds.isEmpty() && doesNotStartWithVowel(bonds))
 			quantifier += "a";
 
 		return prefix + quantifier + bonds + "il";
