@@ -36,7 +36,7 @@ public class Substituent extends Nomenclature {
     }
 
     public Substituent(Group group) {
-        if(group == Group.radical)
+        if (group == Group.radical)
             throw new IllegalArgumentException(String.format(noUniqueError, Group.radical));
 
         this.group = group;
@@ -73,17 +73,17 @@ public class Substituent extends Nomenclature {
     }
 
     public static Substituent radical(int carbonCount, boolean iso) {
-        if(!iso && carbonCount < 1)
+        if (!iso && carbonCount < 1)
             throw new IllegalArgumentException(radicalTooShortError);
 
-        if(iso && carbonCount < 3)
+        if (iso && carbonCount < 3)
             throw new IllegalArgumentException(isoRadicalTooShortError);
 
         return new Substituent(Group.radical, 1, carbonCount, iso);
     }
 
     public static Substituent radical(int carbonCount) {
-        if(carbonCount < 1)
+        if (carbonCount < 1)
             throw new IllegalArgumentException(radicalTooShortError);
 
         return Substituent.radical(carbonCount, false);
@@ -97,7 +97,7 @@ public class Substituent extends Nomenclature {
 
     int compareTo(Substituent other) {
         // OOH < Cl < CH(CH3)2 < CH2CH3 < CH2CH2CH3 < H
-        if(group == Group.radical && other.group == Group.radical)
+        if (group == Group.radical && other.group == Group.radical)
             return compareToRadical(other); // CH(CH3)2 < CH2CH3 < CH2CH2CH3
 
         return group.compareTo(other.group); // OOH < Cl < H
@@ -107,7 +107,7 @@ public class Substituent extends Nomenclature {
         // CH(CH3)2 < CH2CH3 < CH2CH2CH3
         int comparaison = Integer.compare(carbonCount, radical.carbonCount);
 
-        if(comparaison == 0)
+        if (comparaison == 0)
             return iso == radical.iso ? 0 : iso ? -1 : 1; // CH(CH3)2 < CH2CH3
 
         return comparaison; // CH2CH3 < CH2CH2CH3
@@ -120,15 +120,15 @@ public class Substituent extends Nomenclature {
 
     @Override
     public boolean equals(Object other) {
-        if(other == null || other.getClass() != this.getClass())
+        if (other == null || other.getClass() != this.getClass())
             return false;
 
         Substituent otherSubstituent = (Substituent) other;
 
-        if(group != otherSubstituent.group)
+        if (group != otherSubstituent.group)
             return false;
 
-        if(carbonCount != otherSubstituent.carbonCount)
+        if (carbonCount != otherSubstituent.carbonCount)
             return false;
 
         return iso == otherSubstituent.iso;

@@ -23,252 +23,254 @@ import java.util.stream.Stream;
 
 public class Molecule extends Nomenclature {
 
-	private final String smiles;
-	private final Set<Atom> molecule;
+    private final String smiles;
+    private final Set<Atom> molecule;
 
-	// Constructor:
+    // Constructor:
 
-	public Molecule(String cml, String smiles) throws ParserConfigurationException, IOException, SAXException {
-		this.molecule = new HashSet<>();
-		this.smiles = smiles;
+    public Molecule(String cml, String smiles) throws ParserConfigurationException, IOException, SAXException {
+        this.molecule = new HashSet<>();
+        this.smiles = smiles;
 
-		DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-		Document cmlXML = documentBuilder.parse(new InputSource(new StringReader(cml)));
+        DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+        Document cmlXML = documentBuilder.parse(new InputSource(new StringReader(cml)));
 
-		collectAtoms(cmlXML);
-		bondAtoms(cmlXML);
-	}
+        collectAtoms(cmlXML);
+        bondAtoms(cmlXML);
+    }
 
-	private void collectAtoms(Document cmlXML) {
-		NodeList atomsXML = cmlXML.getElementsByTagName("atom");
+    private void collectAtoms(Document cmlXML) {
+        NodeList atomsXML = cmlXML.getElementsByTagName("atom");
 
-		for (int i = 0; i < atomsXML.getLength(); i++) {
-			org.w3c.dom.Element atomXML = (org.w3c.dom.Element) atomsXML.item(i);
+        for (int i = 0; i < atomsXML.getLength(); i++) {
+            org.w3c.dom.Element atomXML = (org.w3c.dom.Element) atomsXML.item(i);
 
-			int id = Integer.parseInt(atomXML.getAttribute("id").replace("a", ""));
-			String elementType = atomXML.getAttribute("elementType");
+            int id = Integer.parseInt(atomXML.getAttribute("id").replace("a", ""));
+            String elementType = atomXML.getAttribute("elementType");
 
-			molecule.add(new Atom(id, elementType));
-		}
-	}
+            molecule.add(new Atom(id, elementType));
+        }
+    }
 
-	private void bondAtoms(Document cmlXML) {
-		NodeList bondsXML = cmlXML.getElementsByTagName("bond");
+    private void bondAtoms(Document cmlXML) {
+        NodeList bondsXML = cmlXML.getElementsByTagName("bond");
 
-		for (int i = 0; i < bondsXML.getLength(); i++) {
-			org.w3c.dom.Element bondXML = (org.w3c.dom.Element) bondsXML.item(i);
+        for (int i = 0; i < bondsXML.getLength(); i++) {
+            org.w3c.dom.Element bondXML = (org.w3c.dom.Element) bondsXML.item(i);
 
-			String[] idsAsStrings = bondXML.getAttribute("id").replace("a", "").split("_");
-			int[] ids = Arrays.stream(idsAsStrings).mapToInt(Integer::valueOf).toArray();
+            String[] idsAsStrings = bondXML.getAttribute("id").replace("a", "").split("_");
+            int[] ids = Arrays.stream(idsAsStrings).mapToInt(Integer::valueOf).toArray();
 
-			Stream<Atom> identified = molecule.stream().filter(atom -> List.of(ids[0], ids[1]).contains(atom.getId()));
-			Atom[] atoms = identified.toArray(Atom[]::new);
+            Stream<Atom> identified = molecule.stream().filter(atom -> List.of(ids[0], ids[1]).contains(atom.getId()));
+            Atom[] atoms = identified.toArray(Atom[]::new);
 
-			atoms[0].bond(atoms[1]);
-			atoms[1].bond(atoms[0]);
-		}
-	}
+            atoms[0].bond(atoms[1]);
+            atoms[1].bond(atoms[0]);
+        }
+    }
 
-	// Queries:
+    // Queries:
 
-	public Optional<OpenChain> toOpenChain() {
-		if (!isOpenChain())
-			return Optional.empty();
+    public Optional<OpenChain> toOpenChain() {
+        if (!isOpenChain())
+            return Optional.empty();
 
-		Optional<OpenChain> openChain = toSimpleOpenChain();
+        Optional<OpenChain> openChain = toSimpleOpenChain();
 
-		if (openChain.isEmpty())
-			openChain = toEtherOpenChain();
+        if (openChain.isEmpty())
+            openChain = toEtherOpenChain();
 
-		return openChain;
-	}
+        return openChain;
+    }
 
-	// Private:
+    // Private:
 
-	private boolean isCycle() {
-		return smiles.matches(".*[0-9].*"); // SMILES uses digits only for cycles
-	}
+    private boolean isCycle() {
+        return smiles.matches(".*[0-9].*"); // SMILES uses digits only for cycles
+    }
 
-	private boolean isOpenChain() {
-		return !isCycle(); // By definition of an open chain
-	}
+    private boolean isOpenChain() {
+        return !isCycle(); // By definition of an open chain
+    }
 
-	private List<Atom> getCarbons() {
-		return molecule.stream().filter(atom -> atom.getElement() == Element.C).collect(Collectors.toList());
-	}
+    private List<Atom> getCarbons() {
+        return molecule.stream().filter(atom -> atom.getElement() == Element.C).collect(Collectors.toList());
+    }
 
-	private List<Atom> getEndingCarbons() {
-		return getCarbons().stream().filter(carbon -> carbon.getAmountOf(Element.C) < 2).collect(Collectors.toList());
-	}
+    private List<Atom> getEndingCarbons() {
+        return getCarbons().stream().filter(carbon -> carbon.getAmountOf(Element.C) < 2).collect(Collectors.toList());
+    }
 
-	// Simple open chain:
+    // Simple open chain:
 
-	private Optional<OpenChain> toSimpleOpenChain() {
-		Optional<Atom> simpleEndingCarbon = getSimpleEndingCarbon();
+    private Optional<OpenChain> toSimpleOpenChain() {
+        Optional<Atom> simpleEndingCarbon = getSimpleEndingCarbon();
 
-		if (simpleEndingCarbon.isEmpty())
-			return Optional.empty();
+        if (simpleEndingCarbon.isEmpty())
+            return Optional.empty();
 
-		Simple simple = new Simple();
-		buildSimpleFrom(simple, simpleEndingCarbon.get());
-		simple.standardize();
+        Simple simple = new Simple();
+        buildSimpleFrom(simple, simpleEndingCarbon.get());
+        simple.standardize();
 
-		return Optional.of(simple);
-	}
+        return Optional.of(simple);
+    }
 
-	private Optional<Atom> getSimpleEndingCarbon() {
-		return getEndingCarbons().stream().filter(this::isSimpleCarbon).findAny();
-	}
+    private Optional<Atom> getSimpleEndingCarbon() {
+        return getEndingCarbons().stream().filter(this::isSimpleCarbon).findAny();
+    }
 
-	private boolean isSimpleCarbon(Atom carbon) {
-		List<Atom> nonSubstituentBondedAtoms = carbon.getBondedAtomsSeparated().stream().filter(bondedAtom ->
-				isNotSubstituent(bondedAtom, Simple.bondableAtoms)).collect(Collectors.toList());
+    private boolean isSimpleCarbon(Atom carbon) {
+        List<Atom> nonSubstituentBondedAtoms = carbon.getBondedAtomsSeparated().stream().filter(bondedAtom ->
+                isNotSubstituent(bondedAtom, Simple.bondableAtoms)).collect(Collectors.toList());
 
-		if (nonSubstituentBondedAtoms.size() == 1) {
-			Atom nonSubstituent = nonSubstituentBondedAtoms.stream().findAny().get();
-			return nonSubstituent.getElement() == Element.C && isSimpleCarbon(nonSubstituent); // Recursion
-		}
-
-		return nonSubstituentBondedAtoms.size() == 0;
-	}
+        if (nonSubstituentBondedAtoms.size() == 1) {
+            Atom nonSubstituent = nonSubstituentBondedAtoms.stream().findAny().get();
+            return nonSubstituent.getElement() == Element.C && isSimpleCarbon(nonSubstituent); // Recursion
+        }
+
+        return nonSubstituentBondedAtoms.size() == 0;
+    }
 
-	private void buildSimpleFrom(Simple simple, Atom simpleCarbon) { // TODO runtime exceptions
-		Optional<Atom> nextCarbon = Optional.empty();
+    private void buildSimpleFrom(Simple simple, Atom simpleCarbon) { // TODO runtime exceptions
+        Optional<Atom> nextCarbon = Optional.empty();
 
-		for (Atom bondedAtom : simpleCarbon.getBondedAtomsSeparated()) {
-			if (isBondableAtom(bondedAtom, Simple.bondableAtoms))
-				simple.bond(bondedAtom.toFunctionalGroup());
-			else if (isRadicalCarbon(bondedAtom))
-				simple.bond(buildRadicalFrom(bondedAtom));
-			else nextCarbon = Optional.of(bondedAtom);
-		}
+        for (Atom bondedAtom : simpleCarbon.getBondedAtomsSeparated()) {
+            if (isBondableAtom(bondedAtom, Simple.bondableAtoms))
+                simple.bond(bondedAtom.toFunctionalGroup());
+            else if (isRadicalCarbon(bondedAtom))
+                simple.bond(buildRadicalFrom(bondedAtom));
+            else nextCarbon = Optional.of(bondedAtom);
+        }
 
-		if (nextCarbon.isPresent()) {
-			simple.bondCarbon();
-			buildSimpleFrom(simple, nextCarbon.get()); // Recursion
-		}
-	}
-
-	// Ether open chain:
+        if (nextCarbon.isPresent()) {
+            simple.bondCarbon();
+            buildSimpleFrom(simple, nextCarbon.get()); // Recursion
+        }
+    }
+
+    // Ether open chain:
+
+    private Optional<OpenChain> toEtherOpenChain() {
+        Optional<Atom> etherEndingCarbon = getEtherEndingCarbon();
+
+        if (etherEndingCarbon.isEmpty())
+            return Optional.empty();
+
+        Ether ether = new Ether();
+        buildEtherFrom(ether, etherEndingCarbon.get());
+        ether.standardize();
 
-	private Optional<OpenChain> toEtherOpenChain() {
-		Optional<Atom> etherEndingCarbon = getEtherEndingCarbon();
+        return Optional.of(ether);
+    }
 
-		if (etherEndingCarbon.isEmpty())
-			return Optional.empty();
+    private Optional<Atom> getEtherEndingCarbon() {
+        List<Atom> endingCarbons = getEndingCarbons();
 
-		Ether ether = new Ether();
-		buildEtherFrom(ether, etherEndingCarbon.get());
-		ether.standardize();
+        if (endingCarbons.size() > 2) // -C-O-C- minimum
+            endingCarbons = endingCarbons.stream().filter(endingCarbon ->
+                    endingCarbon.getBondedAtomsSeparated().stream().noneMatch(bonded ->
+                            bonded.getElement() == Element.O)).collect(Collectors.toList());
 
-		return Optional.of(ether);
-	}
+        return endingCarbons.stream().filter(endingCarbon -> isEtherCarbon(endingCarbon, false)).findAny();
+    }
 
-	private Optional<Atom> getEtherEndingCarbon() {
-		List<Atom> endingCarbons = getEndingCarbons();
+    private boolean isEtherCarbon(Atom carbon, boolean hasFoundEther) {
+        boolean ether;
 
-		if (endingCarbons.size() > 2) // -C-O-C- minimum
-			endingCarbons = endingCarbons.stream().filter(endingCarbon ->
-					endingCarbon.getBondedAtomsSeparated().stream().noneMatch(bonded ->
-							bonded.getElement() == Element.O)).collect(Collectors.toList());
+        List<Atom> nonSubstituentBondedAtoms = carbon.getBondedAtomsSeparated().stream().filter(bondedAtom ->
+                isNotSubstituent(bondedAtom, Ether.bondableAtoms)).collect(Collectors.toList());
 
-		return endingCarbons.stream().filter(endingCarbon -> isEtherCarbon(endingCarbon, false)).findAny();
-	}
+        if (nonSubstituentBondedAtoms.size() == 1) {
+            Atom nonSubstituent = nonSubstituentBondedAtoms.stream().findAny().get();
 
-	private boolean isEtherCarbon(Atom carbon, boolean hasFoundEther) {
-		boolean ether;
+            if (nonSubstituent.getElement() == Element.C)
+                ether = isEtherCarbon(nonSubstituent, hasFoundEther); // Recursion
+            else if (nonSubstituent.getElement() == Element.O)
+                ether = !hasFoundEther && isEtherCarbon(nonSubstituent, true); // Recursion
+            else ether = false;
+        }
+        else ether = nonSubstituentBondedAtoms.size() == 0;
 
-		List<Atom> nonSubstituentBondedAtoms = carbon.getBondedAtomsSeparated().stream().filter(bondedAtom ->
-				isNotSubstituent(bondedAtom, Ether.bondableAtoms)).collect(Collectors.toList());
+        return ether;
+    }
 
-		if (nonSubstituentBondedAtoms.size() == 1) {
-			Atom nonSubstituent = nonSubstituentBondedAtoms.stream().findAny().get();
+    private void buildEtherFrom(Ether ether, Atom etherCarbon) { // TODO runtime exceptions
+        Optional<Atom> nextAtom = Optional.empty();
 
-			if (nonSubstituent.getElement() == Element.C)
-				ether = isEtherCarbon(nonSubstituent, hasFoundEther); // Recursion
-			else if (nonSubstituent.getElement() == Element.O)
-				ether = !hasFoundEther && isEtherCarbon(nonSubstituent, true); // Recursion
-			else ether = false;
-		} else ether = nonSubstituentBondedAtoms.size() == 0;
+        for (Atom bondedAtom : etherCarbon.getBondedAtomsSeparated()) {
+            if (isBondableAtom(bondedAtom, Ether.bondableAtoms))
+                ether.bond(bondedAtom.toFunctionalGroup());
+            else if (isRadicalCarbon(bondedAtom))
+                ether.bond(buildRadicalFrom(bondedAtom));
+            else nextAtom = Optional.of(bondedAtom);
+        }
 
-		return ether;
-	}
+        if (nextAtom.isPresent()) {
+            if (nextAtom.get().getElement() == Element.O) {
+                ether.bond(Group.ether);
+                nextAtom = Optional.of(nextAtom.get().getBondedAtomsSeparated().get(0));
+            }
+            else ether.bondCarbon(); // It's a carbon
 
-	private void buildEtherFrom(Ether ether, Atom etherCarbon) { // TODO runtime exceptions
-		Optional<Atom> nextAtom = Optional.empty();
+            buildEtherFrom(ether, nextAtom.get()); // Recursion
+        }
+    }
 
-		for (Atom bondedAtom : etherCarbon.getBondedAtomsSeparated()) {
-			if (isBondableAtom(bondedAtom, Ether.bondableAtoms))
-				ether.bond(bondedAtom.toFunctionalGroup());
-			else if (isRadicalCarbon(bondedAtom))
-				ether.bond(buildRadicalFrom(bondedAtom));
-			else nextAtom = Optional.of(bondedAtom);
-		}
+    // Open chain:
 
-		if (nextAtom.isPresent()) {
-			if (nextAtom.get().getElement() == Element.O) {
-				ether.bond(Group.ether);
-				nextAtom = Optional.of(nextAtom.get().getBondedAtomsSeparated().get(0));
-			} else ether.bondCarbon(); // It's a carbon
+    private boolean isNotSubstituent(Atom atom, Set<Atom> bondableAtoms) {
+        return !isBondableAtom(atom, bondableAtoms) && !isRadicalCarbon(atom);
+    }
 
-			buildEtherFrom(ether, nextAtom.get()); // Recursion
-		}
-	}
+    private boolean isBondableAtom(Atom atom, Set<Atom> bondableAtoms) {
+        return bondableAtoms.stream().anyMatch(atom.toAnonymous()::equals);
+    }
 
-	// Open chain:
+    private boolean isRadicalCarbon(Atom atom) {
+        if (atom.getElement() != Element.C)
+            return false;
 
-	private boolean isNotSubstituent(Atom atom, Set<Atom> bondableAtoms) {
-		return !isBondableAtom(atom, bondableAtoms) && !isRadicalCarbon(atom);
-	}
+        List<Atom> bondedAtomsCutOff = atom.getBondedAtomsSeparated(); // TODO rename
 
-	private boolean isBondableAtom(Atom atom, Set<Atom> bondableAtoms) {
-		return bondableAtoms.stream().anyMatch(atom.toAnonymous()::equals);
-	}
+        if (bondedAtomsCutOff.size() != 3)
+            return false;
 
-	private boolean isRadicalCarbon(Atom atom) {
-		if (atom.getElement() != Element.C)
-			return false;
+        boolean radical;
 
-		List<Atom> bondedAtomsCutOff = atom.getBondedAtomsSeparated(); // TODO rename
+        int hydrogenCount = atom.getAmountOf(Element.H);
 
-		if (bondedAtomsCutOff.size() != 3)
-			return false;
+        if (hydrogenCount == 1) { // -CH(CH3)2
+            Stream<Atom> bondedCH3s = bondedAtomsCutOff.stream().filter(bonded -> bonded.getAmountOf(Element.H) == 3);
+            bondedCH3s = bondedCH3s.filter(bonded -> bonded.getBondedAtoms().size() == 3);
+            radical = bondedCH3s.count() == 2;
+        }
+        else if (hydrogenCount == 2) { // -CH2-C
+            Stream<Atom> bondedCarbons = bondedAtomsCutOff.stream().filter(bonded -> bonded.getElement() == Element.C);
+            radical = atom.getAmountOf(Element.C) == 1 && bondedCarbons.allMatch(this::isRadicalCarbon); // Recursive
+        }
+        else radical = hydrogenCount == 3; // -CH3
 
-		boolean radical;
+        return radical;
+    }
 
-		int hydrogenCount = atom.getAmountOf(Element.H);
+    private Substituent buildRadicalFrom(Atom radicalCarbon) {
+        int hydrogenCount = radicalCarbon.getAmountOf(Element.H);
 
-		if (hydrogenCount == 1) { // -CH(CH3)2
-			Stream<Atom> bondedCH3s = bondedAtomsCutOff.stream().filter(bonded -> bonded.getAmountOf(Element.H) == 3);
-			bondedCH3s = bondedCH3s.filter(bonded -> bonded.getBondedAtoms().size() == 3);
-			radical = bondedCH3s.count() == 2;
-		}
-		else if (hydrogenCount == 2) { // -CH2-C
-			Stream<Atom> bondedCarbons = bondedAtomsCutOff.stream().filter(bonded -> bonded.getElement() == Element.C);
-			radical = atom.getAmountOf(Element.C) == 1 && bondedCarbons.allMatch(this::isRadicalCarbon); // Recursive
-		}
-		else radical = hydrogenCount == 3; // -CH3
+        if (hydrogenCount == 3)
+            return Substituent.radical(1);
 
-		return radical;
-	}
+        if (hydrogenCount == 1)
+            return Substituent.radical(3, true);
 
-	private Substituent buildRadicalFrom(Atom radicalCarbon) {
-		int hydrogenCount = radicalCarbon.getAmountOf(Element.H);
+        List<Atom> bondedCarbons = radicalCarbon.getBondedAtomsSeparated();
+        bondedCarbons.removeIf(bondedAtom -> bondedAtom.getElement() != Element.C);
 
-		if (hydrogenCount == 3)
-			return Substituent.radical(1);
+        Atom nextCarbon = bondedCarbons.get(0); // There must be one
 
-		if (hydrogenCount == 1)
-			return Substituent.radical(3, true);
+        Substituent radicalEnd = buildRadicalFrom(nextCarbon); // Recursive
 
-		List<Atom> bondedCarbons = radicalCarbon.getBondedAtomsSeparated();
-		bondedCarbons.removeIf(bondedAtom -> bondedAtom.getElement() != Element.C);
-
-		Atom nextCarbon = bondedCarbons.get(0); // There must be one
-
-		Substituent radicalEnd = buildRadicalFrom(nextCarbon); // Recursive
-
-		return Substituent.radical(1 + radicalEnd.getCarbonCount(), radicalEnd.isIso()); // Appended
-	}
+        return Substituent.radical(1 + radicalEnd.getCarbonCount(), radicalEnd.isIso()); // Appended
+    }
 
 }

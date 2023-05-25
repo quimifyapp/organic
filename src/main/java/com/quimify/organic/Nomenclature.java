@@ -26,7 +26,7 @@ public class Nomenclature {
     }
 
     protected static boolean isBond(Group group) {
-        return group == Group.alkene || group ==  Group.alkyne;
+        return group == Group.alkene || group == Group.alkyne;
     }
 
     // Text: TODO refactor, translation
@@ -34,8 +34,8 @@ public class Nomenclature {
     protected static String quantifierFor(int number) {
         String quantifier;
 
-        if(number < 10) { // [1, 9]
-            switch(number) {
+        if (number < 10) { // [1, 9]
+            switch (number) {
                 case 1:
                     quantifier = "met";
                     break;
@@ -53,45 +53,45 @@ public class Nomenclature {
                     break;
             }
         }
-        else if(number == 11) // 11
+        else if (number == 11) // 11
             quantifier = "undec";
         else { // 10 U [12, 999]
             int decenas = number / 10;
             int unidades = number - (decenas * 10);
 
-            if(number < 15) // 10 U [12, 14]
+            if (number < 15) // 10 U [12, 14]
                 quantifier = greekPrefixFor(unidades) + "dec";
-            else if(number < 20) // [15, 19]
+            else if (number < 20) // [15, 19]
                 quantifier = greekPrefixFor(unidades) + "adec";
-            else if(number == 20) // 20
+            else if (number == 20) // 20
                 quantifier = "icos";
-            else if(number == 21) // 21
+            else if (number == 21) // 21
                 quantifier = "heneicos";
-            else if(number < 25) // [22, 25]
+            else if (number < 25) // [22, 25]
                 quantifier = greekPrefixFor(unidades) + "cos";
-            else if(number < 30) // [26, 29]
+            else if (number < 30) // [26, 29]
                 quantifier = greekPrefixFor(unidades) + "acos";
-            else if(number < 100) { // [30, 99]
+            else if (number < 100) { // [30, 99]
                 quantifier = greekPrefixFor(unidades);
 
-                if(unidades > 4)
+                if (unidades > 4)
                     quantifier += "a";
 
                 quantifier += greekPrefixFor(decenas);
 
-                if(decenas == 4)
+                if (decenas == 4)
                     quantifier += "cont";
                 else quantifier += "acont";
             }
-            else if(number == 100) // 100
+            else if (number == 100) // 100
                 quantifier = "hect";
-            else if(number < 999) {  // [101, 999]
+            else if (number < 999) {  // [101, 999]
                 int centenas = number / 100;
                 decenas = decenas - (centenas * 10);
 
                 quantifier = quantifierFor(10 * decenas + unidades); // Recursivo
 
-                switch(centenas) {
+                switch (centenas) {
                     case 1: // [101, 199]
                         quantifier += "ahect";
                         break;
@@ -118,7 +118,7 @@ public class Nomenclature {
     private static String greekPrefixFor(int digit) {
         String greekPrefix;
 
-        switch(digit) {
+        switch (digit) {
             case 0:
                 greekPrefix = "";
                 break;
@@ -159,7 +159,7 @@ public class Nomenclature {
     protected static String multiplierFor(int number) {
         String multiplier;
 
-        switch(number) {
+        switch (number) {
             case 1:
                 multiplier = "";
                 break;
@@ -206,8 +206,8 @@ public class Nomenclature {
         public Locator(List<Integer> posiciones, String lexema) {
             StringBuilder auxiliar = new StringBuilder();
 
-            if(posiciones.size() > 0) {
-                for(int i = 0; i < posiciones.size() - 1; i++)
+            if (posiciones.size() > 0) {
+                for (int i = 0; i < posiciones.size() - 1; i++)
                     auxiliar.append(posiciones.get(i) + 1).append(",");
                 auxiliar.append(posiciones.get(posiciones.size() - 1) + 1);
             }
@@ -225,7 +225,7 @@ public class Nomenclature {
         public String toString() {
             String resultado = "";
 
-            if(!posiciones.equals(""))
+            if (!posiciones.equals(""))
                 resultado = posiciones + "-";
             resultado += multiplicador + lexema;
 
@@ -279,7 +279,7 @@ public class Nomenclature {
     protected static String radicalNameParticleFor(Substituent radical) {
         String nameParticle;
 
-        if(radical.isIso())
+        if (radical.isIso())
             nameParticle = "iso";
         else nameParticle = "";
 
@@ -291,7 +291,7 @@ public class Nomenclature {
     static String prefixNameParticleFor(Group group) {
         String prefixNameParticle;
 
-        switch(group) {
+        switch (group) {
             case carbamoyl:
                 prefixNameParticle = "carbamoil";
                 break;
@@ -332,7 +332,7 @@ public class Nomenclature {
     static String bondNameParticleFor(Group bond) {
         String bondNameParticle;
 
-        switch(bond) {
+        switch (bond) {
             case alkene:
                 bondNameParticle = "en";
                 break;
@@ -349,7 +349,7 @@ public class Nomenclature {
     protected static String suffixNameParticleFor(Group group) {
         String suffixNameParticle;
 
-        switch(group) {
+        switch (group) {
             case acid:
                 suffixNameParticle = "oico";
                 break;
@@ -379,7 +379,7 @@ public class Nomenclature {
     }
 
     protected static String bondSymbolFor(int bondOrder) {
-        switch(bondOrder) {
+        switch (bondOrder) {
             case 0:
                 return "-";
             case 1:

@@ -73,7 +73,7 @@ public final class Simple extends Nomenclature implements OpenChain {
             bondableGroups.add(Group.alcohol);
             bondableGroups.add(Group.amine);
 
-            if(wouldBePriority(Group.ether))
+            if (wouldBePriority(Group.ether))
                 bondableGroups.add(Group.ether);
 
             bondableGroups.add(Group.nitro);
@@ -95,7 +95,7 @@ public final class Simple extends Nomenclature implements OpenChain {
     public OpenChain bond(Substituent substituent) {
         OpenChain openChain;
 
-        if(substituent.getGroup() == Group.ether) {
+        if (substituent.getGroup() == Group.ether) {
             openChain = new Ether(chain);
             openChain.bond(Group.ether);
         }
@@ -134,8 +134,8 @@ public final class Simple extends Nomenclature implements OpenChain {
         // Se procesa el sufijo:
         String suffix = "";
 
-        if(groups.size() > 0 && !isHalogen(groups.get(0)) && !isBond(groups.get(0)))
-            if(groups.get(0) != Group.nitro && groups.get(0) != Group.radical)
+        if (groups.size() > 0 && !isHalogen(groups.get(0)) && !isBond(groups.get(0)))
+            if (groups.get(0) != Group.nitro && groups.get(0) != Group.radical)
                 suffix = getSuffixNameFor(groups.get(groupIndex++));
 
         // Se procesan los prefijos:
@@ -217,7 +217,7 @@ public final class Simple extends Nomenclature implements OpenChain {
 
         Optional<Group> priorityGroup = chain.getPriorityGroup();
 
-        if(priorityGroup.isPresent() && priorityGroup.get().ordinal() > Group.aldehyde.ordinal()) // Would be priority
+        if (priorityGroup.isPresent() && priorityGroup.get().ordinal() > Group.aldehyde.ordinal()) // Would be priority
             groupKetoneWithToTerminal(Group.hydrogen, Group.aldehyde); // CH(O) → CHO
 
         // Moving out carbons into substituents:
@@ -232,7 +232,7 @@ public final class Simple extends Nomenclature implements OpenChain {
     }
 
     private void breakDownTerminalToKetoneWithIn(Group terminal, Group companion, Carbon carbon) {
-        if(carbon.isBondedTo(terminal)) {
+        if (carbon.isBondedTo(terminal)) {
             carbon.unbond(terminal); // C(A)- → C-
             carbon.bond(Group.ketone); // C- → C(O)-
             carbon.bond(companion); // C- → C(O)(B)-
@@ -245,7 +245,7 @@ public final class Simple extends Nomenclature implements OpenChain {
     }
 
     private void groupKetoneWithToTerminalIn(Group companion, Group terminal, Carbon carbon) {
-        if(carbon.isBondedTo(Group.ketone) && carbon.isBondedTo(companion)) {
+        if (carbon.isBondedTo(Group.ketone) && carbon.isBondedTo(companion)) {
             carbon.unbond(Group.ketone); // C(O)(A)- → C(A)-
             carbon.unbond(companion); // C(A)- → C-
             carbon.bond(terminal);// C- → C(B)-
@@ -253,10 +253,10 @@ public final class Simple extends Nomenclature implements OpenChain {
     }
 
     private void moveOutWithAs(Group terminal, Group substitute) {
-        if(!wouldBePriority(terminal)) {
-            if(chain.getSize() > 1)
+        if (!wouldBePriority(terminal)) {
+            if (chain.getSize() > 1)
                 moveOutWithAsIn(terminal, substitute, chain.getFirstCarbon(), chain.getCarbon(1));
-            if(chain.getSize() > 1) // Might have changed
+            if (chain.getSize() > 1) // Might have changed
                 moveOutWithAsIn(terminal, substitute, chain.getLastCarbon(), chain.getCarbon(chain.getSize() - 2));
         }
     }

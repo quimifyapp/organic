@@ -89,8 +89,8 @@ public class RandomStructureToName {
     private static OpenChain getRandomOpenChain() {
         OpenChain openChain = new Simple();
 
-        while(!openChain.isDone()) {
-            if(openChain.canBondCarbon() && random.nextInt(bondCarbonPeriod) == 0) {
+        while (!openChain.isDone()) {
+            if (openChain.canBondCarbon() && random.nextInt(bondCarbonPeriod) == 0) {
                 openChain.bondCarbon();
                 continue;
             }
