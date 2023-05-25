@@ -121,8 +121,8 @@ public class Molecule extends Nomenclature {
 	}
 
 	private boolean isSimpleCarbon(Atom carbon) {
-		Set<Atom> nonSubstituentBondedAtoms = carbon.getBondedAtomsSeparated().stream().filter(bondedAtom ->
-				isNotSubstituent(bondedAtom, Simple.bondableAtoms)).collect(Collectors.toSet());
+		List<Atom> nonSubstituentBondedAtoms = carbon.getBondedAtomsSeparated().stream().filter(bondedAtom ->
+				isNotSubstituent(bondedAtom, Simple.bondableAtoms)).collect(Collectors.toList());
 
 		if (nonSubstituentBondedAtoms.size() == 1) {
 			Atom nonSubstituent = nonSubstituentBondedAtoms.stream().findAny().get();
@@ -178,8 +178,8 @@ public class Molecule extends Nomenclature {
 	private boolean isEtherCarbon(Atom carbon, boolean hasFoundEther) {
 		boolean ether;
 
-		Set<Atom> nonSubstituentBondedAtoms = carbon.getBondedAtomsSeparated().stream().filter(bondedAtom ->
-				isNotSubstituent(bondedAtom, Ether.bondableAtoms)).collect(Collectors.toSet());
+		List<Atom> nonSubstituentBondedAtoms = carbon.getBondedAtomsSeparated().stream().filter(bondedAtom ->
+				isNotSubstituent(bondedAtom, Ether.bondableAtoms)).collect(Collectors.toList());
 
 		if (nonSubstituentBondedAtoms.size() == 1) {
 			Atom nonSubstituent = nonSubstituentBondedAtoms.stream().findAny().get();
