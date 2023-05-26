@@ -1,10 +1,11 @@
 package com.quimify.organic.components;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Atom {
 
-    private final Integer id;
+    private final Integer id; // TODO remove
     private final Element element;
     private final List<Atom> bondedAtoms;
 
@@ -144,40 +145,31 @@ public class Atom {
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(id, element, new HashSet<>(getBondedAtomsSeparated()));
+    public int hashCode() { // One node deep
+        return Objects.hash(element, getBondedElements());
     }
 
     @Override
-    public boolean equals(Object other) {
+    public boolean equals(Object other) { // One node deep
         if (other == null || other.getClass() != this.getClass())
             return false;
 
         Atom otherAtom = (Atom) other;
 
-        if (!Objects.equals(id, otherAtom.id)) // Objects.equals(null, null) = true
-            return false;
-
         if (element != otherAtom.element)
             return false;
 
-        if (bondedAtoms.size() != otherAtom.bondedAtoms.size())
-            return false;
-
-        // Equality check between bonded atoms, one node deep and regardless of order:
-
-        List<Atom> bondedAtomsCutOff = getBondedAtomsSeparated(); // TODO rename
-        List<Atom> othersBondedAtomsCutOff = otherAtom.getBondedAtomsSeparated(); // TODO rename
-
-        for (Atom bondedAtom : bondedAtomsCutOff) {
-            int frequency = Collections.frequency(bondedAtomsCutOff, bondedAtom);
-            int otherFrequency = Collections.frequency(othersBondedAtomsCutOff, bondedAtom);
-
-            if (frequency != otherFrequency)
+        for (Element bondedElement : getBondedElements())
+            if (getAmountOf(bondedElement) != otherAtom.getAmountOf(bondedElement))
                 return false;
-        }
 
         return true;
+    }
+
+    // Private:
+
+    private Set<Element> getBondedElements() {
+        return bondedAtoms.stream().map(Atom::getElement).collect(Collectors.toSet());
     }
 
     // Getters:

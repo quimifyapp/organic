@@ -224,7 +224,7 @@ public class Molecule extends Nomenclature {
     }
 
     private boolean isBondableAtom(Atom atom, Set<Atom> bondableAtoms) {
-        return bondableAtoms.stream().anyMatch(atom.toAnonymous()::equals);
+        return bondableAtoms.contains(atom);
     }
 
     private boolean isRadicalCarbon(Atom atom) {

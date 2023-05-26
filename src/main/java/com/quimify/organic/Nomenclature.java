@@ -31,7 +31,7 @@ public class Nomenclature {
 
     // Text: TODO refactor, translation
 
-    protected static String quantifierFor(int number) {
+    protected static String quantifierFor(int number) { // TODO check correctness
         String quantifier;
 
         if (number < 10) { // [1, 9]
@@ -85,7 +85,7 @@ public class Nomenclature {
             }
             else if (number == 100) // 100
                 quantifier = "hect";
-            else if (number < 999) {  // [101, 999]
+            else if (number < 999) {  // [101, 999] TODO <= ?
                 int centenas = number / 100;
                 decenas = decenas - (centenas * 10);
 
