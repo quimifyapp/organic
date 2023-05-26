@@ -13,9 +13,9 @@ public class Atom {
     public static final Atom H = new Atom(Element.H);
     public static final Atom N = new Atom(Element.N);
     public static final Atom O = new Atom(Element.O);
-    public static final Atom OH = new Atom(Element.O, List.of(H)); // TODO set?
-    public static final Atom NH2 = new Atom(Element.N, List.of(H, H));
-    public static final Atom NO2 = new Atom(Element.N, List.of(O, O));
+    public static final Atom OH = new Atom(Element.O, H);
+    public static final Atom NH2 = new Atom(Element.N, H, H);
+    public static final Atom NO2 = new Atom(Element.N, O, O);
     public static final Atom Br = new Atom(Element.Br);
     public static final Atom Cl = new Atom(Element.Cl);
     public static final Atom F = new Atom(Element.F);
@@ -73,8 +73,8 @@ public class Atom {
         this(null, element, bondedAtoms);
     }
 
-    Atom(Element element) {
-        this(element, new ArrayList<>());
+    private Atom(Element element, Atom... bondedAtoms) {
+        this(null, element, List.of(bondedAtoms));
     }
 
     private Atom(Atom other) {

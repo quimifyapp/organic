@@ -24,12 +24,12 @@ import java.util.stream.Stream;
 public class Molecule extends Nomenclature {
 
     private final String smiles;
-    private final Set<Atom> molecule;
+    private final List<Atom> molecule;
 
     // Constructor:
 
     public Molecule(String cml, String smiles) throws ParserConfigurationException, IOException, SAXException {
-        this.molecule = new HashSet<>();
+        this.molecule = new ArrayList<>();
         this.smiles = smiles;
 
         DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
