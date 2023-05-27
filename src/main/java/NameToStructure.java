@@ -22,10 +22,12 @@ public class NameToStructure {
 
                 if (organic.isPresent()) {
                     System.out.println("Smiles: " + organic.get().getSmiles());
-                    System.out.println("Structure: " + organic.get().getStructure());
+
+                    if(organic.get().getStructure() != null)
+                        System.out.println("Structure: " + organic.get().getStructure());
+                    else System.out.println("Structure exception: " + organic.get().getStructureException());
                 }
                 else System.out.println("Not found");
-
             } catch (Exception exception) {
                 exception.printStackTrace();
             }

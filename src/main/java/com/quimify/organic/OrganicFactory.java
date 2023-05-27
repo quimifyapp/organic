@@ -25,8 +25,8 @@ public class OrganicFactory {
             String structure = openChain.map(OpenChain::getStructure).orElse(null);
 
             organic = new Organic(name, smiles, structure);
-        } catch (Exception exception) {
-            organic = new Organic(name, smiles, exception);
+        } catch (Exception structureException) {
+            organic = new Organic(name, smiles, structureException);
         }
 
         return Optional.of(organic);
