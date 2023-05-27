@@ -3,12 +3,12 @@ package com.quimify.organic.components;
 // This enum represents atoms involved in organic chemistry.
 
 public enum Element {
-	C,	// Carbono
-	H,	// Hidrógeno
-	N,	// Nitrógeno
-	O,	// Oxígeno
-	Br,	// Bromo
-	Cl,	// Cloro
-	F,	// Flúor
-	I	// Yodo
+	C,	// Carbon
+	H,	// Hydrogen
+	N,	// Nitrogen
+	O,	// Oxygen
+	Br,	// Bromine
+	Cl,	// Chlorine
+	F,	// Fluorine
+	I,	// Iodine
 }

@@ -24,7 +24,6 @@ public class Atom {
 
     // Error messages:
 
-    private static final String unknownAtomError = "Unknown organic atom: %s.";
     private static final String unknownFunctionalGroupError = "Unknown functional group of atom: %s.";
 
     // Constructor:
@@ -35,39 +34,8 @@ public class Atom {
         this.bondedAtoms = bondedAtoms;
     }
 
-    public Atom(int id, String symbol) {
-        this.id = id;
-
-        switch (symbol) {
-            case "C":
-                element = Element.C;
-                break;
-            case "H":
-                element = Element.H;
-                break;
-            case "N":
-                element = Element.N;
-                break;
-            case "O":
-                element = Element.O;
-                break;
-            case "Br":
-                element = Element.Br;
-                break;
-            case "Cl":
-                element = Element.Cl;
-                break;
-            case "F":
-                element = Element.F;
-                break;
-            case "I":
-                element = Element.I;
-                break;
-            default:
-                throw new IllegalArgumentException(String.format(unknownAtomError, symbol));
-        }
-
-        this.bondedAtoms = new ArrayList<>();
+    public Atom(int id, Element element) {
+        this(id, element, new ArrayList<>());
     }
 
     private Atom(Element element, List<Atom> bondedAtoms) {

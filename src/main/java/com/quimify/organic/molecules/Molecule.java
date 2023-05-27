@@ -46,9 +46,9 @@ public class Molecule extends Nomenclature {
             org.w3c.dom.Element atomXML = (org.w3c.dom.Element) atomsXML.item(i);
 
             int id = Integer.parseInt(atomXML.getAttribute("id").replace("a", ""));
-            String elementType = atomXML.getAttribute("elementType");
+            String symbol = atomXML.getAttribute("elementType");
 
-            molecule.add(new Atom(id, elementType));
+            molecule.add(new Atom(id, Element.valueOf(symbol)));
         }
     }
 
