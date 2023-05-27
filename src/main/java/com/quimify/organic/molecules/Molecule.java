@@ -1,6 +1,5 @@
 package com.quimify.organic.molecules;
 
-import com.quimify.organic.Nomenclature;
 import com.quimify.organic.components.*;
 import com.quimify.organic.molecules.openchain.Ether;
 import com.quimify.organic.molecules.openchain.OpenChain;
@@ -21,7 +20,7 @@ import java.util.stream.Stream;
 
 // This class represents any molecule described by a CML to try to convert it into recognized molecule types.
 
-public class Molecule extends Nomenclature {
+public class Molecule {
 
     private final String smiles;
     private final List<Atom> molecule;
