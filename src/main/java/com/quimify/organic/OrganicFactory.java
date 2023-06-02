@@ -17,16 +17,18 @@ public class OrganicFactory {
 
         Organic organic;
 
-        String smiles = opsinResult.get().getSmiles();
-
         try {
-            Molecule molecule = new Molecule(opsinResult.get().getCml(), smiles);
-            Optional<OpenChain> openChain = molecule.toOpenChain();
+            Optional<Molecule> molecule = Molecule.from(opsinResult.get().getCml(), opsinResult.get().getSmiles());
+
+            if(molecule.isEmpty())
+                return Optional.empty();
+
+            Optional<OpenChain> openChain = molecule.get().toOpenChain();
             String structure = openChain.map(OpenChain::getStructure).orElse(null);
 
-            organic = new Organic(name, smiles, structure);
+            organic = new Organic(name, opsinResult.get().getSmiles(), structure);
         } catch (Exception structureException) {
-            organic = new Organic(name, smiles, structureException);
+            organic = new Organic(name, opsinResult.get().getSmiles(), structureException);
         }
 
         return Optional.of(organic);

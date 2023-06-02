@@ -14,7 +14,7 @@ public final class Simple extends Nomenclature implements OpenChain {
 
     // Constants:
 
-    public static final Set<Atom> bondableAtoms = Set.of(
+    public static final List<Atom> bondableAtoms = List.of(
             Atom.N,
             Atom.O,
             Atom.OH,
@@ -27,7 +27,7 @@ public final class Simple extends Nomenclature implements OpenChain {
             Atom.H
     );
 
-    private static final Set<Group> bondableGroups = Set.of(
+    private static final List<Group> bondableGroups = List.of(
             Group.acid,
             Group.amide,
             Group.nitrile,

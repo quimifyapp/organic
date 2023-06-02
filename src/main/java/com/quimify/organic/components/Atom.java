@@ -5,7 +5,6 @@ import java.util.stream.Collectors;
 
 public class Atom {
 
-    private final Integer id; // TODO remove
     private final Element element;
     private final List<Atom> bondedAtoms;
 
@@ -22,104 +21,41 @@ public class Atom {
     public static final Atom F = new Atom(Element.F);
     public static final Atom I = new Atom(Element.I);
 
-    // Error messages:
-
-    private static final String unknownFunctionalGroupError = "Unknown functional group of atom: %s.";
-
     // Constructor:
 
-    private Atom(Integer id, Element element, List<Atom> bondedAtoms) {
-        this.id = id;
+    private Atom(Element element, List<Atom> bondedAtoms) {
         this.element = element;
         this.bondedAtoms = bondedAtoms;
     }
 
-    public Atom(int id, Element element) {
-        this(id, element, new ArrayList<>());
-    }
-
-    private Atom(Element element, List<Atom> bondedAtoms) {
-        this(null, element, bondedAtoms);
-    }
-
     private Atom(Element element, Atom... bondedAtoms) {
-        this(null, element, List.of(bondedAtoms));
+        this(element, List.of(bondedAtoms));
     }
 
-    private Atom(Atom other) {
-        this(other.id, other.element, new ArrayList<>(other.bondedAtoms));
+    public Atom(Element element) {
+        this(element, new ArrayList<>());
     }
 
     // Modifiers:
 
-    public void bond(Atom other) {
-        bondedAtoms.add(other);
+    public void bond(Atom atom) {
+        bondedAtoms.add(atom);
     }
 
     // Queries:
 
     public int getAmountOf(Element element) {
-        return (int) bondedAtoms.stream().filter(bondedAtom -> bondedAtom.getElement() == element).count();
-    }
-
-    public List<Atom> getBondedAtomsSeparated() { // TODO rename and reconsider
-        List<Atom> bondedAtomsCutOff = new ArrayList<>();
-
-        for (Atom bondedAtom : bondedAtoms)
-            bondedAtomsCutOff.add(new Atom(bondedAtom));
-
-        if (id != null)
-            for (Atom bondedAtomCutOff : bondedAtomsCutOff)
-                bondedAtomCutOff.bondedAtoms.removeIf(bondedAtom ->
-                        Objects.equals(id, bondedAtom.id)); // Removes itself from the copy
-
-        return bondedAtomsCutOff;
-    }
-
-    public Atom toAnonymous() { // TODO rename and reconsider
-        Atom anonymousAtom = new Atom(element, getBondedAtomsSeparated());
-        anonymousAtom.bondedAtoms.replaceAll(Atom::toAnonymous);
-        return anonymousAtom;
-    }
-
-    public Group toFunctionalGroup() {
-        Group group;
-
-        Atom anonymousAtom = toAnonymous(); // TODO rename
-
-        if (anonymousAtom.equals(Atom.H))
-            group = Group.hydrogen;
-        else if (anonymousAtom.equals(Atom.N))
-            group = Group.nitrile;
-        else if (anonymousAtom.equals(Atom.O))
-            group = Group.ketone;
-        else if (anonymousAtom.equals(Atom.OH))
-            group = Group.alcohol;
-        else if (anonymousAtom.equals(Atom.NH2))
-            group = Group.amine;
-        else if (anonymousAtom.equals(Atom.NO2))
-            group = Group.nitro;
-        else if (anonymousAtom.equals(Atom.Br))
-            group = Group.bromine;
-        else if (anonymousAtom.equals(Atom.Cl))
-            group = Group.chlorine;
-        else if (anonymousAtom.equals(Atom.F))
-            group = Group.fluorine;
-        else if (anonymousAtom.equals(Atom.I))
-            group = Group.iodine;
-        else throw new IllegalArgumentException(String.format(unknownFunctionalGroupError, element));
-
-        return group;
+        return (int) bondedAtoms.stream().filter(bondedAtom -> bondedAtom.element == element).count();
     }
 
     @Override
-    public int hashCode() { // One node deep
-        return Objects.hash(element, getBondedElements());
+    public int hashCode() { // Only one node deep
+        return Objects.hash(element, getOrderedBondedElements());
     }
 
     @Override
-    public boolean equals(Object other) { // One node deep
-        if (other == null || other.getClass() != this.getClass())
+    public boolean equals(Object other) { // Only one node deep
+        if (other == null || getClass() != other.getClass())
             return false;
 
         Atom otherAtom = (Atom) other;
@@ -127,24 +63,16 @@ public class Atom {
         if (element != otherAtom.element)
             return false;
 
-        for (Element bondedElement : getBondedElements())
-            if (getAmountOf(bondedElement) != otherAtom.getAmountOf(bondedElement))
-                return false;
-
-        return true;
+        return getOrderedBondedElements().equals(otherAtom.getOrderedBondedElements());
     }
 
     // Private:
 
-    private Set<Element> getBondedElements() {
-        return bondedAtoms.stream().map(Atom::getElement).collect(Collectors.toSet());
+    private List<Element> getOrderedBondedElements() {
+        return bondedAtoms.stream().map(Atom::getElement).sorted().collect(Collectors.toList());
     }
 
     // Getters:
-
-    public Integer getId() {
-        return id;
-    }
 
     public Element getElement() {
         return element;

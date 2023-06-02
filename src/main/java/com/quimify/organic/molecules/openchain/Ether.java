@@ -19,7 +19,7 @@ public final class Ether extends Nomenclature implements OpenChain {
 
 	// Constants:
 
-	public static final Set<Atom> bondableAtoms = Set.of(
+	public static final List<Atom> bondableAtoms = List.of(
 			Atom.NO2,
 			Atom.Br,
 			Atom.Cl,
@@ -28,7 +28,7 @@ public final class Ether extends Nomenclature implements OpenChain {
 			Atom.H
 	);
 
-	private static final Set<Group> bondableGroups = Set.of(
+	private static final List<Group> bondableGroups = List.of(
 			Group.ether,
 			Group.nitro,
 			Group.bromine,
@@ -108,7 +108,7 @@ public final class Ether extends Nomenclature implements OpenChain {
 	public void standardize() {
 		firstChain.correctChainToTheLeft(); // CF(CH3)-O- → CH3-CF-O-
 		secondChain.correctChainToTheRight(); // -O-CHF(CH3) → -O-CHF-CH3
-		// TODO based on chains names? gpt?
+		// TODO order based on chains names?
 	}
 
 	public String getName() {

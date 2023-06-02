@@ -7,103 +7,146 @@ import com.quimify.organic.molecules.openchain.Simple;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.IOException;
 import java.io.StringReader;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-// This class represents any molecule described by a CML to try to convert it into recognized molecule types.
+// This class builds molecules from serialized data to convert them into known molecule types.
 
 public class Molecule {
 
-    private final String smiles;
-    private final List<Atom> molecule;
+    // TODO MAKE ALL POSSIBLE METHODS IN THIS PROJECT STATIC
+
+    private final List<Atom> atoms;
+
+    // Constants:
+
+    private static final Map<Atom, Group> atomToGroup = Map.of(
+            Atom.H, Group.hydrogen,
+            Atom.N, Group.nitrile,
+            Atom.O, Group.ketone,
+            Atom.OH, Group.alcohol,
+            Atom.NH2, Group.amine,
+            Atom.NO2, Group.nitro,
+            Atom.Br, Group.bromine,
+            Atom.Cl, Group.chlorine,
+            Atom.F, Group.fluorine,
+            Atom.I, Group.iodine
+    );
+
+    // Error messages:
+
+    private static final String unknownFunctionalGroupError = "Unknown functional group of atom with element: %s.";
 
     // Constructor:
 
-    public Molecule(String cml, String smiles) throws ParserConfigurationException, IOException, SAXException {
-        this.molecule = new ArrayList<>();
-        this.smiles = smiles;
+    private Molecule(List<Atom> atoms) {
+        this.atoms = atoms;
+    }
+
+    public static Optional<Molecule> from(String cml, String smiles) throws Exception {
+        if (smiles.matches(".*[0-9].*"))
+            return Optional.empty(); // SMILES uses digits only for cycles
 
         DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-        Document cmlXML = documentBuilder.parse(new InputSource(new StringReader(cml)));
+        Document cmlDocument = documentBuilder.parse(new InputSource(new StringReader(cml)));
 
-        collectAtoms(cmlXML);
-        bondAtoms(cmlXML);
+        Optional<Map<Integer, Atom>> idToAtom = collectAtoms(cmlDocument);
+
+        if (idToAtom.isEmpty())
+            return Optional.empty(); // There were strictly inorganic atoms
+
+        List<Atom> atoms = bondAtoms(idToAtom.get(), cmlDocument);
+
+        if (atoms.stream().noneMatch(atom -> atom.getElement() == Element.C)) // TODO NEEDED? try and see what happens
+            return Optional.empty(); // Not an organic molecule
+
+        return Optional.of(new Molecule(atoms));
     }
 
-    private void collectAtoms(Document cmlXML) {
-        NodeList atomsXML = cmlXML.getElementsByTagName("atom");
+    private static Optional<Map<Integer, Atom>> collectAtoms(Document cmlDocument) {
+        Map<Integer, Atom> idToAtom = new HashMap<>();
 
-        for (int i = 0; i < atomsXML.getLength(); i++) {
-            org.w3c.dom.Element atomXML = (org.w3c.dom.Element) atomsXML.item(i);
+        NodeList cmlAtoms = cmlDocument.getElementsByTagName("atom");
+        for (int i = 0; i < cmlAtoms.getLength(); i++) {
+            org.w3c.dom.Element cmlAtom = (org.w3c.dom.Element) cmlAtoms.item(i);
 
-            int id = Integer.parseInt(atomXML.getAttribute("id").replace("a", ""));
-            String symbol = atomXML.getAttribute("elementType");
+            int id = Integer.parseInt(cmlAtom.getAttribute("id").replace("a", ""));
+            String symbol = cmlAtom.getAttribute("elementType");
 
-            molecule.add(new Atom(id, Element.valueOf(symbol)));
+            Element element;
+            try {
+                element = Element.valueOf(symbol);
+            } catch (IllegalArgumentException ignore) {
+                return Optional.empty(); // Probably not an organic symbol
+            }
+
+            idToAtom.put(id, new Atom(element));
         }
+
+        return Optional.of(idToAtom);
     }
 
-    private void bondAtoms(Document cmlXML) {
+    private static List<Atom> bondAtoms(Map<Integer, Atom> idToAtom, Document cmlXML) {
         NodeList bondsXML = cmlXML.getElementsByTagName("bond");
 
         for (int i = 0; i < bondsXML.getLength(); i++) {
             org.w3c.dom.Element bondXML = (org.w3c.dom.Element) bondsXML.item(i);
 
             String[] idsAsStrings = bondXML.getAttribute("id").replace("a", "").split("_");
-            int[] ids = Arrays.stream(idsAsStrings).mapToInt(Integer::valueOf).toArray();
 
-            Stream<Atom> identified = molecule.stream().filter(atom -> List.of(ids[0], ids[1]).contains(atom.getId()));
-            Atom[] atoms = identified.toArray(Atom[]::new);
+            int[] ids = {Integer.parseInt(idsAsStrings[0]), Integer.parseInt(idsAsStrings[1])};
+            Atom[] atoms = {idToAtom.get(ids[0]), idToAtom.get(ids[1])};
 
             atoms[0].bond(atoms[1]);
             atoms[1].bond(atoms[0]);
         }
+
+        return new ArrayList<>(idToAtom.values());
     }
 
     // Queries:
 
     public Optional<OpenChain> toOpenChain() {
-        if (!isOpenChain())
-            return Optional.empty();
+        List<Atom> originCarbons = getOriginCarbons();
 
-        Optional<OpenChain> openChain = toSimpleOpenChain();
+        Optional<OpenChain> openChain = toSimpleOpenChain(originCarbons);
 
         if (openChain.isEmpty())
-            openChain = toEtherOpenChain();
+            openChain = toEtherOpenChain(originCarbons);
 
         return openChain;
     }
 
     // Private:
 
-    private boolean isCycle() {
-        return smiles.matches(".*[0-9].*"); // SMILES uses digits only for cycles
+    private List<Atom> getOriginCarbons() {
+        Stream<Atom> carbonTips = atoms.stream().filter(Molecule::isCarbonTip);
+        return carbonTips.map(carbonTip -> asOrigin(carbonTip, null)).collect(Collectors.toList());
     }
 
-    private boolean isOpenChain() {
-        return !isCycle(); // By definition of an open chain
+    private static boolean isCarbonTip(Atom atom) {
+        return atom.getElement() == Element.C && atom.getAmountOf(Element.C) < 2;
     }
 
-    private List<Atom> getCarbons() {
-        return molecule.stream().filter(atom -> atom.getElement() == Element.C).collect(Collectors.toList());
-    }
+    private static Atom asOrigin(Atom atom, Atom parent) {
+        Atom origin = new Atom(atom.getElement());
 
-    private List<Atom> getEndingCarbons() {
-        return getCarbons().stream().filter(carbon -> carbon.getAmountOf(Element.C) < 2).collect(Collectors.toList());
+        for(Atom bondedAtom : atom.getBondedAtoms())
+            if(bondedAtom != parent)
+                origin.bond(asOrigin(bondedAtom, atom));
+
+        return origin;
     }
 
     // Simple open chain:
 
-    private Optional<OpenChain> toSimpleOpenChain() {
-        Optional<Atom> simpleEndingCarbon = getSimpleEndingCarbon();
+    private static Optional<OpenChain> toSimpleOpenChain(List<Atom> originCarbons) { // TODO Optional of Simple?
+        Optional<Atom> simpleEndingCarbon = getSimpleOriginCarbon(originCarbons);
 
         if (simpleEndingCarbon.isEmpty())
             return Optional.empty();
@@ -115,28 +158,32 @@ public class Molecule {
         return Optional.of(simple);
     }
 
-    private Optional<Atom> getSimpleEndingCarbon() {
-        return getEndingCarbons().stream().filter(this::isSimpleCarbon).findAny();
+    private static Optional<Atom> getSimpleOriginCarbon(List<Atom> originCarbons) {
+        return originCarbons.stream().filter(Molecule::isSimpleCarbon).findAny();
     }
 
-    private boolean isSimpleCarbon(Atom carbon) {
-        List<Atom> nonSubstituentBondedAtoms = carbon.getBondedAtomsSeparated().stream().filter(bondedAtom ->
+    private static boolean isSimpleCarbon(Atom carbon) {
+        List<Atom> nonSubstituentBondedAtoms = carbon.getBondedAtoms().stream().filter(bondedAtom ->
                 isNotSubstituent(bondedAtom, Simple.bondableAtoms)).collect(Collectors.toList());
 
         if (nonSubstituentBondedAtoms.size() == 1) {
-            Atom nonSubstituent = nonSubstituentBondedAtoms.stream().findAny().get();
-            return nonSubstituent.getElement() == Element.C && isSimpleCarbon(nonSubstituent); // Recursion
+            Atom nonSubstituent = nonSubstituentBondedAtoms.get(0);
+
+            if (nonSubstituent.getElement() != Element.C)
+                return false;
+
+            return isSimpleCarbon(nonSubstituent); // Recursive
         }
 
         return nonSubstituentBondedAtoms.size() == 0;
     }
 
-    private void buildSimpleFrom(Simple simple, Atom simpleCarbon) { // TODO runtime exceptions
+    private static void buildSimpleFrom(Simple simple, Atom simpleCarbon) { // TODO runtime exceptions??
         Optional<Atom> nextCarbon = Optional.empty();
 
-        for (Atom bondedAtom : simpleCarbon.getBondedAtomsSeparated()) {
+        for (Atom bondedAtom : simpleCarbon.getBondedAtoms()) {
             if (isBondableAtom(bondedAtom, Simple.bondableAtoms))
-                simple.bond(bondedAtom.toFunctionalGroup());
+                simple.bond(asGroup(bondedAtom));
             else if (isRadicalCarbon(bondedAtom))
                 simple.bond(buildRadicalFrom(bondedAtom));
             else nextCarbon = Optional.of(bondedAtom);
@@ -144,14 +191,14 @@ public class Molecule {
 
         if (nextCarbon.isPresent()) {
             simple.bondCarbon();
-            buildSimpleFrom(simple, nextCarbon.get()); // Recursion
+            buildSimpleFrom(simple, nextCarbon.get()); // Recursive
         }
     }
 
     // Ether open chain:
 
-    private Optional<OpenChain> toEtherOpenChain() {
-        Optional<Atom> etherEndingCarbon = getEtherEndingCarbon();
+    private static Optional<OpenChain> toEtherOpenChain(List<Atom> originCarbons) {  // TODO Optional of Ether?
+        Optional<Atom> etherEndingCarbon = getEtherOriginCarbon(originCarbons);
 
         if (etherEndingCarbon.isEmpty())
             return Optional.empty();
@@ -163,30 +210,29 @@ public class Molecule {
         return Optional.of(ether);
     }
 
-    private Optional<Atom> getEtherEndingCarbon() {
-        List<Atom> endingCarbons = getEndingCarbons();
-
-        if (endingCarbons.size() > 2) // -C-O-C- minimum
-            endingCarbons = endingCarbons.stream().filter(endingCarbon ->
-                    endingCarbon.getBondedAtomsSeparated().stream().noneMatch(bonded ->
+    private static Optional<Atom> getEtherOriginCarbon(List<Atom> originCarbons) {
+        // TODO SPLIT IN LINES:
+        if (originCarbons.size() > 2) // -C-O-C- minimum TODO what does this comment mean? it must be one of those two?
+            originCarbons = originCarbons.stream().filter(endingCarbon ->
+                    endingCarbon.getBondedAtoms().stream().noneMatch(bonded ->
                             bonded.getElement() == Element.O)).collect(Collectors.toList());
 
-        return endingCarbons.stream().filter(endingCarbon -> isEtherCarbon(endingCarbon, false)).findAny();
+        return originCarbons.stream().filter(originCarbon -> isEtherCarbon(originCarbon, false)).findAny();
     }
 
-    private boolean isEtherCarbon(Atom carbon, boolean hasFoundEther) {
+    private static boolean isEtherCarbon(Atom carbon, boolean etherFound) {
         boolean ether;
 
-        List<Atom> nonSubstituentBondedAtoms = carbon.getBondedAtomsSeparated().stream().filter(bondedAtom ->
+        List<Atom> nonSubstituentBondedAtoms = carbon.getBondedAtoms().stream().filter(bondedAtom ->
                 isNotSubstituent(bondedAtom, Ether.bondableAtoms)).collect(Collectors.toList());
 
         if (nonSubstituentBondedAtoms.size() == 1) {
             Atom nonSubstituent = nonSubstituentBondedAtoms.stream().findAny().get();
 
             if (nonSubstituent.getElement() == Element.C)
-                ether = isEtherCarbon(nonSubstituent, hasFoundEther); // Recursion
+                ether = isEtherCarbon(nonSubstituent, etherFound); // Recursive
             else if (nonSubstituent.getElement() == Element.O)
-                ether = !hasFoundEther && isEtherCarbon(nonSubstituent, true); // Recursion
+                ether = !etherFound && isEtherCarbon(nonSubstituent, true); // Recursive
             else ether = false;
         }
         else ether = nonSubstituentBondedAtoms.size() == 0;
@@ -194,12 +240,12 @@ public class Molecule {
         return ether;
     }
 
-    private void buildEtherFrom(Ether ether, Atom etherCarbon) { // TODO runtime exceptions
+    private static void buildEtherFrom(Ether ether, Atom etherCarbon) { // TODO runtime exceptions??
         Optional<Atom> nextAtom = Optional.empty();
 
-        for (Atom bondedAtom : etherCarbon.getBondedAtomsSeparated()) {
+        for (Atom bondedAtom : etherCarbon.getBondedAtoms()) {
             if (isBondableAtom(bondedAtom, Ether.bondableAtoms))
-                ether.bond(bondedAtom.toFunctionalGroup());
+                ether.bond(asGroup(bondedAtom));
             else if (isRadicalCarbon(bondedAtom))
                 ether.bond(buildRadicalFrom(bondedAtom));
             else nextAtom = Optional.of(bondedAtom);
@@ -208,31 +254,30 @@ public class Molecule {
         if (nextAtom.isPresent()) {
             if (nextAtom.get().getElement() == Element.O) {
                 ether.bond(Group.ether);
-                nextAtom = Optional.of(nextAtom.get().getBondedAtomsSeparated().get(0));
-            }
-            else ether.bondCarbon(); // It's a carbon
+                nextAtom = Optional.of(nextAtom.get().getBondedAtoms().get(0));
+            } else ether.bondCarbon(); // It's a carbon
 
-            buildEtherFrom(ether, nextAtom.get()); // Recursion
+            buildEtherFrom(ether, nextAtom.get()); // Recursive
         }
     }
 
     // Open chain:
 
-    private boolean isNotSubstituent(Atom atom, Set<Atom> bondableAtoms) {
+    private static boolean isNotSubstituent(Atom atom, List<Atom> bondableAtoms) {
         return !isBondableAtom(atom, bondableAtoms) && !isRadicalCarbon(atom);
     }
 
-    private boolean isBondableAtom(Atom atom, Set<Atom> bondableAtoms) {
+    private static boolean isBondableAtom(Atom atom, List<Atom> bondableAtoms) {
         return bondableAtoms.contains(atom);
     }
 
-    private boolean isRadicalCarbon(Atom atom) {
+    private static boolean isRadicalCarbon(Atom atom) {
         if (atom.getElement() != Element.C)
             return false;
 
-        List<Atom> bondedAtomsCutOff = atom.getBondedAtomsSeparated(); // TODO rename
+        List<Atom> bondedAtoms = atom.getBondedAtoms();
 
-        if (bondedAtomsCutOff.size() != 3)
+        if (bondedAtoms.size() != 3)
             return false;
 
         boolean radical;
@@ -240,20 +285,23 @@ public class Molecule {
         int hydrogenCount = atom.getAmountOf(Element.H);
 
         if (hydrogenCount == 1) { // -CH(CH3)2
-            Stream<Atom> bondedCH3s = bondedAtomsCutOff.stream().filter(bonded -> bonded.getAmountOf(Element.H) == 3);
+            Stream<Atom> bondedCH3s = bondedAtoms.stream().filter(bonded -> bonded.getAmountOf(Element.H) == 3);
             bondedCH3s = bondedCH3s.filter(bonded -> bonded.getBondedAtoms().size() == 3);
+
             radical = bondedCH3s.count() == 2;
-        }
-        else if (hydrogenCount == 2) { // -CH2-C
-            Stream<Atom> bondedCarbons = bondedAtomsCutOff.stream().filter(bonded -> bonded.getElement() == Element.C);
-            radical = atom.getAmountOf(Element.C) == 1 && bondedCarbons.allMatch(this::isRadicalCarbon); // Recursive
+        } else if (hydrogenCount == 2) { // -CH2-C
+            Stream<Atom> bondedCarbons = bondedAtoms.stream().filter(bonded -> bonded.getElement() == Element.C);
+
+            if (atom.getAmountOf(Element.C) == 1)
+                radical = bondedCarbons.allMatch(Molecule::isRadicalCarbon); // Recursive
+            else radical = false;
         }
         else radical = hydrogenCount == 3; // -CH3
 
         return radical;
     }
 
-    private Substituent buildRadicalFrom(Atom radicalCarbon) {
+    private static Substituent buildRadicalFrom(Atom radicalCarbon) {
         int hydrogenCount = radicalCarbon.getAmountOf(Element.H);
 
         if (hydrogenCount == 3)
@@ -262,7 +310,7 @@ public class Molecule {
         if (hydrogenCount == 1)
             return Substituent.radical(3, true);
 
-        List<Atom> bondedCarbons = radicalCarbon.getBondedAtomsSeparated();
+        List<Atom> bondedCarbons = radicalCarbon.getBondedAtoms();
         bondedCarbons.removeIf(bondedAtom -> bondedAtom.getElement() != Element.C);
 
         Atom nextCarbon = bondedCarbons.get(0); // There must be one
@@ -270,6 +318,15 @@ public class Molecule {
         Substituent radicalEnd = buildRadicalFrom(nextCarbon); // Recursive
 
         return Substituent.radical(1 + radicalEnd.getCarbonCount(), radicalEnd.isIso()); // Appended
+    }
+
+    private static Group asGroup(Atom atom) {
+        Group group = atomToGroup.get(atom);
+
+        if(group == null)
+            throw new IllegalArgumentException(String.format(unknownFunctionalGroupError, atom.getElement()));
+
+        return group;
     }
 
 }
