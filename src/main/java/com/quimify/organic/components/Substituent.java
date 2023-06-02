@@ -120,7 +120,7 @@ public class Substituent extends Nomenclature {
 
     @Override
     public boolean equals(Object other) {
-        if (other == null || other.getClass() != this.getClass())
+        if (other == null || getClass() != other.getClass())
             return false;
 
         Substituent otherSubstituent = (Substituent) other;

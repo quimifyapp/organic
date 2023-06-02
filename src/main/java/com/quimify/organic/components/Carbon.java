@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 public class Carbon extends Nomenclature {
 
     private int freeBondCount;
-    private final List<Substituent> substituents; // TODO set?
+    private final List<Substituent> substituents;
 
     // Error messages:
 
@@ -17,39 +17,27 @@ public class Carbon extends Nomenclature {
 
     // Constants:
 
-    static final Carbon CH3 = new Carbon(1);
-
-    static {
-        CH3.bond(Group.hydrogen);
-        CH3.bond(Group.hydrogen);
-        CH3.bond(Group.hydrogen);
-    }
-
-    static final Carbon CHCH3 = new Carbon(2);
-
-    static {
-        CHCH3.bond(Group.hydrogen);
-        CHCH3.bond(Substituent.radical(1));
-    }
-
-    static final Carbon CH2 = new Carbon(2);
-
-    static {
-        CH2.bond(Group.hydrogen);
-        CH2.bond(Group.hydrogen);
-    }
+    static final Carbon CH3 = new Carbon(Collections.nCopies(3, new Substituent(Group.hydrogen)));
+    static final Carbon CH2 = new Carbon(Collections.nCopies(2, new Substituent(Group.hydrogen)));
+    static final Carbon CHCH3 = new Carbon(List.of(new Substituent(Group.hydrogen), Substituent.radical(1)));
 
     // Constructors:
 
+    private Carbon(int freeBondCount, List<Substituent> substituents) {
+        this.freeBondCount = freeBondCount;
+        this.substituents = substituents;
+    }
+
+    private Carbon(List<Substituent> substituents) {
+        this(0, substituents);
+    }
+
     Carbon(int usedBondCount) {
-        freeBondCount = 4 - usedBondCount;
-        substituents = new ArrayList<>();
+        this(4 - usedBondCount, new ArrayList<>());
     }
 
     Carbon(Carbon other) {
-        freeBondCount = other.freeBondCount;
-        substituents = new ArrayList<>();
-        other.substituents.forEach(s -> substituents.add(new Substituent(s)));
+        this(other.freeBondCount, other.substituents.stream().map(Substituent::new).collect(Collectors.toList()));
     }
 
     // Queries:
@@ -83,7 +71,7 @@ public class Carbon extends Nomenclature {
 
     @Override
     public boolean equals(Object other) {
-        if (other == null || other.getClass() != this.getClass())
+        if (other == null || getClass() != other.getClass())
             return false;
 
         Carbon otherCarbon = (Carbon) other;
