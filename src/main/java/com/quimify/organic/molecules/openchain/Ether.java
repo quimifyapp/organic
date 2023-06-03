@@ -108,7 +108,7 @@ public final class Ether extends Nomenclature implements OpenChain {
 	public void standardize() {
 		firstChain.correctChainToTheLeft(); // CF(CH3)-O- → CH3-CF-O-
 		secondChain.correctChainToTheRight(); // -O-CHF(CH3) → -O-CHF-CH3
-		// TODO order based on chains names?
+		// TODO standardize chain order! (based on chains names?)
 	}
 
 	public String getName() {
