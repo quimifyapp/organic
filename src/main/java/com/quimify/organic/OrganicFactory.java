@@ -20,13 +20,13 @@ public class OrganicFactory {
         try {
             Optional<Molecule> molecule = Molecule.from(opsinResult.get().getCml(), opsinResult.get().getSmiles());
 
-            if(molecule.isEmpty())
-                return Optional.empty();
+            if(molecule.isPresent()) {
+                Optional<OpenChain> openChain = molecule.get().toOpenChain();
+                String structure = openChain.map(OpenChain::getStructure).orElse(null);
 
-            Optional<OpenChain> openChain = molecule.get().toOpenChain();
-            String structure = openChain.map(OpenChain::getStructure).orElse(null);
-
-            organic = new Organic(name, opsinResult.get().getSmiles(), structure);
+                organic = new Organic(name, opsinResult.get().getSmiles(), structure);
+            }
+            else organic = new Organic(name, opsinResult.get().getSmiles(), (Exception) null);
         } catch (Exception structureException) {
             organic = new Organic(name, opsinResult.get().getSmiles(), structureException);
         }
