@@ -62,9 +62,6 @@ public class Molecule {
 
         List<Atom> atoms = bondAtoms(idToAtom.get(), cmlDocument);
 
-        if (atoms.stream().noneMatch(atom -> atom.getElement() == Element.C)) // TODO NEEDED? try and see what happens
-            return Optional.empty(); // Not an organic molecule
-
         return Optional.of(new Molecule(atoms));
     }
 
@@ -114,12 +111,17 @@ public class Molecule {
     public Optional<OpenChain> toOpenChain() {
         List<Atom> originCarbons = getOriginCarbons();
 
-        Optional<OpenChain> openChain = toSimpleOpenChain(originCarbons);
+        Optional<Simple> simple = toSimple(originCarbons);
 
-        if (openChain.isEmpty())
-            openChain = toEtherOpenChain(originCarbons);
+        if (simple.isPresent())
+            return Optional.of(simple.get());
 
-        return openChain;
+        Optional<Ether> ether = toEther(originCarbons);
+
+        if (ether.isPresent())
+            return Optional.of(ether.get());
+
+        return Optional.empty();
     }
 
     // Private:
@@ -136,8 +138,8 @@ public class Molecule {
     private static Atom asOrigin(Atom atom, Atom parent) {
         Atom origin = new Atom(atom.getElement());
 
-        for(Atom bondedAtom : atom.getBondedAtoms())
-            if(bondedAtom != parent)
+        for (Atom bondedAtom : atom.getBondedAtoms())
+            if (bondedAtom != parent)
                 origin.bond(asOrigin(bondedAtom, atom));
 
         return origin;
@@ -145,14 +147,14 @@ public class Molecule {
 
     // Simple open chain:
 
-    private static Optional<OpenChain> toSimpleOpenChain(List<Atom> originCarbons) { // TODO Optional of Simple?
-        Optional<Atom> simpleEndingCarbon = getSimpleOriginCarbon(originCarbons);
+    private static Optional<Simple> toSimple(List<Atom> originCarbons) {
+        Optional<Atom> simpleOriginCarbon = getSimpleOriginCarbon(originCarbons);
 
-        if (simpleEndingCarbon.isEmpty())
+        if (simpleOriginCarbon.isEmpty())
             return Optional.empty();
 
         Simple simple = new Simple();
-        buildSimpleFrom(simple, simpleEndingCarbon.get());
+        buildSimpleFrom(simple, simpleOriginCarbon.get());
         simple.standardize();
 
         return Optional.of(simple);
@@ -163,22 +165,24 @@ public class Molecule {
     }
 
     private static boolean isSimpleCarbon(Atom carbon) {
+        boolean simpleCarbon;
+
         List<Atom> nonSubstituentBondedAtoms = carbon.getBondedAtoms().stream().filter(bondedAtom ->
                 isNotSubstituent(bondedAtom, Simple.bondableAtoms)).collect(Collectors.toList());
 
         if (nonSubstituentBondedAtoms.size() == 1) {
             Atom nonSubstituent = nonSubstituentBondedAtoms.get(0);
 
-            if (nonSubstituent.getElement() != Element.C)
-                return false;
-
-            return isSimpleCarbon(nonSubstituent); // Recursive
+            if (nonSubstituent.getElement() == Element.C)
+                simpleCarbon = isSimpleCarbon(nonSubstituent); // Recursive
+            else simpleCarbon = false;
         }
+        else simpleCarbon = nonSubstituentBondedAtoms.size() == 0;
 
-        return nonSubstituentBondedAtoms.size() == 0;
+        return simpleCarbon;
     }
 
-    private static void buildSimpleFrom(Simple simple, Atom simpleCarbon) { // TODO runtime exceptions??
+    private static void buildSimpleFrom(Simple simple, Atom simpleCarbon) {
         Optional<Atom> nextCarbon = Optional.empty();
 
         for (Atom bondedAtom : simpleCarbon.getBondedAtoms()) {
@@ -197,31 +201,28 @@ public class Molecule {
 
     // Ether open chain:
 
-    private static Optional<OpenChain> toEtherOpenChain(List<Atom> originCarbons) {  // TODO Optional of Ether?
-        Optional<Atom> etherEndingCarbon = getEtherOriginCarbon(originCarbons);
+    private static Optional<Ether> toEther(List<Atom> originCarbons) {
+        Optional<Atom> etherOriginCarbon = getEtherOriginCarbon(originCarbons);
 
-        if (etherEndingCarbon.isEmpty())
+        if (etherOriginCarbon.isEmpty())
             return Optional.empty();
 
         Ether ether = new Ether();
-        buildEtherFrom(ether, etherEndingCarbon.get());
+        buildEtherFrom(ether, etherOriginCarbon.get());
         ether.standardize();
 
         return Optional.of(ether);
     }
 
     private static Optional<Atom> getEtherOriginCarbon(List<Atom> originCarbons) {
-        // TODO SPLIT IN LINES:
-        if (originCarbons.size() > 2) // -C-O-C- minimum TODO what does this comment mean? it must be one of those two?
-            originCarbons = originCarbons.stream().filter(endingCarbon ->
-                    endingCarbon.getBondedAtoms().stream().noneMatch(bonded ->
-                            bonded.getElement() == Element.O)).collect(Collectors.toList());
+        if (originCarbons.size() > 2) // It's not just C-O-C
+            originCarbons.removeIf(originCarbon -> originCarbon.getAmountOf(Element.O) == 0);
 
         return originCarbons.stream().filter(originCarbon -> isEtherCarbon(originCarbon, false)).findAny();
     }
 
     private static boolean isEtherCarbon(Atom carbon, boolean etherFound) {
-        boolean ether;
+        boolean etherCarbon;
 
         List<Atom> nonSubstituentBondedAtoms = carbon.getBondedAtoms().stream().filter(bondedAtom ->
                 isNotSubstituent(bondedAtom, Ether.bondableAtoms)).collect(Collectors.toList());
@@ -230,17 +231,17 @@ public class Molecule {
             Atom nonSubstituent = nonSubstituentBondedAtoms.stream().findAny().get();
 
             if (nonSubstituent.getElement() == Element.C)
-                ether = isEtherCarbon(nonSubstituent, etherFound); // Recursive
-            else if (nonSubstituent.getElement() == Element.O)
-                ether = !etherFound && isEtherCarbon(nonSubstituent, true); // Recursive
-            else ether = false;
+                etherCarbon = isEtherCarbon(nonSubstituent, etherFound); // Recursive
+            else if (nonSubstituent.getElement() == Element.O && !etherFound)
+                etherCarbon = isEtherCarbon(nonSubstituent, true); // Recursive
+            else etherCarbon = false;
         }
-        else ether = nonSubstituentBondedAtoms.size() == 0;
+        else etherCarbon = nonSubstituentBondedAtoms.size() == 0;
 
-        return ether;
+        return etherCarbon;
     }
 
-    private static void buildEtherFrom(Ether ether, Atom etherCarbon) { // TODO runtime exceptions??
+    private static void buildEtherFrom(Ether ether, Atom etherCarbon) {
         Optional<Atom> nextAtom = Optional.empty();
 
         for (Atom bondedAtom : etherCarbon.getBondedAtoms()) {
@@ -255,7 +256,8 @@ public class Molecule {
             if (nextAtom.get().getElement() == Element.O) {
                 ether.bond(Group.ether);
                 nextAtom = Optional.of(nextAtom.get().getBondedAtoms().get(0));
-            } else ether.bondCarbon(); // It's a carbon
+            }
+            else ether.bondCarbon(); // It's a carbon
 
             buildEtherFrom(ether, nextAtom.get()); // Recursive
         }
@@ -323,7 +325,7 @@ public class Molecule {
     private static Group asGroup(Atom atom) {
         Group group = atomToGroup.get(atom);
 
-        if(group == null)
+        if (group == null)
             throw new IllegalArgumentException(String.format(unknownFunctionalGroupError, atom.getElement()));
 
         return group;
