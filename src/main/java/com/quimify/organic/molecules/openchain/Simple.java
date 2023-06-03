@@ -336,13 +336,12 @@ public final class Simple extends Nomenclature implements OpenChain {
             case 1: // Like methanol
                 return true;
             case 2: // Like ethanol, ethene, or chloroethyne
-                int substituentsWithoutHydrogen = chain.getSubstituents().size() - chain.getAmountOf(Group.hydrogen);
-                return substituentsWithoutHydrogen == 1 || isBond(group) || chain.isBondedTo(Group.alkyne);
+                return isBond(group) || (chain.getSubstituents().size() - chain.getAmountOf(Group.hydrogen) == 1);
             case 3: // It's propadiene
                 return group == Group.alkene && chain.getAmountOf(Group.alkene) == 2;
-            default:
-                return false;
         }
+
+        return false;
     }
 
     private String getSuffixNameFor(Group bond) { // TODO fix repeated code
