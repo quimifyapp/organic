@@ -215,8 +215,8 @@ public class Molecule {
     }
 
     private static Optional<Atom> getEtherOriginCarbon(List<Atom> originCarbons) {
-        if (originCarbons.size() > 2) // It's not just C-O-C
-            originCarbons.removeIf(originCarbon -> originCarbon.getAmountOf(Element.O) == 0);
+        if (originCarbons.size() > 2) // It's C(...)C-O-C(...)C
+            originCarbons.removeIf(originCarbon -> originCarbon.getAmountOf(Element.O) != 0);
 
         return originCarbons.stream().filter(originCarbon -> isEtherCarbon(originCarbon, false)).findAny();
     }
