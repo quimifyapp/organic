@@ -233,7 +233,7 @@ public class Molecule {
 
             if (nonSubstituent.getElement() == Element.C)
                 etherCarbon = isEtherCarbon(nonSubstituent, etherFound); // Recursive
-            else if (nonSubstituent.getElement() == Element.O && !etherFound)
+            else if (nonSubstituent.equals(Atom.OC) && !etherFound)
                 etherCarbon = isEtherCarbon(nonSubstituent, true); // Recursive
             else etherCarbon = false;
         }
@@ -244,21 +244,24 @@ public class Molecule {
 
     private static void buildEtherFrom(Ether ether, Atom etherCarbon) {
         Optional<Atom> nextAtom = Optional.empty();
+        boolean bondEther = false;
 
         for (Atom bondedAtom : etherCarbon.getBondedAtoms()) {
-            if (isBondableAtom(bondedAtom, Ether.bondableAtoms))
+            if (bondedAtom.equals(Atom.OC)) {
+                nextAtom = Optional.of(bondedAtom.getBondedAtoms().get(0));
+                bondEther = true;
+            }
+            else if (isBondableAtom(bondedAtom, Ether.bondableAtoms))
                 ether.bond(asGroup(bondedAtom));
             else if (isRadicalCarbon(bondedAtom))
                 ether.bond(buildRadicalFrom(bondedAtom));
-            else nextAtom = Optional.of(bondedAtom);
+            else nextAtom = Optional.of(bondedAtom); // It's a carbon
         }
 
         if (nextAtom.isPresent()) {
-            if (nextAtom.get().getElement() == Element.O) {
+            if(bondEther)
                 ether.bond(Group.ether);
-                nextAtom = Optional.of(nextAtom.get().getBondedAtoms().get(0));
-            }
-            else ether.bondCarbon(); // It's a carbon
+            else ether.bondCarbon();
 
             buildEtherFrom(ether, nextAtom.get()); // Recursive
         }
