@@ -20,6 +20,7 @@ public final class Ether extends Nomenclature implements OpenChain {
 	// Constants:
 
 	public static final List<Atom> bondableAtoms = List.of(
+			// TODO Atom.OC
 			Atom.NO2,
 			Atom.Br,
 			Atom.Cl,

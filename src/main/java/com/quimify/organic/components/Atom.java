@@ -15,6 +15,7 @@ public class Atom {
     public static final Atom O = new Atom(Element.O);
     public static final Atom OH = new Atom(Element.O, H);
     public static final Atom NH2 = new Atom(Element.N, H, H);
+    public static final Atom OC = new Atom(Element.O, new Atom(Element.C));
     public static final Atom NO2 = new Atom(Element.N, O, O);
     public static final Atom Br = new Atom(Element.Br);
     public static final Atom Cl = new Atom(Element.Cl);

@@ -31,6 +31,7 @@ public class Molecule {
             Atom.O, Group.ketone,
             Atom.OH, Group.alcohol,
             Atom.NH2, Group.amine,
+            // TODO Atom.OC
             Atom.NO2, Group.nitro,
             Atom.Br, Group.bromine,
             Atom.Cl, Group.chlorine,
@@ -216,7 +217,7 @@ public class Molecule {
 
     private static Optional<Atom> getEtherOriginCarbon(List<Atom> originCarbons) {
         if (originCarbons.size() > 2) // It's C(...)C-O-C(...)C
-            originCarbons.removeIf(originCarbon -> originCarbon.getAmountOf(Element.O) != 0);
+            originCarbons.removeIf(originCarbon -> originCarbon.getBondedAtoms().contains(Atom.OC));
 
         return originCarbons.stream().filter(originCarbon -> isEtherCarbon(originCarbon, false)).findAny();
     }
