@@ -19,8 +19,6 @@ import java.util.stream.Stream;
 
 public class Molecule {
 
-    // TODO MAKE ALL POSSIBLE METHODS IN THIS PROJECT STATIC
-
     private final List<Atom> atoms;
 
     // Constants:
@@ -31,7 +29,6 @@ public class Molecule {
             Atom.O, Group.ketone,
             Atom.OH, Group.alcohol,
             Atom.NH2, Group.amine,
-            // TODO Atom.OC
             Atom.NO2, Group.nitro,
             Atom.Br, Group.bromine,
             Atom.Cl, Group.chlorine,
@@ -253,7 +250,8 @@ public class Molecule {
             if (bondedAtom.equals(Atom.OC)) {
                 nextAtom = Optional.of(bondedAtom.getBondedAtoms().get(0));
                 bondEther = true;
-            } else if (isBondableAtom(bondedAtom, Ether.bondableAtoms))
+            }
+            else if (isBondableAtom(bondedAtom, Ether.bondableAtoms))
                 ether.bond(asGroup(bondedAtom));
             else if (isRadicalCarbon(bondedAtom))
                 ether.bond(buildRadicalFrom(bondedAtom));

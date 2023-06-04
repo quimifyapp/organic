@@ -20,6 +20,7 @@ public final class Ether extends Nomenclature implements OpenChain {
 	// Constants:
 
 	public static final List<Atom> bondableAtoms = List.of(
+			Atom.O, // Temporary hack to get ester structures too
 			Atom.OC,
 			Atom.NO2,
 			Atom.Br,
@@ -30,6 +31,7 @@ public final class Ether extends Nomenclature implements OpenChain {
 	);
 
 	private static final List<Group> bondableGroups = List.of(
+			Group.ketone, // Temporary hack to get ester structures too
 			Group.ether,
 			Group.nitro,
 			Group.bromine,
