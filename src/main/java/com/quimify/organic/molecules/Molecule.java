@@ -250,8 +250,7 @@ public class Molecule {
             if (bondedAtom.equals(Atom.OC)) {
                 nextAtom = Optional.of(bondedAtom.getBondedAtoms().get(0));
                 bondEther = true;
-            }
-            else if (isBondableAtom(bondedAtom, Ether.bondableAtoms))
+            } else if (isBondableAtom(bondedAtom, Ether.bondableAtoms))
                 ether.bond(asGroup(bondedAtom));
             else if (isRadicalCarbon(bondedAtom))
                 ether.bond(buildRadicalFrom(bondedAtom));
@@ -301,7 +300,8 @@ public class Molecule {
             if (atom.getAmountOf(Element.C) == 1)
                 radical = bondedCarbons.allMatch(Molecule::isRadicalCarbon); // Recursive
             else radical = false;
-        } else radical = hydrogenCount == 3; // -CH3
+        }
+        else radical = hydrogenCount == 3; // -CH3
 
         return radical;
     }
