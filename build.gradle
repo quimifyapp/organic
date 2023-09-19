@@ -8,7 +8,7 @@ repositories {
 }
 
 group 'com.quimify.organic'
-version '3.2.0' // Needs to be manually updated
+version '3.2.1' // Needs to be manually updated
 
 dependencies {
     implementation(files("lib/quimify-opsin-spanish-2.7.0-with-dependencies.jar"))
