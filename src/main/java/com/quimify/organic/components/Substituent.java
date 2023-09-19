@@ -83,9 +83,6 @@ public class Substituent extends Nomenclature {
     }
 
     public static Substituent radical(int carbonCount) {
-        if (carbonCount < 1)
-            throw new IllegalArgumentException(radicalTooShortError);
-
         return Substituent.radical(carbonCount, false);
     }
 
@@ -96,19 +93,17 @@ public class Substituent extends Nomenclature {
     // Queries:
 
     int compareTo(Substituent other) {
-        // OOH < Cl < CH(CH3)2 < CH2CH3 < CH2CH2CH3 < H
         if (group == Group.radical && other.group == Group.radical)
-            return compareToRadical(other); // CH(CH3)2 < CH2CH3 < CH2CH2CH3
+            return compareToRadical(other); // CH2CH3 < CH(CH3)2 < CH2CH2CH3
 
-        return group.compareTo(other.group); // OOH < Cl < H
+        return group.compareTo(other.group); // OOH < Cl < CH2CH3 < H
     }
 
-    private int compareToRadical(Substituent radical) {
-        // CH(CH3)2 < CH2CH3 < CH2CH2CH3
-        int comparaison = Integer.compare(carbonCount, radical.carbonCount);
+    private int compareToRadical(Substituent otherRadical) {
+        int comparaison = Integer.compare(carbonCount, otherRadical.carbonCount);
 
-        if (comparaison == 0)
-            return iso == radical.iso ? 0 : iso ? -1 : 1; // CH(CH3)2 < CH2CH3
+        if (comparaison == 0 && iso != otherRadical.iso)
+            return iso ? -1 : 1; // CH(CH3)2 < CH2CH2CH3
 
         return comparaison; // CH2CH3 < CH2CH2CH3
     }
