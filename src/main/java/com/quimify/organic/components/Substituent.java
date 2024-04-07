@@ -4,7 +4,7 @@ import com.quimify.organic.Nomenclature;
 
 import java.util.Objects;
 
-public class Substituent extends Nomenclature {
+public class Substituent extends Nomenclature implements Comparable<Substituent> {
 
     private final Group group;
     private final int bondCount;
@@ -92,7 +92,8 @@ public class Substituent extends Nomenclature {
 
     // Queries:
 
-    int compareTo(Substituent other) {
+    @Override
+    public int compareTo(Substituent other) {
         if (group == Group.radical && other.group == Group.radical)
             return compareToRadical(other); // CH2CH3 < CH(CH3)2 < CH2CH2CH3
 

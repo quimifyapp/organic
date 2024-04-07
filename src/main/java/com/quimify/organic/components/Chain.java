@@ -227,7 +227,7 @@ public class Chain extends Nomenclature {
 
         List<Substituent> radicals = new ArrayList<>(carbon.getSubstituents());
         radicals.removeIf(substituent -> substituent.getGroup() != Group.radical);
-        radicals.sort(Substituent::compareTo);
+        Collections.sort(radicals);
 
         return radicals.get(radicals.size() - 1);
     }

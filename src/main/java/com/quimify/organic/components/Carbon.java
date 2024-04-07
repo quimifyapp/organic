@@ -65,8 +65,7 @@ public class Carbon extends Nomenclature {
 
     @Override
     public int hashCode() {
-        Stream<Substituent> sortedSubstituents = substituents.stream().sorted(Substituent::compareTo);
-        return Objects.hash(freeBondCount, sortedSubstituents.collect(Collectors.toList()));
+        return Objects.hash(freeBondCount, substituents.stream().sorted().collect(Collectors.toList()));
     }
 
     @Override
@@ -79,13 +78,10 @@ public class Carbon extends Nomenclature {
         if (freeBondCount != otherCarbon.freeBondCount)
             return false;
 
-        List<Substituent> sortedSubstituents = substituents.stream()
-                .sorted(Substituent::compareTo).collect(Collectors.toList());
+        List<Substituent> sorted = substituents.stream().sorted().collect(Collectors.toList());
+        List<Substituent> otherSorted = otherCarbon.substituents.stream().sorted().collect(Collectors.toList());
 
-        List<Substituent> sortedOtherSubstituents = otherCarbon.substituents.stream()
-                .sorted(Substituent::compareTo).collect(Collectors.toList());
-
-        return sortedSubstituents.equals(sortedOtherSubstituents);
+        return sorted.equals(otherSorted);
     }
 
     // Modifiers:
@@ -144,8 +140,7 @@ public class Carbon extends Nomenclature {
         Stream<Substituent> uniqueSubstituents = substituents.stream()
                 .filter(s -> s.getGroup() != Group.hydrogen && s.getGroup() != Group.ether).distinct();
 
-        List<Substituent> uniqueOrderedSubstituents = uniqueSubstituents
-                .sorted(Substituent::compareTo).collect(Collectors.toList());
+        List<Substituent> uniqueOrderedSubstituents = uniqueSubstituents.sorted().collect(Collectors.toList());
 
         StringBuilder otherSubstituentsStructure;
 
