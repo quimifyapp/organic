@@ -12,6 +12,7 @@ version '3.2.2' // Needs to be manually updated
 
 dependencies {
     implementation(files("lib/quimify-opsin-spanish-2.7.0-with-dependencies.jar"))
+    implementation(files("lib/quimify-opsin-english-2.7.0-with-dependencies.jar"))
 }
 
 shadowJar {

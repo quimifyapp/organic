@@ -9,8 +9,8 @@ import java.util.Optional;
 
 public class OrganicFactory {
 
-    public static Optional<Organic> getFromName(String name) {
-        Optional<OpsinResult> opsinResult = Opsin.parseSpanishName(name);
+    public static Optional<Organic> getFromName(String name, String language) {
+        Optional<OpsinResult> opsinResult = language.equals("es") ? Opsin.parseSpanishName(name) : Opsin.parseEnglishName(name);
 
         if (opsinResult.isEmpty())
             return Optional.empty();
