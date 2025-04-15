@@ -82,7 +82,7 @@ public class StructureToName {
         System.out.print("Structure given name:\t");
 
         try {
-            Optional<Organic> organicFromName = OrganicFactory.getFromName(name, "es");
+            Optional<Organic> organicFromName = OrganicFactory.getFromName(name, "sp");
 
             if (organicFromName.isPresent())
                 System.out.print(organicFromName.get().getStructure());

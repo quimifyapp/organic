@@ -18,7 +18,7 @@ public class NameToStructure {
             String name = scanner.nextLine();
 
             try {
-                Optional<Organic> organic = OrganicFactory.getFromName(name, "es");
+                Optional<Organic> organic = OrganicFactory.getFromName(name, "sp");
 
                 if (organic.isPresent()) {
                     System.out.println("Smiles: " + organic.get().getSmiles());
